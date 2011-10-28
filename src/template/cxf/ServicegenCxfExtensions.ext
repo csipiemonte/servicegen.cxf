@@ -1,0 +1,127 @@
+/**
+ * <copyright>
+ * (C) Copyright 2011 CSI-PIEMONTE;
+
+ * Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;
+ * Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.
+ * E' possibile ottenere una copia della Licenza al seguente indirizzo:
+ *
+ * http://www.eupl.it/opensource/eupl-1-1
+ *
+ * Salvo diversamente indicato dalla legge applicabile o concordato per 
+ * iscritto, il software distribuito secondo i termini della Licenza e' 
+ * distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,
+ * esplicite o implicite.
+ * Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni
+ * e le limitazioni secondo i termini della Licenza.
+ * </copyright>
+ *
+ * $Id$
+ */
+
+import servicegen;
+import typedef;
+import servicedef;
+import appresources;
+
+extension template::ServicegenExtensions;
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+/// NAMING PACCHETTI
+
+String getWSWarName(String codServ, String codBinding, String srvType, SOABEModel model) :
+	srvType+"-"+removeSeparator(codServ)+"-"+codBinding.toLowerCase()+".war";
+
+String wsWebContext(String codServ, String codBinding, String serviceType, SOABEModel model) :
+	model.codComponente.toLowerCase()+toCamel(serviceType.toString())+toCamel(removeSeparator(codServ))+codBinding.toLowerCase().toFirstUpper();	
+	
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//// NAMING DIRECTORY
+
+String fullWebServiceInterfaceDir(ServiceDef sd, String codServ, SOABEModel model) :
+    getGeneratedJavaSrcDir(model)+"/"+getOrganizationNamePathPrefix()+"/"+model.codProdotto.toLowerCase()+"/"+model.codComponente.toLowerCase()+"/interfacews/"+removeSeparator(codServ);	
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+///// NAMING PACKAGE JAVA
+	
+// full qualified name dell'interfaccia del servizio (SEI)
+String fullQualifiedWebServiceInterfacePkg(servicedef::ServiceDef sd, SOABEModel model) :
+    getOrganizationNamePkgPrefix()+"."+model.codProdotto.toLowerCase()+"."+model.codComponente.toLowerCase()+".interfacews."+removeSeparator(sd.codServizio);	
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//// NAMING CLASSI
+
+String serviceImplementationClassName(ServiceDef sd) :
+	toCamel(sd.codServizio)+"Impl";
+
+String serviceBusinessInterfaceName(ServiceDef sd) :
+	toCamel(sd.codServizio)+"Business";
+	
+String serviceBusinessClassName(ServiceDef sd) :
+	toCamel(sd.codServizio)+"BusinessImpl";
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+// DATA TYPES MAPPING
+
+String map2javaWsType(Type type, String codServ, SOABEModel model) :
+	if (type.metaType==PrimitiveType) then
+		map2JavaWSTypeSDRelative((PrimitiveType)type)
+	else if (type.metaType==TypedArray) then
+		"List<" + map2JavaTypeSDRelative(((TypedArray)type).componentType)+">"
+	else
+		// delega al metodo gia' esistente la gestione di void, Entity ed Exception
+		map2javaType(type, codServ, model);
+
+// mappa il tipo java contestualizzandolo nel servicedef contenitore
+// (sfrutta codProdotto e codservizio di ServiceDef invece che quelli di SOABEModel)
+String map2JavaWSTypeSDRelative(PrimitiveType type) :
+	let binding = type.languageBindings.select(a|a.lang=="java").first() :
+	let ns = (binding.langSpecificNS != null ? binding.langSpecificNS : "") :
+	ns + binding.langSpecificType;
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+///// GENERAZIONE ELEMENTI JAVA
+
+String getWsTargetNamespace(ServiceDef sd, SOABEModel model) :
+	let sdannTns = getSDAnnDetail(sd, "ws", "tns") :
+    if sdannTns != null then
+    	sdannTns.value	
+    else
+    	null; // TODO: definire un default?
+
+String getWsTargetNamespaceAnnotation(ServiceDef sd, SOABEModel model) :
+	let sdannTns = getWsTargetNamespace(sd, model) :
+	if sdannTns != null then
+		", targetNamespace = \"" + sdannTns + "\""
+	else
+		"";
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+// TODO: vedere se servono
+
+String getAppServerLib(SOABEModel model) :
+	if ( model.targetPlatform.code == TargetPlatformCodes::JBoss43 ) then
+		"jboss"
+	else if ( model.targetPlatform.code == TargetPlatformCodes::WLS92 ) then
+		"weblogic";
+		
+		
+		

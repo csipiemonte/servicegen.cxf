@@ -1,0 +1,95 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;
+
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.
+E' possibile ottenere una copia della Licenza al seguente indirizzo:
+
+http://www.eupl.it/opensource/eupl-1-1
+
+Salvo diversamente indicato dalla legge applicabile o concordato per
+iscritto, il software distribuito secondo i termini della Licenza e'
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,
+esplicite o implicite.
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni
+e le limitazioni secondo i termini della Licenza.
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef»
+«IMPORT appresources»
+
+«REM»«IMPORT template::configfiles»«ENDREM»
+«REM»«IMPORT template::papdconfigfiles»«ENDREM»
+«REM»«IMPORT papdconfigfiles»«ENDREM»
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«DEFINE main(boolean useExternalDaoBeans) FOR SOABEModel»
+«EXPAND main2(useExternalDaoBeans) FOR this»
+«ENDDEFINE»
+
+«DEFINE main2(boolean useExternalDaoBeans) FOR SOABEModel»
+«EXPAND main_prodotto(useExternalDaoBeans) FOR this»
+«ENDDEFINE»
+
+«DEFINE main_prodotto(boolean useExternalDaoBeans) FOR SOABEModel»
+«EXPAND svn_project(useExternalDaoBeans) FOR this»
+«ENDDEFINE»
+
+
+
+
+«DEFINE svn_project(boolean useExternalDaoBeans) FOR SOABEModel»
+	«LET codComponente AS svn_project_dir»
+		«REM»
+		per ogni componente è necessario creare la struttura del progetto SVN:
+		- build.xml
+		- build.properties
+		- ivy
+		- ivyconf
+		- ...
+		«ENDREM»
+		«EXPAND buildfiles::buildfile FOR this»
+		«EXPAND buildfiles::buildproperties  FOR this»
+		«REM»TODO?«EXPAND buildfiles::buildEnvProperties FOR this»«ENDREM»
+		«EXPAND buildfiles::ivyfiles FOR this»
+		«REM»TODO?«EXPAND buildfiles::aboutfiles FOR this»«ENDREM»
+
+		«REM»File di configurazione dell'applicazione«ENDREM»
+ 		«EXPAND j2eeconfigfiles::applicationfiles FOR this»
+
+		«REM»TODO: Ciclo su ciascun servizio e genero la struttura«ENDREM»
+		«LET getProvidedServices(this) AS services»
+			«REM»«EXPAND configfiles::serviceFiles(this) FOREACH services»«ENDREM»
+			«EXPAND javafiles::serviceFiles(this) FOREACH services»
+			«FOREACH services AS currsrv»
+				«EXPAND javafiles::typedefs(this, currsrv.codServizio) FOR currsrv.types»
+			«ENDFOREACH»
+		«ENDLET»
+
+		 «REM»TODO: il file log4j è unico per tutto il componente«ENDREM»
+		 «REM»«EXPAND configfiles::log4jfiles FOR this»«ENDREM»
+
+		«REM»TODO:se c'è almeno una cartridge FlowModelImpl creo le classi base degli handler«ENDREM»
+		«REM»«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0»
+			«EXPAND template::flowmodel::handlerfiles::baseHandlers FOR this»
+		«ENDIF»«ENDREM»
+
+		«REM»TODO:files associati ai resource set«ENDREM»
+		«REM»«FOREACH this.serviceimplementations AS currSrvImpl»
+			«LET getAllResourceConnectors(currSrvImpl) AS allRC»
+				«EXPAND resourceConnectorFiles(currSrvImpl.provides, this) FOREACH allRC»
+			«ENDLET»
+			«IF currSrvImpl.implCartridge.metaType==ManualImplCartridge && ((ManualImplCartridge)(currSrvImpl.implCartridge)).useInjectedPojo -»
+				«EXPAND template::configfiles::beanContextFile(this, useExternalDaoBeans) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»
+				«EXPAND template::manualimpl::javafiles::springStartupFiles(this) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»
+			«ENDIF-»
+		«ENDFOREACH»«ENDREM»
+
+	«ENDLET»
+«ENDDEFINE»
+

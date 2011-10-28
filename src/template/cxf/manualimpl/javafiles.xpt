@@ -1,0 +1,148 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;                                             
+                                                                            
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.       
+E' possibile ottenere una copia della Licenza al seguente indirizzo:        
+                                                                            
+http://www.eupl.it/opensource/eupl-1-1                                      
+                                                                            
+Salvo diversamente indicato dalla legge applicabile o concordato per        
+iscritto, il software distribuito secondo i termini della Licenza e'        
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,         
+esplicite o implicite.                                                      
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
+e le limitazioni secondo i termini della Licenza.                           
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef»
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«REM»
+==========================================================================================================================
+CLASSE DI BUSINESS
+Classe che contiene la vera implementazione del servizio
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE javaServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND javaServiceBusinessInterfaceFile(model) FOR this»
+	«EXPAND javaServiceBusinessClassFile(model) FOR this»
+«ENDDEFINE»
+
+«REM»comment«ENDREM»
+«DEFINE javaServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.util.List;
+
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+/**
+ * @generated
+ */
+public interface «serviceBusinessInterfaceName()» {
+	«EXPAND operationDeclaration(model, this) FOREACH this.operations-»
+}
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»comment«ENDREM»
+«DEFINE javaServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.util.List;
+
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+/**
+ * @generated
+ */
+public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceName()» {
+	«EXPAND operationImplemetation(model, this) FOREACH this.operations-»
+}
+«ENDFILE»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+CLASSE DI BUSINESS
+Classe che contiene la vera implementazione del servizio
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE javaOrchServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND javaOrchServiceBusinessClassFile(model) FOR this»
+	«EXPAND javaServiceBusinessClassFile(model) FOR this»
+«ENDDEFINE»
+
+«REM»comment«ENDREM»
+«DEFINE javaOrchServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.util.List;
+
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+/**
+ * @generated
+ */
+public interface «serviceBusinessInterfaceName()» {
+	«EXPAND operationDeclaration(model, this) FOREACH this.operations-»
+}
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»comment«ENDREM»
+«DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.util.List;
+
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+/**
+ * @generated
+ */
+public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceName()» {
+	«EXPAND operationImplemetation(model, this) FOREACH this.operations-»
+}
+«ENDFILE»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+COMMON METHODS
+==========================================================================================================================
+«ENDREM»
+
+
+«REM»Genera la definizione di ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR Operation»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-»;
+«ENDDEFINE»
+
+
+«REM»Genera ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationImplemetation(SOABEModel model, ServiceDef def) FOR Operation»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
+	return null;
+}
+«ENDDEFINE»
