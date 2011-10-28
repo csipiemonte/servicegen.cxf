@@ -212,7 +212,6 @@ ENTITIES
 «FILE fullEntitiesDir(codServ, model)+"/"+name+".java"»package «fullQualifiedEntitiesPkg(codServ, model)»;
 
 «EXPAND additionalImports(model, codServ) FOR this-»
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -228,7 +227,8 @@ import javax.xml.bind.annotation.XmlType;
 public class «name» {
 
 	«EXPAND entityProperties(model, codServ) FOREACH this.features»
-	
+
+
 	«EXPAND entityGettersSetters(model, codServ) FOREACH this.features»
 }
 «ENDFILE»
@@ -238,28 +238,53 @@ public class «name» {
 «REM»comment«ENDREM»
 «DEFINE additionalImports(SOABEModel model, String codServ) FOR Entity-»
 «REM»Esiste almeno una lista?«ENDREM»
-«IF  features.select(e|e.type.metaType==TypedArray).size > 0»
+«IF features.select(e|e.type.metaType==TypedArray).size > 0»
 import java.util.List;
+
+«ENDIF»
+«REM»Esiste almeno un allegato?«ENDREM»
+«IF features.select(e|e.type.metaType==PrimitiveType && ((PrimitiveType)e.type).name.contains("64Binary")).size > 0»
+import javax.xml.bind.annotation.XmlMimeType;
+«ENDIF»
+«REM»Esiste almeno una data?«ENDREM»
+«IF features.select(e|e.type.metaType==PrimitiveType && 
+	(((PrimitiveType)e.type).name.contains("date") || ((PrimitiveType)e.type).name.contains("Date") || 
+	((PrimitiveType)e.type).name.contains("time") || ((PrimitiveType)e.type).name.contains("Time"))).size > 0»
+import javax.xml.bind.annotation.XmlSchemaType;
 «ENDIF»
 «ENDDEFINE»
 
 
 «REM»comment«ENDREM»
-«DEFINE entityProperties(SOABEModel model, String codServ) FOR Feature»
+«DEFINE entityProperties(SOABEModel model, String codServ) FOR Feature-»
 private «map2javaWsType(this.type, codServ, model)» «name»;
 «ENDDEFINE»
 
 «REM»comment«ENDREM»
 «DEFINE entityGettersSetters(SOABEModel model, String codServ) FOR Feature»
-«REM»TODO: ANNOTATION«ENDREM»
+«EXPAND propertyAnnotation(model, codServ) FOR this-»
 public «map2javaWsType(this.type, codServ, model)» get«name.toFirstUpper()»() {
 	return «name»;
 }
 
 public void set«name.toFirstUpper()»(«map2javaWsType(this.type, codServ, model)» «name») {
 	this.«name» = «name»;
-} 
+}
+
 «ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE propertyAnnotation(SOABEModel model, String codServ) FOR Feature-»
+	«LET this.type.annotations.select(e|e.source=="jaxb") AS annotations-»
+		«IF annotations.size > 0-»
+			«FOREACH annotations.details AS detail-»
+				«detail.key»(«detail.value»)
+			«ENDFOREACH-»
+		«ENDIF-»
+	«ENDLET-»
+«ENDDEFINE»
+
 
 
 «REM»
