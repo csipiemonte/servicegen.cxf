@@ -1,4 +1,4 @@
-«REM»
+Â«REMÂ»
 C) Copyright 2011 CSI-PIEMONTE;                                             
                                                                             
 Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
@@ -13,45 +13,45 @@ distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,
 esplicite o implicite.                                                      
 Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
 e le limitazioni secondo i termini della Licenza.                           
-«ENDREM»
+Â«ENDREMÂ»
 
-«IMPORT servicegen»
-«IMPORT servicedef»
-«IMPORT typedef»
+Â«IMPORT servicegenÂ»
+Â«IMPORT servicedefÂ»
+Â«IMPORT typedefÂ» 
 
-«EXTENSION template::ServicegenExtensions»
-«EXTENSION template::cxf::ServicegenCxfExtensions»
+Â«EXTENSION template::ServicegenExtensionsÂ»
+Â«EXTENSION template::cxf::ServicegenCxfExtensionsÂ»
 
 
-«REM»
+Â«REMÂ»
 ***************************************************************
 Metodo centralizzato per la generazione delle classi dei servizi
 ***************************************************************
-«ENDREM»
-«DEFINE serviceFiles(SOABEModel model) FOR ServiceDef»
-	«REM»Files comuni (SEI e SI)«ENDREM»
-	«EXPAND javaServiceEndpointInterfaceFile(model) FOR this»
-	«EXPAND javaServiceImplementationClassFile(model) FOR this»
+Â«ENDREMÂ»
+Â«DEFINE serviceFiles(SOABEModel model) FOR ServiceDefÂ»
+	Â«REMÂ»Files comuni (SEI e SI)Â«ENDREMÂ»
+	Â«EXPAND javaServiceEndpointInterfaceFile(model) FOR thisÂ»
+	Â«EXPAND javaServiceImplementationClassFile(model) FOR thisÂ»
 	
-	«REM»Files della implementation cartridge (classe di business)«ENDREM»
-	«IF this.serviceType==SrvTypeEnum::orch»
-		«EXPAND javaOrchServiceBusinessClassFile(model) FOR this»
-	«ELSE»
-		«EXPAND javaApplServiceBusinessClassFile(model) FOR this»
-	«ENDIF»
-«ENDDEFINE»
+	Â«REMÂ»Files della implementation cartridge (classe di business)Â«ENDREMÂ»
+	Â«IF this.serviceType==SrvTypeEnum::orchÂ»
+		Â«EXPAND javaOrchServiceBusinessClassFile(model) FOR thisÂ»
+	Â«ELSEÂ»
+		Â«EXPAND javaApplServiceBusinessClassFile(model) FOR thisÂ»
+	Â«ENDIFÂ»
+Â«ENDDEFINEÂ»
 
 
 
-«REM»
+Â«REMÂ»
 ==========================================================================================================================
 SERVICE ENDPOINT INTERFACE (SEI)
 ==========================================================================================================================
-«ENDREM»
+Â«ENDREMÂ»
 
-«REM»Genera la Service Endpoint Interface (SEI) del web service«ENDREM»
-«DEFINE javaServiceEndpointInterfaceFile(SOABEModel model) FOR ServiceDef»
-«FILE fullWebServiceInterfaceDir(codServizio, model)+"/"+serviceInterfaceName()+".java" »package «fullQualifiedWebServiceInterfacePkg(model)»;
+Â«REMÂ»Genera la Service Endpoint Interface (SEI) del web serviceÂ«ENDREMÂ»
+Â«DEFINE javaServiceEndpointInterfaceFile(SOABEModel model) FOR ServiceDefÂ»
+Â«FILE fullWebServiceInterfaceDir(codServizio, model)+"/"+serviceInterfaceName()+".java" Â»package Â«fullQualifiedWebServiceInterfacePkg(model)Â»;
 
 import java.util.List;
 
@@ -60,158 +60,158 @@ import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 
-import «fullQualifiedEntitiesPkg(codServizio, model)».*;
-import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+import Â«fullQualifiedEntitiesPkg(codServizio, model)Â».*;
+import Â«fullQualifiedServiceExceptionPkg(codServizio, model)Â».*;
 
-@WebService(name = "«toCamel(this.codServizio)»"«getWsTargetNamespaceAnnotation(this, model)»)
-public interface «serviceInterfaceName()»{
-	«EXPAND operationDeclaration(model, this) FOREACH this.operations-»
+@WebService(name = "Â«toCamel(this.codServizio)Â»"Â«getWsTargetNamespaceAnnotation(this, model)Â»)
+public interface Â«serviceInterfaceName()Â»{
+	Â«EXPAND operationDeclaration(model, this) FOREACH this.operations-Â»
 }
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
 
-«REM»Genera la definizione di ciascuna operation (metodo) del servizio«ENDREM»
-«DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR Operation»
-@WebResult(name = "result"«getWsTargetNamespaceAnnotation(def, model)»)
+Â«REMÂ»Genera la definizione di ciascuna operation (metodo) del servizioÂ«ENDREMÂ»
+Â«DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR OperationÂ»
+@WebResult(name = "result"Â«getWsTargetNamespaceAnnotation(def, model)Â»)
 @WebMethod
-public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
-	«EXPAND paramDef(model, def, true) FOREACH params SEPARATOR ","»
-)«EXPAND throwsClause(model, def) FOR this-»;
-«ENDDEFINE»
+public Â«map2javaWsType(this.returnType, def.codServizio, model)Â» Â«this.nameÂ»(
+	Â«EXPAND paramDef(model, def, true) FOREACH params SEPARATOR ","Â»
+)Â«EXPAND throwsClause(model, def) FOR this-Â»;
+Â«ENDDEFINEÂ»
 
 
 
-«REM»
+Â«REMÂ»
 ==========================================================================================================================
 SERVICE IMPLEMENTATION CLASS (SI)
 ==========================================================================================================================
-«ENDREM»
+Â«ENDREMÂ»
 
-«REM»Genera la Service Endpoint Interface (SEI) del web service«ENDREM»
-«DEFINE javaServiceImplementationClassFile(SOABEModel model) FOR ServiceDef»
-«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceImplementationClassName()+".java" »package «getFullServiceEJBPkg(codServizio, model)»;
+Â«REMÂ»Genera la Service Endpoint Interface (SEI) del web serviceÂ«ENDREMÂ»
+Â«DEFINE javaServiceImplementationClassFile(SOABEModel model) FOR ServiceDefÂ»
+Â«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceImplementationClassName()+".java" Â»package Â«getFullServiceEJBPkg(codServizio, model)Â»;
 
 import java.util.List;
 
 import javax.jws.WebService;
 
-import «fullQualifiedWebServiceInterfacePkg(model)».*;
-import «fullQualifiedEntitiesPkg(codServizio, model)».*;
-import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+import Â«fullQualifiedWebServiceInterfacePkg(model)Â».*;
+import Â«fullQualifiedEntitiesPkg(codServizio, model)Â».*;
+import Â«fullQualifiedServiceExceptionPkg(codServizio, model)Â».*;
 
 @WebService(
-		serviceName = "«serviceInterfaceName()»Service",
-		portName = "«serviceInterfaceName()»Port",
-		endpointInterface = "«fullQualifiedWebServiceInterfacePkg(model)».«serviceInterfaceName()»"
-		«getWsTargetNamespaceAnnotation(this, model)»)
-public class «serviceImplementationClassName()» implements «serviceInterfaceName()» {
-	«EXPAND businessClassInjection(model) FOR this»
+		serviceName = "Â«serviceInterfaceName()Â»Service",
+		portName = "Â«serviceInterfaceName()Â»Port",
+		endpointInterface = "Â«fullQualifiedWebServiceInterfacePkg(model)Â».Â«serviceInterfaceName()Â»"
+		Â«getWsTargetNamespaceAnnotation(this, model)Â»)
+public class Â«serviceImplementationClassName()Â» implements Â«serviceInterfaceName()Â» {
+	Â«EXPAND businessClassInjection(model) FOR thisÂ»
 
-	«EXPAND operationImplemetation(model, this) FOREACH this.operations-»
+	Â«EXPAND operationImplemetation(model, this) FOREACH this.operations-Â»
 }
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
 
-«REM»Genera la property per l'iniezione via Spring della classe di business«ENDREM»
-«DEFINE businessClassInjection(SOABEModel model) FOR ServiceDef»
-private «serviceBusinessInterfaceName()» «toCamel(serviceBusinessInterfaceName())»;
+Â«REMÂ»Genera la property per l'iniezione via Spring della classe di businessÂ«ENDREMÂ»
+Â«DEFINE businessClassInjection(SOABEModel model) FOR ServiceDefÂ»
+private Â«serviceBusinessInterfaceName()Â» Â«toCamel(serviceBusinessInterfaceName())Â»;
 
-public «serviceBusinessInterfaceName()» get«serviceBusinessInterfaceName()»() {
-	return «toCamel(serviceBusinessInterfaceName())»;
+public Â«serviceBusinessInterfaceName()Â» getÂ«serviceBusinessInterfaceName()Â»() {
+	return Â«toCamel(serviceBusinessInterfaceName())Â»;
 }
 
-public void set«serviceBusinessInterfaceName()»(«serviceBusinessInterfaceName()» «toCamel(serviceBusinessInterfaceName())») {
-	this.«toCamel(serviceBusinessInterfaceName())» = «toCamel(serviceBusinessInterfaceName())»;
+public void setÂ«serviceBusinessInterfaceName()Â»(Â«serviceBusinessInterfaceName()Â» Â«toCamel(serviceBusinessInterfaceName())Â») {
+	this.Â«toCamel(serviceBusinessInterfaceName())Â» = Â«toCamel(serviceBusinessInterfaceName())Â»;
 }
-«ENDDEFINE»
+Â«ENDDEFINEÂ»
 
 
-«REM»Genera ciascuna operation (metodo) del servizio«ENDREM»
-«DEFINE operationImplemetation(SOABEModel model, ServiceDef def) FOR Operation»
-public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
-	«EXPAND paramDef(model, def, false) FOREACH params SEPARATOR ","»
-)«EXPAND throwsClause(model, def) FOR this-» {
-	«IF this.returnType != null»return «ENDIF»get«serviceBusinessInterfaceName(def)»().«this.name»(«FOREACH params AS p SEPARATOR ","»«p.name»«ENDFOREACH»);
+Â«REMÂ»Genera ciascuna operation (metodo) del servizioÂ«ENDREMÂ»
+Â«DEFINE operationImplemetation(SOABEModel model, ServiceDef def) FOR OperationÂ»
+public Â«map2javaWsType(this.returnType, def.codServizio, model)Â» Â«this.nameÂ»(
+	Â«EXPAND paramDef(model, def, false) FOREACH params SEPARATOR ","Â»
+)Â«EXPAND throwsClause(model, def) FOR this-Â» {
+	Â«IF this.returnType != nullÂ»return Â«ENDIFÂ»getÂ«serviceBusinessInterfaceName(def)Â»().Â«this.nameÂ»(Â«FOREACH params AS p SEPARATOR ","Â»Â«p.nameÂ»Â«ENDFOREACHÂ»);
 }
-«ENDDEFINE»
+Â«ENDDEFINEÂ»
 
 
 
-«REM»
+Â«REMÂ»
 ==========================================================================================================================
 CLASSE DI BUSINESS
 Classe che contiene la vera implementazione del servizio
 ==========================================================================================================================
-«ENDREM»
+Â«ENDREMÂ»
 
-«REM»Classi di business per servizi applicativi«ENDREM»
-«DEFINE javaApplServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
-	«LET getServiceImpl(this, model) AS impl-»
-		«IF impl != null-»
-			«LET impl.serviceComponent AS sc»
-				«LET impl.implCartridge AS crt»
-					«IF crt==null || crt.metaType==ManualImplCartridge»
-						«EXPAND template::cxf::manualimpl::javafiles::javaServiceBusinessFiles(model) FOR this»
-					«ELSEIF crt!=null && crt.metaType==FlowModelImplCartridge»
-						«EXPAND template::cxf::flowmodel::javafiles::javaServiceBusinessFiles(model) FOR this»
-					«ELSE»
-						«ERROR "tipo di cartridge non gestita per implementazione "+impl»
-					«ENDIF»
-				«ENDLET-»
-			«ENDLET-»
-		«ELSE-»
-			«ERROR "la definizione di servizio "+this+" non ha implementazione"»		
-		«ENDIF-»
-	«ENDLET-»
-«ENDDEFINE»
-
-
-«REM»Classi di business per servizi orchestrati«ENDREM»
-«DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
-	«LET getServiceImpl(this, model) AS impl-»
-		«IF impl != null-»
-			«LET impl.serviceComponent AS sc»
-				«LET impl.implCartridge AS crt»
-					«IF crt==null || crt.metaType==ManualImplCartridge»
-						«EXPAND template::cxf::manualimpl::javafiles::javaOrchServiceBusinessFiles(model) FOR this»
-					«ELSEIF crt!=null && crt.metaType==FlowModelImplCartridge»
-						«EXPAND template::cxf::flowmodel::javafiles::javaOrchServiceBusinessFiles(model) FOR this»
-					«ELSE»
-						«ERROR "tipo di cartridge non gestita per implementazione "+impl»
-					«ENDIF»
-				«ENDLET-»
-			«ENDLET-»
-		«ELSE-»
-			«ERROR "la definizione di servizio "+this+" non ha implementazione"»		
-		«ENDIF-»
-	«ENDLET-»
-«ENDDEFINE»
+Â«REMÂ»Classi di business per servizi applicativiÂ«ENDREMÂ»
+Â«DEFINE javaApplServiceBusinessClassFile(SOABEModel model) FOR ServiceDefÂ»
+	Â«LET getServiceImpl(this, model) AS impl-Â»
+		Â«IF impl != null-Â»
+			Â«LET impl.serviceComponent AS scÂ»
+				Â«LET impl.implCartridge AS crtÂ»
+					Â«IF crt==null || crt.metaType==ManualImplCartridgeÂ»
+						Â«EXPAND template::cxf::manualimpl::javafiles::javaServiceBusinessFiles(model) FOR thisÂ»
+					Â«ELSEIF crt!=null && crt.metaType==FlowModelImplCartridgeÂ»
+						Â«EXPAND template::cxf::flowmodel::javafiles::javaServiceBusinessFiles(model) FOR thisÂ»
+					Â«ELSEÂ»
+						Â«ERROR "tipo di cartridge non gestita per implementazione "+implÂ»
+					Â«ENDIFÂ»
+				Â«ENDLET-Â»
+			Â«ENDLET-Â»
+		Â«ELSE-Â»
+			Â«ERROR "la definizione di servizio "+this+" non ha implementazione"Â»		
+		Â«ENDIF-Â»
+	Â«ENDLET-Â»
+Â«ENDDEFINEÂ»
 
 
+Â«REMÂ»Classi di business per servizi orchestratiÂ«ENDREMÂ»
+Â«DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDefÂ»
+	Â«LET getServiceImpl(this, model) AS impl-Â»
+		Â«IF impl != null-Â»
+			Â«LET impl.serviceComponent AS scÂ»
+				Â«LET impl.implCartridge AS crtÂ»
+					Â«IF crt==null || crt.metaType==ManualImplCartridgeÂ»
+						Â«EXPAND template::cxf::manualimpl::javafiles::javaOrchServiceBusinessFiles(model) FOR thisÂ»
+					Â«ELSEIF crt!=null && crt.metaType==FlowModelImplCartridgeÂ»
+						Â«EXPAND template::cxf::flowmodel::javafiles::javaOrchServiceBusinessFiles(model) FOR thisÂ»
+					Â«ELSEÂ»
+						Â«ERROR "tipo di cartridge non gestita per implementazione "+implÂ»
+					Â«ENDIFÂ»
+				Â«ENDLET-Â»
+			Â«ENDLET-Â»
+		Â«ELSE-Â»
+			Â«ERROR "la definizione di servizio "+this+" non ha implementazione"Â»		
+		Â«ENDIF-Â»
+	Â«ENDLET-Â»
+Â«ENDDEFINEÂ»
 
-«REM»
+
+
+Â«REMÂ»
 ==========================================================================================================================
 DATA TYPES GENERATION
 ==========================================================================================================================
-«ENDREM»
+Â«ENDREMÂ»
 
-«DEFINE typedefs(SOABEModel model,String codServ) FOR Types»
-	«EXPAND javaWsEntityClass(model, codServ) FOREACH (List[Entity])this.types.select(e|e.metaType==Entity && !e.isTypedefAnnotated())»
-	«EXPAND javaWsExceptionClass(model, codServ) FOREACH (List[Exception])this.types.select(e|e.metaType==Exception && !e.isTypedefAnnotated())»
-«ENDDEFINE»
+Â«DEFINE typedefs(SOABEModel model,String codServ) FOR TypesÂ»
+	Â«EXPAND javaWsEntityClass(model, codServ) FOREACH (List[Entity])this.types.select(e|e.metaType==Entity && !e.isTypedefAnnotated())Â»
+	Â«EXPAND javaWsExceptionClass(model, codServ) FOREACH (List[Exception])this.types.select(e|e.metaType==Exception && !e.isTypedefAnnotated())Â»
+Â«ENDDEFINEÂ»
 
 
-«REM»
+Â«REMÂ»
 ***************************************************************
 ENTITIES
 ***************************************************************
-«ENDREM»
-«DEFINE javaWsEntityClass(SOABEModel model, String codServ) FOR Entity»
-«FILE fullEntitiesDir(codServ, model)+"/"+name+".java"»package «fullQualifiedEntitiesPkg(codServ, model)»;
+Â«ENDREMÂ»
+Â«DEFINE javaWsEntityClass(SOABEModel model, String codServ) FOR EntityÂ»
+Â«FILE fullEntitiesDir(codServ, model)+"/"+name+".java"Â»package Â«fullQualifiedEntitiesPkg(codServ, model)Â»;
 
-«EXPAND additionalImports(model, codServ) FOR this-»
+Â«EXPAND additionalImports(model, codServ) FOR this-Â»
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -219,134 +219,134 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlType(
-	name = "«name.toFirstLower()»",
+	name = "Â«name.toFirstLower()Â»",
 	propOrder = {
-		«FOREACH this.features AS prop SEPARATOR ","»"«prop.name.toFirstLower()»"«ENDFOREACH»
+		Â«FOREACH this.features AS prop SEPARATOR ","Â»"Â«prop.name.toFirstLower()Â»"Â«ENDFOREACHÂ»
 	}
 )
-public class «name» {
+public class Â«nameÂ» {
 
-	«EXPAND entityProperties(model, codServ) FOREACH this.features»
+	Â«EXPAND entityProperties(model, codServ) FOREACH this.featuresÂ»
 
 
-	«EXPAND entityGettersSetters(model, codServ) FOREACH this.features»
+	Â«EXPAND entityGettersSetters(model, codServ) FOREACH this.featuresÂ»
 }
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
 
-«REM»comment«ENDREM»
-«DEFINE additionalImports(SOABEModel model, String codServ) FOR Entity-»
-«REM»Esiste almeno una lista?«ENDREM»
-«IF features.select(e|e.type.metaType==TypedArray).size > 0»
+Â«REMÂ»commentÂ«ENDREMÂ»
+Â«DEFINE additionalImports(SOABEModel model, String codServ) FOR Entity-Â»
+Â«REMÂ»Esiste almeno una lista?Â«ENDREMÂ»
+Â«IF features.select(e|e.type.metaType==TypedArray).size > 0Â»
 import java.util.List;
 
-«ENDIF»
-«REM»Esiste almeno un allegato?«ENDREM»
-«IF features.select(e|e.type.metaType==PrimitiveType && ((PrimitiveType)e.type).name.contains("64Binary")).size > 0»
+Â«ENDIFÂ»
+Â«REMÂ»Esiste almeno un allegato?Â«ENDREMÂ»
+Â«IF features.select(e|e.type.metaType==PrimitiveType && ((PrimitiveType)e.type).name.contains("64Binary")).size > 0Â»
 import javax.xml.bind.annotation.XmlMimeType;
-«ENDIF»
-«REM»Esiste almeno una data?«ENDREM»
-«IF features.select(e|e.type.metaType==PrimitiveType && 
+Â«ENDIFÂ»
+Â«REMÂ»Esiste almeno una data?Â«ENDREMÂ»
+Â«IF features.select(e|e.type.metaType==PrimitiveType && 
 	(((PrimitiveType)e.type).name.contains("date") || ((PrimitiveType)e.type).name.contains("Date") || 
-	((PrimitiveType)e.type).name.contains("time") || ((PrimitiveType)e.type).name.contains("Time"))).size > 0»
+	((PrimitiveType)e.type).name.contains("time") || ((PrimitiveType)e.type).name.contains("Time"))).size > 0Â»
 import javax.xml.bind.annotation.XmlSchemaType;
-«ENDIF»
-«ENDDEFINE»
+Â«ENDIFÂ»
+Â«ENDDEFINEÂ»
 
 
-«REM»comment«ENDREM»
-«DEFINE entityProperties(SOABEModel model, String codServ) FOR Feature-»
-private «map2javaWsType(this.type, codServ, model)» «name»;
-«ENDDEFINE»
+Â«REMÂ»commentÂ«ENDREMÂ»
+Â«DEFINE entityProperties(SOABEModel model, String codServ) FOR Feature-Â»
+private Â«map2javaWsType(this.type, codServ, model)Â» Â«nameÂ»;
+Â«ENDDEFINEÂ»
 
-«REM»comment«ENDREM»
-«DEFINE entityGettersSetters(SOABEModel model, String codServ) FOR Feature»
-«EXPAND propertyAnnotation(model, codServ) FOR this-»
-public «map2javaWsType(this.type, codServ, model)» get«name.toFirstUpper()»() {
-	return «name»;
+Â«REMÂ»commentÂ«ENDREMÂ»
+Â«DEFINE entityGettersSetters(SOABEModel model, String codServ) FOR FeatureÂ»
+Â«EXPAND propertyAnnotation(model, codServ) FOR this-Â»
+public Â«map2javaWsType(this.type, codServ, model)Â» getÂ«name.toFirstUpper()Â»() {
+	return Â«nameÂ»;
 }
 
-public void set«name.toFirstUpper()»(«map2javaWsType(this.type, codServ, model)» «name») {
-	this.«name» = «name»;
+public void setÂ«name.toFirstUpper()Â»(Â«map2javaWsType(this.type, codServ, model)Â» Â«nameÂ») {
+	this.Â«nameÂ» = Â«nameÂ»;
 }
 
-«ENDDEFINE»
+Â«ENDDEFINEÂ»
 
 
-«REM»comment«ENDREM»
-«DEFINE propertyAnnotation(SOABEModel model, String codServ) FOR Feature-»
-	«LET this.type.annotations.select(e|e.source=="jaxb") AS annotations-»
-		«IF annotations.size > 0-»
-			«FOREACH annotations.details AS detail-»
-				«detail.key»(«detail.value»)
-			«ENDFOREACH-»
-		«ENDIF-»
-	«ENDLET-»
-«ENDDEFINE»
+Â«REMÂ»commentÂ«ENDREMÂ»
+Â«DEFINE propertyAnnotation(SOABEModel model, String codServ) FOR Feature-Â»
+	Â«LET this.type.annotations.select(e|e.source=="jaxb") AS annotations-Â»
+		Â«IF annotations.size > 0-Â»
+			Â«FOREACH annotations.details AS detail-Â»
+				Â«detail.keyÂ»(Â«detail.valueÂ»)
+			Â«ENDFOREACH-Â»
+		Â«ENDIF-Â»
+	Â«ENDLET-Â»
+Â«ENDDEFINEÂ»
 
 
 
-«REM»
+Â«REMÂ»
 ***************************************************************
 EXCEPTIONS
 ***************************************************************
-«ENDREM»
-«DEFINE javaWsExceptionClass(SOABEModel model, String codServ) FOR Exception»
-«FILE fullServiceExceptionsDir(codServ, model)+"/"+name+".java"»package «fullQualifiedServiceExceptionPkg(codServ, model)»;
+Â«ENDREMÂ»
+Â«DEFINE javaWsExceptionClass(SOABEModel model, String codServ) FOR ExceptionÂ»
+Â«FILE fullServiceExceptionsDir(codServ, model)+"/"+name+".java"Â»package Â«fullQualifiedServiceExceptionPkg(codServ, model)Â»;
 
 import javax.xml.ws.WebFault;
 
 @WebFault
-public class «name» extends Exception {
+public class Â«nameÂ» extends Exception {
 
 	/**
 	 * @generated
 	 */
-	public «name»() {
+	public Â«nameÂ»() {
 		super();
 	}
 
 	/**
 	 * @generated
 	 */
-	public «name»(String message) {
+	public Â«nameÂ»(String message) {
 		super(message);
 	}
 
 	/**
 	 * @generated
 	 */
-	public «name»(String message, Throwable cause) {
+	public Â«nameÂ»(String message, Throwable cause) {
 		super(message, cause);
 	}
 
 }
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
 
 
-«REM»
+Â«REMÂ»
 ==========================================================================================================================
 COMMON METHODS
 ==========================================================================================================================
-«ENDREM»
+Â«ENDREMÂ»
 
-«REM»comment«ENDREM»
-«DEFINE paramDef(SOABEModel model, ServiceDef def, boolean interface) FOR Param-»
-	«IF interface»@WebParam(name = "«name»"«getWsTargetNamespaceAnnotation(def, model)»)«ENDIF»
-	«map2javaWsType(this.type, def.codServizio, model)» «name»
-«ENDDEFINE»
-
-
-«REM»comment«ENDREM»
-«DEFINE throwsClause(SOABEModel model, ServiceDef def) FOR Operation-»
-	«IF this.throws != null && this.throws.size > 0» throws «EXPAND exceptionInThrowsClause(model, def) FOREACH throws SEPARATOR ","»«ENDIF»
-«ENDDEFINE»
+Â«REMÂ»commentÂ«ENDREMÂ»
+Â«DEFINE paramDef(SOABEModel model, ServiceDef def, boolean interface) FOR Param-Â»
+	Â«IF interfaceÂ»@WebParam(name = "Â«nameÂ»"Â«getWsTargetNamespaceAnnotation(def, model)Â»)Â«ENDIFÂ»
+	Â«map2javaWsType(this.type, def.codServizio, model)Â» Â«nameÂ»
+Â«ENDDEFINEÂ»
 
 
-«REM»comment«ENDREM»
-«DEFINE exceptionInThrowsClause(SOABEModel model, ServiceDef def) FOR Exception-»
-	«map2JavaTypeSDRelative(this)»
-«ENDDEFINE»
+Â«REMÂ»commentÂ«ENDREMÂ»
+Â«DEFINE throwsClause(SOABEModel model, ServiceDef def) FOR Operation-Â»
+	Â«IF this.throws != null && this.throws.size > 0Â» throws Â«EXPAND exceptionInThrowsClause(model, def) FOREACH throws SEPARATOR ","Â»Â«ENDIFÂ»
+Â«ENDDEFINEÂ»
+
+
+Â«REMÂ»commentÂ«ENDREMÂ»
+Â«DEFINE exceptionInThrowsClause(SOABEModel model, ServiceDef def) FOR Exception-Â»
+	Â«map2JavaTypeSDRelative(this)Â»
+Â«ENDDEFINEÂ»

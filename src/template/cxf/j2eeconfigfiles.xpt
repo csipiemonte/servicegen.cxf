@@ -1,4 +1,4 @@
-«REM»
+Â«REMÂ»
 C) Copyright 2011 CSI-PIEMONTE;                                             
                                                                             
 Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
@@ -13,63 +13,63 @@ distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,
 esplicite o implicite.                                                      
 Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
 e le limitazioni secondo i termini della Licenza.                           
-«ENDREM»
+Â«ENDREMÂ»
 
-«IMPORT servicegen»
-«IMPORT servicedef»
-«IMPORT typedef»
+Â«IMPORT servicegenÂ»
+Â«IMPORT servicedefÂ»
+Â«IMPORT typedefÂ» 
 
-«EXTENSION template::ServicegenExtensions»
-«EXTENSION template::cxf::ServicegenCxfExtensions»
+Â«EXTENSION template::ServicegenExtensionsÂ»
+Â«EXTENSION template::cxf::ServicegenCxfExtensionsÂ»
 
 
-«REM»
+Â«REMÂ»
 ==========================================================================================================================
 Crea il descrittore di applicazione application.xml
 Crea i descrittori specifici per l'Application Server scelto (weblogic-application.xml o jboss-app.xml)
 ==========================================================================================================================
-«ENDREM»
-«DEFINE applicationfiles FOR SOABEModel»
-	«EXPAND applicationXmlFile FOR this»
-	«IF targetPlatform.code==TargetPlatformCodes::JBoss43»
-		«EXPAND jbossApplicationXmlFile FOR this»
-	«ENDIF»
-	«IF targetPlatform.code==TargetPlatformCodes::WLS92»
-		«EXPAND wlApplicationXmlFile FOR this»
-	«ENDIF»
-«ENDDEFINE»
+Â«ENDREMÂ»
+Â«DEFINE applicationfiles FOR SOABEModelÂ»
+	Â«EXPAND applicationXmlFile FOR thisÂ»
+	Â«IF targetPlatform.code==TargetPlatformCodes::JBoss43Â»
+		Â«EXPAND jbossApplicationXmlFile FOR thisÂ»
+	Â«ENDIFÂ»
+	Â«IF targetPlatform.code==TargetPlatformCodes::WLS92Â»
+		Â«EXPAND wlApplicationXmlFile FOR thisÂ»
+	Â«ENDIFÂ»
+Â«ENDDEFINEÂ»
 
-«REM»Application descriptor per BEA WebLogic 9.2«ENDREM»
-«DEFINE applicationXmlFile FOR SOABEModel»
-«FILE "conf/ear/application.xml"»<?xml version="1.0" encoding="UTF-8"?>
+Â«REMÂ»Application descriptor per BEA WebLogic 9.2Â«ENDREMÂ»
+Â«DEFINE applicationXmlFile FOR SOABEModelÂ»
+Â«FILE "conf/ear/application.xml"Â»<?xml version="1.0" encoding="UTF-8"?>
 <application xmlns="http://java.sun.com/xml/ns/j2ee" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	version="1.4" 
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd">
 
-	<display-name>«codComponente»</display-name>
+	<display-name>Â«codComponenteÂ»</display-name>
 
-	«FOREACH serviceimplementations AS serviceimpl-»
-	«LET serviceimpl.provides AS service-»
-    «FOREACH service.bindings.typeSelect(servicedef::WSBinding) AS ws»
-  	<!-- web module relativo al web-service con codice binding=«ws.codBinding». --> 
+	Â«FOREACH serviceimplementations AS serviceimpl-Â»
+	Â«LET serviceimpl.provides AS service-Â»
+    Â«FOREACH service.bindings.typeSelect(servicedef::WSBinding) AS wsÂ»
+  	<!-- web module relativo al web-service con codice binding=Â«ws.codBindingÂ». --> 
   	<module>
     	<web>
-      		<web-uri>«getWSWarName(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»</web-uri>
-     		<context-root>«wsWebContext(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»</context-root>
+      		<web-uri>Â«getWSWarName(service.codServizio, ws.codBinding, service.serviceType.toString(), this)Â»</web-uri>
+     		<context-root>Â«wsWebContext(service.codServizio, ws.codBinding, service.serviceType.toString(), this)Â»</context-root>
     	</web>
   	</module>
-  «ENDFOREACH»
-  «ENDLET-»
-  «ENDFOREACH-»
+  Â«ENDFOREACHÂ»
+  Â«ENDLET-Â»
+  Â«ENDFOREACH-Â»
 
 </application>
- «ENDFILE»
-«ENDDEFINE»
+ Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
-«REM»Application descriptor per JBoss 4.3«ENDREM»
-«DEFINE jbossApplicationXmlFile FOR SOABEModel»
-«FILE "conf/ear/jboss-app.xml"»<?xml version="1.0" encoding="UTF-8"?>
+Â«REMÂ»Application descriptor per JBoss 4.3Â«ENDREMÂ»
+Â«DEFINE jbossApplicationXmlFile FOR SOABEModelÂ»
+Â«FILE "conf/ear/jboss-app.xml"Â»<?xml version="1.0" encoding="UTF-8"?>
 <jboss-app>
 	<loader-repository>
 		apache.cxf:loader=@ear-file-name@.ear
@@ -79,11 +79,11 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
 		</loader-repository-config>
 	</loader-repository>
 </jboss-app>
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
-«DEFINE wlApplicationXmlFile FOR SOABEModel»
-«FILE "conf/ear/META-INF/weblogic-application.xml"»<?xml version="1.0" encoding="UTF-8"?> 
+Â«DEFINE wlApplicationXmlFile FOR SOABEModelÂ»
+Â«FILE "conf/ear/META-INF/weblogic-application.xml"Â»<?xml version="1.0" encoding="UTF-8"?> 
 <wls:weblogic-application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 		xmlns:wls="http://www.bea.com/ns/weblogic/90" 
 		xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/j2ee_1_4.xsd http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-application.xsd"> 
@@ -98,8 +98,8 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
 	</wls:prefer-application-packages>
 
 </wls:weblogic-application>
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
 
 
