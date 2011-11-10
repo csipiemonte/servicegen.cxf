@@ -52,7 +52,7 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
 	«FOREACH serviceimplementations AS serviceimpl-»
 	«LET serviceimpl.provides AS service-»
     «FOREACH service.bindings.typeSelect(servicedef::WSBinding) AS ws»
-  	<!-- web module relativo al web-service con codice binding=«ws.codBinding». --> 
+  	<!-- web module relativo al web-service con codice=«service.codServizio» e binding=«ws.codBinding» --> 
   	<module>
     	<web>
       		<web-uri>«getWSWarName(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»</web-uri>
@@ -103,9 +103,45 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
 
 
 
+«REM»
+==========================================================================================================================
+WS CXF
+Crea il deployment descriptor generico (web.xml) 
+Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml o jboss-web.xml) 
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE wswebxml(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+«FILE getSpecificWarConfigRootDir("ws",removeSeparator(serviceDef.codServizio),model)+"/WEB-INF/web.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+         http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>WEB-INF/cxf.xml</param-value>«REM»TODO: MODIFICARE FILE DI SPRING«ENDREM»
+    </context-param>
+
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
 
 
+    <servlet>
+    	<display-name>CXF Servlet</display-name>
+			<servlet-name>CXFServlet</servlet-name>
+			<servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+			<load-on-startup>1</load-on-startup>
+	 </servlet>
 
+	<servlet-mapping>
+		<servlet-name>CXFServlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
 
-
+</web-app>
+«ENDFILE»
+«ENDDEFINE»
 

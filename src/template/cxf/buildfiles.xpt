@@ -32,8 +32,6 @@ creazione del build.xml per ANT
 «FILE "build.xml"»<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ##################################################### -->
-<!-- # Copyright 2006 (c) CSI Piemonte.                  # -->
-<!-- #                                                   # -->
 <!-- # build.xml file per compilazione e generazione     # -->
 <!-- # del pacchetto per il rilascio dell'applicazione.  # -->
 <!-- #                                                   # -->
@@ -217,6 +215,18 @@ creazione del build.xml per ANT
 	        description="Predispone le configurazioni dipendenti dall'ambiente." >
 		<!-- Gestione replace delle variabile d'ambiente create dal generatore -->
 		«REM»TODO: REPLACEMENT VARIABILI D'AMBIENTE DEL GENERATORE«ENDREM»
+		«REM»
+		«IF targetPlatform.code == TargetPlatformCodes::JBoss43»
+		<!-- JBoss replacements -->
+		<replace dir="${temp}/conf/ear/${webapp}/META-INF/">
+			<include name="jboss-app.xml" />
+			<replacefilter token="@context-root@" value="${war-file-name}" />
+			<replacefilter token="@ear-file-name@" value="${ear-file-name}" />
+		</replace>
+		«ENDIF»
+		
+		
+		«ENDREM»
 
 		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("build.environment-config")»
 		<!-- gestire qui i  replace delle proprie variabili d'ambiente -->
@@ -552,9 +562,22 @@ creazione del file di configurazione IVY
 	<info organisation="csipiemonte" module="«codComponente.toLowerCase()»" />
 	<dependencies>
 
+		<!-- librerie per il logging applicativo e la misurazione 
+		     delle performance. Nota: la piattaforma jboss impone l'utilizzo della
+		     versione 1.2.14. 
+		-->		
+		<dependency org="apache" name="log4j" rev="1.2.14">
+			<artifact name="log4j-1.2.14" type="jar" />
+		</dependency>
+
+		<dependency org="csipiemonte" name="util-perf" rev="1.0.0">
+			<artifact name="util-perf-1.0.0" type="jar" />
+		</dependency>
+
 		<dependency org="apache" name="commons-logging" rev="1.1.1">
 			<artifact name="commons-logging-1.1.1" type="jar" />
 		</dependency>
+
 
 		<!-- Spring 2.5.6 (CXF 2.2.12 dependency) -->
 		<dependency org="others" name="spring" rev="2.5.6">

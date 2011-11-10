@@ -64,7 +64,7 @@ e le limitazioni secondo i termini della Licenza.
 
 		«REM»TODO: Ciclo su ciascun servizio e genero la struttura«ENDREM»
 		«LET getProvidedServices(this) AS services»
-			«REM»«EXPAND configfiles::serviceFiles(this) FOREACH services»«ENDREM»
+			«EXPAND configfiles::serviceFiles(this) FOREACH services»
 			«EXPAND javafiles::serviceFiles(this) FOREACH services»
 			«FOREACH services AS currsrv»
 				«EXPAND javafiles::typedefs(this, currsrv.codServizio) FOR currsrv.types»
@@ -80,15 +80,15 @@ e le limitazioni secondo i termini della Licenza.
 		«ENDIF»«ENDREM»
 
 		«REM»TODO:files associati ai resource set«ENDREM»
-		«REM»«FOREACH this.serviceimplementations AS currSrvImpl»
+		«FOREACH this.serviceimplementations AS currSrvImpl»
 			«LET getAllResourceConnectors(currSrvImpl) AS allRC»
-				«EXPAND resourceConnectorFiles(currSrvImpl.provides, this) FOREACH allRC»
+				«REM»«EXPAND resourceConnectorFiles(currSrvImpl.provides, this) FOREACH allRC»«ENDREM»
 			«ENDLET»
 			«IF currSrvImpl.implCartridge.metaType==ManualImplCartridge && ((ManualImplCartridge)(currSrvImpl.implCartridge)).useInjectedPojo -»
-				«EXPAND template::configfiles::beanContextFile(this, useExternalDaoBeans) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»
-				«EXPAND template::manualimpl::javafiles::springStartupFiles(this) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»
+				«REM»«EXPAND template::configfiles::beanContextFile(this, useExternalDaoBeans) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»«ENDREM»
+				«REM»«EXPAND template::manualimpl::javafiles::springStartupFiles(this) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»«ENDREM»
 			«ENDIF-»
-		«ENDFOREACH»«ENDREM»
+		«ENDFOREACH»
 
 	«ENDLET»
 «ENDDEFINE»

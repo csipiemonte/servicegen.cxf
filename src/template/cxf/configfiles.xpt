@@ -1,0 +1,163 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;                                             
+                                                                            
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.       
+E' possibile ottenere una copia della Licenza al seguente indirizzo:        
+                                                                            
+http://www.eupl.it/opensource/eupl-1-1                                      
+                                                                            
+Salvo diversamente indicato dalla legge applicabile o concordato per        
+iscritto, il software distribuito secondo i termini della Licenza e'        
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,         
+esplicite o implicite.                                                      
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
+e le limitazioni secondo i termini della Licenza.                           
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef»
+«IMPORT template::cxf::j2eeconfigfiles»
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«REM»
+Contiene i template per la definizione dei file di configurazione necessari per
+l'implementazione della Specific Platform (CSI over J2EE) 
+«ENDREM»
+
+«DEFINE serviceFiles(SOABEModel model) FOR ServiceDef»
+	«REM»WS CXF FILES«ENDREM»
+	«FOREACH this.bindings.typeSelect(WSBinding) AS ws»
+		«EXPAND wsfiles(model, this) FOR ws»
+	«ENDFOREACH»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+WS CXF FILES
+Genera i file per webservices CXF
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE wsfiles(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+	«EXPAND j2eeconfigfiles::wswebxml(model, serviceDef) FOR this»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+SPRING CONFIGURATION
+Genera il file per la configurazione della Dependency Injection con Spring
+==========================================================================================================================
+«ENDREM»
+
+«REM»
+«DEFINE beanContextFile(SOABEModel model, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«LET (ServiceImpl)eContainer AS impl-»
+«FILE paConfigDir(impl.provides, model)+"/META-INF/"+impl.provides.codServizio.toLowerCase()+"BeanContext.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+       					   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd"> 
+       					   
+
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"beancontext")»
+		<!-- Insert here your custom Spring Beans -->				
+	«ENDPROTECT»
+	
+	
+	
+	<bean id="«serviceImplBeanId(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceImplClassName(impl.provides)»">			
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+serviceImplBeanId(impl.provides))»
+			<!-- Insert here «impl.provides.codServizio» bean properties (Dao, customBeans, etc...) -->
+	«ENDPROTECT»
+	</bean>
+	
+	
+</beans>
+«ENDFILE»
+«IF !useExternalDaoBeans-»
+«FILE paConfigDir(impl.provides, model)+"/META-INF/"+impl.provides.codServizio.toLowerCase()+"Dao-beans.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+       					   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
+
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"daobeans")»
+		<!-- Insert here your Spring Beans -->	
+	«ENDPROTECT»
+	
+</beans>
+«ENDFILE»
+«ENDIF-»
+«ENDLET-»
+«ENDDEFINE»
+«ENDREM»
+
+
+«REM»
+==========================================================================================================================
+LOGGING CONFIGURATION
+Genera il frammento log4j con log e stopwatch
+==========================================================================================================================
+«ENDREM»
+«REM»
+«DEFINE log4jfiles FOR SOABEModel»
+«FILE getDocsRootDir()+"/log4j_"+this.codComponente+".properties"»
+#-------------------------------------------------------------------
+# configurazione dei logger per il componente «this.codComponente»
+#-------------------------------------------------------------------
+«LET getLoggerPrefixForComponent(this.codProdotto,this.codComponente) AS logger_name»
+log4j.logger.«logger_name»=INFO, «logger_name».file
+log4j.additivity.«logger_name»=false
+#tipologia di appender
+log4j.appender.«logger_name».file=org.apache.log4j.RollingFileAppender
+log4j.appender.«logger_name».file.File=/usr/prod/«this.codComponente»/logs/«this.codComponente»_[srvInstance].log
+#politica di back-up
+log4j.appender.«logger_name».file.MaxFileSize=3Mb
+log4j.appender.«logger_name».file.MaxBackupIndex=5
+#conversion pattern
+log4j.appender.«logger_name».file.layout=org.apache.log4j.PatternLayout
+log4j.appender.«logger_name».file.layout.ConversionPattern= %d{yyyy-MM-dd HH:mm:ss} [«logger_name»] %p <%c> <%t> %m%n
+
+#--------------------------------------------------------------------
+# configurazione dello stopwatch per il componente «codComponente»
+#--------------------------------------------------------------------
+log4j.logger.«logger_name».util.stopwatch=INFO, «logger_name».util.stopwatch.file
+log4j.additivity.«logger_name».util.stopwatch=false
+log4j.appender.«logger_name».util.stopwatch.file=org.apache.log4j.RollingFileAppender
+log4j.appender.«logger_name».util.stopwatch.file.File=/usr/prod/«this.codComponente»/logs/«this.codComponente»_perf_[srvInstance].csv
+log4j.appender.«logger_name».util.stopwatch.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.«logger_name».util.stopwatch.file.layout.ConversionPattern=%t,%d{yyyy-MM-dd HH:mm:ss},%X{«logger_name».stopwatch.context},%X{«logger_name».stopwatch.elapsed},%m%n
+«IF serviceimplementations.select(srvimpl|srvimpl.provides.traceEnabled==true).size>0»
+	«EXPAND papdconfigfiles::cooptrace_logger_cfg FOR this»
+«ENDIF»
+#---------------------------------------------------------------------
+# fine sezione logger del componente «this.codComponente»
+#---------------------------------------------------------------------
+«ENDLET»
+«ENDFILE»
+
+«FILE getDocsRootDir()+"/README.txt"»
+Istruzioni per l'utilizzo dei files contenuti in questa directory.
+
+- «"log4j_"+this.codComponente+".properties"»: 
+  E'il frammento di configurazione di log4j da inserire nel file di configurazione
+  del server (occorre completare i path di destinazione dei file di log).
+  Contiene:
+  - le configurazioni del log applicativo
+  - le configurazioni dello stopwatch
+  - le configurazioni necessarie per abilitare coop-trace (se previsto) 
+
+- «"log4j_"+this.codComponente+".xml"»:
+  E'il frammento di configuraizone di log4j necessario per configurare l'appender
+  JMS che serve alle librerie coop-trace per tracciare le chiamate a servizi.
+«ENDFILE»
+«ENDDEFINE»
+«ENDREM»

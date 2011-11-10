@@ -1,148 +1,277 @@
-Â«REMÂ»
-C) Copyright 2011 CSI-PIEMONTE;                                             
-                                                                            
-Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
-Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.       
-E' possibile ottenere una copia della Licenza al seguente indirizzo:        
-                                                                            
-http://www.eupl.it/opensource/eupl-1-1                                      
-                                                                            
-Salvo diversamente indicato dalla legge applicabile o concordato per        
-iscritto, il software distribuito secondo i termini della Licenza e'        
-distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,         
-esplicite o implicite.                                                      
-Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
-e le limitazioni secondo i termini della Licenza.                           
-Â«ENDREMÂ»
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;
 
-Â«IMPORT servicegenÂ»
-Â«IMPORT servicedefÂ»
-Â«IMPORT typedefÂ»
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.
+E' possibile ottenere una copia della Licenza al seguente indirizzo:
 
-Â«EXTENSION template::ServicegenExtensionsÂ»
-Â«EXTENSION template::cxf::ServicegenCxfExtensionsÂ»
+http://www.eupl.it/opensource/eupl-1-1
+
+Salvo diversamente indicato dalla legge applicabile o concordato per
+iscritto, il software distribuito secondo i termini della Licenza e'
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,
+esplicite o implicite.
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni
+e le limitazioni secondo i termini della Licenza.
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef»
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
 
 
-Â«REMÂ»
+«REM»
 ==========================================================================================================================
 CLASSE DI BUSINESS
 Classe che contiene la vera implementazione del servizio
 ==========================================================================================================================
-Â«ENDREMÂ»
+«ENDREM»
 
-Â«DEFINE javaServiceBusinessFiles(SOABEModel model) FOR ServiceDefÂ»
-	Â«EXPAND javaServiceBusinessInterfaceFile(model) FOR thisÂ»
-	Â«EXPAND javaServiceBusinessClassFile(model) FOR thisÂ»
-Â«ENDDEFINEÂ»
+«DEFINE javaServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND javaServiceBusinessInterfaceFile(model) FOR this»
+	«EXPAND javaServiceBusinessClassFile(model) FOR this»
+«ENDDEFINE»
 
-Â«REMÂ»commentÂ«ENDREMÂ»
-Â«DEFINE javaServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDefÂ»
-Â«FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessInterfaceName()+".java"Â»package Â«getFullServiceEJBPkg(codServizio, model)Â»;
+
+«REM»Interfaccia del delegate«ENDREM»
+«DEFINE javaServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.List;
 
-import Â«fullQualifiedEntitiesPkg(codServizio, model)Â».*;
-import Â«fullQualifiedServiceExceptionPkg(codServizio, model)Â».*;
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
 
 /**
  * @generated
  */
-public interface Â«serviceBusinessInterfaceName()Â» {
-	Â«EXPAND operationDeclaration(model, this) FOREACH this.operations-Â»
+public interface «serviceBusinessInterfaceName()» {
+	«EXPAND operationDeclaration(model, this) FOREACH this.operations-»
 }
-Â«ENDFILEÂ»
-Â«ENDDEFINEÂ»
+«ENDFILE»
+«ENDDEFINE»
 
-Â«REMÂ»commentÂ«ENDREMÂ»
-Â«DEFINE javaServiceBusinessClassFile(SOABEModel model) FOR ServiceDefÂ»
-Â«FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessClassName()+".java"Â»package Â«getFullServiceEJBPkg(codServizio, model)Â»;
+
+«REM»Classe di implementazione del delegate«ENDREM»
+«DEFINE javaServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.List;
 
-import Â«fullQualifiedEntitiesPkg(codServizio, model)Â».*;
-import Â«fullQualifiedServiceExceptionPkg(codServizio, model)Â».*;
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+import org.apache.log4j.*;
+
+«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("extraImport"+codServizio)»
+// aggiungere qui eventuali import aggiuntive.
+// non verranno sovrascritte da successive rigenerazioni
+«ENDPROTECT»
 
 /**
  * @generated
  */
-public class Â«serviceBusinessClassName()Â» implements Â«serviceBusinessInterfaceName()Â» {
-	Â«EXPAND operationImplemetation(model, this) FOREACH this.operations-Â»
+public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceName()» {
+    /**
+	 * @generated
+	 */
+	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto,model.codComponente)»";
+
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implLocalVars"+codServizio)»
+	// inserire qui la definizione di varibili locali o costanti dell'implementazione.
+	// non verranno sovrascritte da successive rigenerazioni
+	«ENDPROTECT»
+
+	/*
+	 * Implementazione operazioni esposte dal servizio
+	 */
+	«EXPAND operationImplemetation(model, this, serviceBusinessClassName()) FOREACH this.operations-»
+
+	/**
+	 * @generated
+	 */
+	protected Logger getLogger(String subsystem) {
+		if (subsystem != null) {
+			return Logger.getLogger(LOGGER_PREFIX+"."+subsystem);
+		} else {
+			return Logger.getLogger(LOGGER_PREFIX);
+		}
+	}
+
+
+	/*
+	 * Eventuali metodi aggiuntivi
+	 */
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implOtherMethods"+codServizio)»
+	// inserire qui la dichiarazione di eventuali metodi aggiuntivi utili per l'implementazione.
+	// non verranno sovrascritti da successive rigenerazioni.
+	«ENDPROTECT»
 }
-Â«ENDFILEÂ»
-Â«ENDDEFINEÂ»
+«ENDFILE»
+«ENDDEFINE»
 
 
 
-Â«REMÂ»
+«REM»
 ==========================================================================================================================
 CLASSE DI BUSINESS
 Classe che contiene la vera implementazione del servizio
 ==========================================================================================================================
-Â«ENDREMÂ»
+«ENDREM»
 
-Â«DEFINE javaOrchServiceBusinessFiles(SOABEModel model) FOR ServiceDefÂ»
-	Â«EXPAND javaOrchServiceBusinessClassFile(model) FOR thisÂ»
-	Â«EXPAND javaServiceBusinessClassFile(model) FOR thisÂ»
-Â«ENDDEFINEÂ»
+«DEFINE javaOrchServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND javaOrchServiceBusinessClassFile(model) FOR this»
+	«EXPAND javaServiceBusinessClassFile(model) FOR this»
+«ENDDEFINE»
 
-Â«REMÂ»commentÂ«ENDREMÂ»
-Â«DEFINE javaOrchServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDefÂ»
-Â«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"Â»package Â«getFullServiceEJBPkg(codServizio, model)Â»;
+
+«REM»Interfaccia del delegate«ENDREM»
+«DEFINE javaOrchServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.List;
 
-import Â«fullQualifiedEntitiesPkg(codServizio, model)Â».*;
-import Â«fullQualifiedServiceExceptionPkg(codServizio, model)Â».*;
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
 
 /**
  * @generated
  */
-public interface Â«serviceBusinessInterfaceName()Â» {
-	Â«EXPAND operationDeclaration(model, this) FOREACH this.operations-Â»
+public interface «serviceBusinessInterfaceName()» {
+	«EXPAND operationDeclaration(model, this) FOREACH this.operations-»
 }
-Â«ENDFILEÂ»
-Â«ENDDEFINEÂ»
+«ENDFILE»
+«ENDDEFINE»
 
-Â«REMÂ»commentÂ«ENDREMÂ»
-Â«DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDefÂ»
-Â«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"Â»package Â«getFullServiceEJBPkg(codServizio, model)Â»;
+«REM»Classe di implementazione del delegate«ENDREM»
+«DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.List;
 
-import Â«fullQualifiedEntitiesPkg(codServizio, model)Â».*;
-import Â«fullQualifiedServiceExceptionPkg(codServizio, model)Â».*;
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+import org.apache.log4j.*;
+
+«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("extraImport"+codServizio)»
+// aggiungere qui eventuali import aggiuntive.
+// non verranno sovrascritte da successive rigenerazioni
+«ENDPROTECT»
 
 /**
  * @generated
  */
-public class Â«serviceBusinessClassName()Â» implements Â«serviceBusinessInterfaceName()Â» {
-	Â«EXPAND operationImplemetation(model, this) FOREACH this.operations-Â»
+public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceName()» {
+
+    /**
+	 * @generated
+	 */
+	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto,model.codComponente)»";
+
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implLocalVars"+codServizio)»
+	// inserire qui la definizione di varibili locali o costanti dell'implementazione.
+	// non verranno sovrascritte da successive rigenerazioni
+	«ENDPROTECT»
+
+	/*
+	 * Implementazione operazioni esposte dal servizio
+	 */
+	«EXPAND operationOrchImplemetation(model, this, serviceBusinessClassName()) FOREACH this.operations-»
+
+
+	/**
+	 * @generated
+	 */
+	protected Logger getLogger(String subsystem) {
+		if (subsystem != null) {
+			return Logger.getLogger(LOGGER_PREFIX+"."+subsystem);
+		} else {
+			 Logger.getLogger(LOGGER_PREFIX);
+		}
+	}
+
+
+	/*
+	 * Eventuali metodi aggiuntivi
+	 */
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implOtherMethods"+codServizio)»
+	// inserire qui la dichiarazione di eventuali metodi aggiuntivi utili per l'implementazione.
+	// non verranno sovrascritti da successive rigenerazioni.
+	«ENDPROTECT»
 }
-Â«ENDFILEÂ»
-Â«ENDDEFINEÂ»
+«ENDFILE»
+«ENDDEFINE»
 
 
 
-Â«REMÂ»
+«REM»
 ==========================================================================================================================
 COMMON METHODS
 ==========================================================================================================================
-Â«ENDREMÂ»
+«ENDREM»
 
 
-Â«REMÂ»Genera la definizione di ciascuna operation (metodo) del servizioÂ«ENDREMÂ»
-Â«DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR OperationÂ»
-public Â«map2javaWsType(this.returnType, def.codServizio, model)Â» Â«this.nameÂ»(
-	Â«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","Â»
-)Â«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-Â»;
-Â«ENDDEFINEÂ»
+«REM»Genera la definizione di ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR Operation»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-»;
+«ENDDEFINE»
 
 
-Â«REMÂ»Genera ciascuna operation (metodo) del servizioÂ«ENDREMÂ»
-Â«DEFINE operationImplemetation(SOABEModel model, ServiceDef def) FOR OperationÂ»
-public Â«map2javaWsType(this.returnType, def.codServizio, model)Â» Â«this.nameÂ»(
-	Â«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","Â»
-)Â«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-Â» {
-	return null;
+«REM»Genera ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationImplemetation(SOABEModel model, ServiceDef def, String implClassName) FOR Operation»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
+	Logger logger = getLogger(null);
+	logger.debug("[«implClassName»::«name»] - START");
+	
+	// inizio misurazione
+	it.csi.util.performance.StopWatch watcher = new it.csi.util.performance.StopWatch("«model.codComponente»");
+	watcher.start();
+
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implCodeLocals"+implClassName+"_"+name)»
+	// inserire qui la dichiarazione di variabili locali al metodo
+	// non verranno sovrascritte nelle successive rigenerazioni
+	«ENDPROTECT»
+
+	try {
+	 «PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implCodeStmt"+implClassName+"_"+name)»
+		 // inserire qui il codice di implementazione del metodo '«name»'.
+		 // non verra' sovrascritto nelle successive rigenerazioni
+		 
+		 «IF returnType!=null»return «defaultInitVal(returnType)»;«ENDIF»
+	 
+	 // aggiungere qui anche la GESTIONE DELLE ECCEZIONI (log e lancio delle eccezioni corrette)
+	 //} catch (Exception e) {
+	 //	logger.error("[«implClassName»::«name»] - Errore occorso durante l'esecuzione del metodo:"+ex, ex);
+	 //	throw e;
+	 //}
+	 «ENDPROTECT»	
+	} finally {
+		// fine misurazione
+		watcher.stop();
+		watcher.dumpElapsed("«implClassName»", "«name»()", "invocazione servizio [«removeSeparator(def.codServizio)»]::[«name»]", "(valore input omesso)");
+		logger.debug("[«implClassName»::«name»] - END");
+	}
 }
-Â«ENDDEFINEÂ»
+«ENDDEFINE»
+
+
+«REM»Genera ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationOrchImplemetation(SOABEModel model, ServiceDef def, String implClassName) FOR Operation»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
+	Logger logger = getLogger(null);
+	logger.debug("[«implClassName»::«name»] - START");
+
+	«REM»TODO: AGGIUNGERE IMPLEMENTAZIONE«ENDREM»
+	«IF returnType!=null»return «defaultInitVal(returnType)»;«ENDIF»
+}
+«ENDDEFINE»

@@ -84,8 +84,16 @@ String map2JavaWSTypeSDRelative(PrimitiveType type) :
 	let ns = (binding.langSpecificNS != null ? binding.langSpecificNS : "") :
 	ns + binding.langSpecificType;
 
+// Default value 
+String defaultWSInitVal(Type type) :
+	if (type.metaType==PrimitiveType) then
+		defaultPrimitiveInitVal((PrimitiveType)type)
+	else
+		defaultInitVal(type);
 
-
+String defaultPrimitiveInitVal(PrimitiveType type) :
+	let binding = type.languageBindings.select(a|a.lang=="java").first() :
+	binding.defaultInitValue;
 
 
 

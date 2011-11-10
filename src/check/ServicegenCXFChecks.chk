@@ -1,0 +1,360 @@
+import csiserviceapp;
+import typedef;
+import servicedef;
+import appresources;
+import svcorch;
+import servicegen;
+
+extension template::ServicegenExtensions;
+extension template::flowmodel::FlowModelExtensions;
+extension org::openarchitectureware::util::stdlib::naming;
+
+
+
+
+// validazioni generali (prodotto/componente etc..)
+context SOABEModel ERROR "E'necessario specificare il codice prodotto (max 10 caratteri)" :
+	codProdotto!=null && codProdotto.length<=10;
+
+context SOABEModel ERROR "E'necessario specificare il codice componente (max 20 caratteri)" :
+	codComponente!=null && codComponente.length<=20;
+
+context SOABEModel ERROR "E'necessario specificare la versione del prodotto nel formato major.minor.bugfix" :
+	versioneProdotto!=null; //&& isVersioneFormalmenteCorretta(versioneProdotto);
+
+context SOABEModel ERROR "E'necessario specificare la versione del componente nel formato major.minor.bugfix" :
+	versioneComponente!=null;// && isVersioneFormalmenteCorretta(versioneComponente);
+
+context SOABEModel ERROR "E' necessario scegliere la Target Platform" :
+	targetPlatform!=null;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Vincoli di elementi non validi per la cartuccia CXF
+///  Check per disabilitare gli elementi WSBinding e PrimitiveType
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+context EJBPABinding ERROR "Il EJBPABinding non è ammesso per la cartuccia basata su framework CXF":
+	false;
+
+context SOAPPABRBinding ERROR "Il SOAPPABRBinding non è ammesso per la cartuccia basata su framework CXF":
+	false;
+
+context WSFADBinding ERROR "Il WSFADBinding non è ammesso per la cartuccia basata su framework CXF":
+	false;
+
+context CSIDatatype ERROR "Il tipo 'CSIDatatype' non è ammesso per la cartuccia basata su framework CXF":
+	false;
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// vincoli sulle definizioni di tipi
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// TD1(ERROR): un qualsiasi tipo deve avere un nome
+context typedef::Type ERROR "TD1: tutti i tipi definiti devono avere un nome" :
+	this.name != null;
+	
+// TD2(ERROR): le feature di una entity devono avere un nome
+context Entity ERROR "TD2: almeno una feature dell'entita' "+this.name+" non ha nome":
+	(this.features.select(e|e.name==null).size)==0;
+	
+// TD3(ERROR): la feature di una entity deve avere un tipo
+context Entity ERROR "TD3: almeno una feature dell'entita' "+this.name+" non ha tipo":
+	(this.features.select(e|e.type==null).size)==0;
+    
+// TD4(ERROR): un csi datatype deve avere un codice tipo specificato
+//context CSIDatatype ERROR "TD4: ogni CSIDatatype deve avere un codice tipo specificato" :
+//    this.code!=null;
+
+// TD5(ERROR): i tipi definiti in "baseTypes" possono essere o semplici o array di semplici
+context BaseTypes ERROR "TD5: i tipi definiti a livello globale possono essere solo tipi semplici o array di tipi semplici" :
+	(this.baseTypes.select(e|e.metaType==Entity).size==0)&&
+	(this.baseTypes.select(e|e.metaType==TypedArray&&((TypedArray)e).componentType.metaType==Entity)).size==0&&
+	(this.baseTypes.select(e|e.metaType==Exception).size==0);
+
+// TD6(ERROR): i tipi definiti nei servizi possono solo essere entity o eccezioni o array di entity
+context Types ERROR "TD6: i tipi definiti nel contesto di un servizio possono solo essere Entity o Array di entity o eccezioni" :
+	this.types.select(e|e.metaType==PrimitiveType).size==0 &&
+	this.types.select(e|e.metaType==TypedArray && ((TypedArray)e).componentType.metaType==PrimitiveType).size==0;
+	
+// TD7(ERROR): un typed array non può contenere classi eccezione nè tipi array
+context TypedArray ERROR "TD7: un array tipato non può contenere eccezioni o tipi array annidati" :
+    this.componentType.metaType!=Exception &&
+    this.componentType.metaType!=TypedArray;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// vincoli sulla definizione di servizio
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//context ServiceDef ERROR "Definizione duplicata di servizio con nome "+codServizio :
+//    ((DocumentRoot)this.eRootContainer).model.serviceDefs.select(e|e.codServizio==codServizio).size==1;
+
+// SD1: una definizione di servizio deve avere un nome
+context ServiceDef ERROR "Codice servizio non specificato " :
+	this.codServizio != null;
+
+// SD2: deve essere definito almeno un binding
+context ServiceDef ERROR "Deve essere definito almeno un binding " :
+    this.bindings != null && bindings.size>0;
+
+// SD3: codifica corretta del codice servizio: minuscola con underscore
+context ServiceDef ERROR "Il codice servizio deve essere alfanumerico minuscolo e l'unico separatore ammesso è l'underscore" : 
+     validateCodServ(this.codServizio);
+     
+// SD4: il tipo di ritorno deve essere CSIString in caso di operazione asincrona o pubsub (TODO!!)
+// context Operation ERROR "Un operazione asincrona (p2p o pubsub) deve avere tipo di ritorno CSIString" :
+// 	(opType==OpTypeEnum::synch) ||
+// 	(opType==OpTypeEnum::asynch || opType==OpTypeEnum::notify) && 
+// 		(this.returnType.metaType==CSIDatatype && ((CSIDatatype)returnType).code==CSIDatatypeCodes::CSIString);
+
+// SD5: un servizio pubblico non può avere ruoli associati
+// context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non può avere Ruoli definiti" :
+// 	(this.authLevel==AuthLevelEnum::A0 && this.roles.size==0) || authLevel != AuthLevelEnum::A0; 
+
+// SD6: in un servizio non pubblico tutte le operazioni devono avere almeno un ruolo associato
+// context Operation ERROR "Un operazione appartenente ad un servizio con security non A0 deve avere almeno un ruolo associato" :
+//    (((ServiceDef)this.eContainer).authLevel == AuthLevelEnum::A0) || 
+//    ((((ServiceDef)this.eContainer).authLevel != AuthLevelEnum::A0 && this.authorizedRoles.size>0));
+
+// SD7: in un servizio non pubblico ci deve essere almeno un ruolo definito
+// context ServiceDef ERROR "Il servizio (con security non 'A0') deve definire almeno un ruolo" :
+//     (this.authLevel!=AuthLevelEnum::A0 && this.roles.size!=0) || authLevel == AuthLevelEnum::A0;
+    
+context ServiceDef ERROR "E'necessario specificare il codice prodotto (max 10 caratteri)"+loc() :
+	codProdotto!=null && codProdotto.length<=10;
+
+context ServiceDef ERROR "E'necessario specificare il codice componente (max 20 caratteri)"+loc() :
+	codComponente!=null && codComponente.length<=20;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// cartridge e service component
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+context ServiceImpl WARNING 
+	"Non è stata specificata la cartuccia di implementazione e/o il tipo di service "+
+	"component: viene assunta la cartuccia ManualImplCartridge, mentre il tipo di service component"+
+	" non è utilizzato "+loc()+", "+this.provides :
+this.implCartridge!=null && this.serviceComponent!=null;
+
+context ServiceImpl 
+	if serviceComponent.metaType==OrchestrationFlowCompositeSC && implCartridge==ManualImplCartridge 
+	ERROR "Non è possibile specificare il modello delle orchestrazioni in presenza di cartuccia 'manuale'"+loc() :
+	((OrchestrationFlowCompositeSC)serviceComponent).orchestrations.size==0;	
+
+context ServiceImpl 
+	if serviceComponent.metaType==OrchestrationFlowCompositeSC && implCartridge==FlowModelImplCartridge 
+	ERROR "E'necessario specificare un modello di orchestrazione per ogni operazione del servizio "+
+	"in presenza di cartuccia basata su modello (FlowModelImplCartridge)"+loc() :
+	((OrchestrationFlowCompositeSC)serviceComponent).orchestrations.size==provides.operations.size;	
+
+context ServiceImpl 
+	if serviceComponent.metaType==OrchestrationFlowCompositeSC && implCartridge==FlowModelImplCartridge
+	ERROR "Il servizio referenziato da almeno una delle orchestrazioni non coincide con quello esposto "+
+		  " dalla ServiceImpl: "+loc() :
+	let orchs = ((OrchestrationFlowCompositeSC)serviceComponent).orchestrations :
+		orchs.select(o|o.service!=provides).size==0;
+
+context ResourceBasedSimpleSC ERROR "E' necessario specificare un ResourceSet:" +loc() :
+	resourceSet != null;
+	
+////// WARNINGS ///////////////////////////////////
+context Operation WARNING "Tipo di ritorno non specificato per operazione "+name+": assumo che sia VOID " :
+	this.returnType != null;
+	
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// APPRESOURCES checks
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+context PDPAServiceConnector if useRegistry ERROR "Per utilizzar e il registry è necessario specificare un ServiceSelector:"+loc() :
+	selector!=null;
+
+context ServiceSelector ERROR "E' necessario specificare l'ambiente del servizio acceduto:"+loc() :
+	this.ambiente!=null; 
+
+context ServiceSelector ERROR "E' necessario specificare il codiceBinding del servizio acceduto:"+loc() :
+	this.codBinding!=null;
+
+context ServiceSelector ERROR "E' necessario specificare l'ente/cliente del servizio acceduto:"+loc() :
+	this.codEnte!=null;
+	
+context ServiceSelector ERROR "E' necessario specificare il cod. prodotto del servizio acceduto:"+loc() :
+	this.codProd!=null;
+
+context ServiceSelector ERROR "E' necessario specificare il codice del servizio acceduto:"+loc() :
+	this.codServ!=null;		
+	
+context ServiceSelector ERROR "E' necessario specificare l'istanza infrastrutturale del servizio acceduto" :
+	this.istanza!=null;
+	
+	
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// SVCORCH checks
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+context svcorch::Node ERROR "E'necessario specificare il nome per ogni nodo" :
+	this.name != null && this.name.length>0;
+
+context svcorch::Node ERROR "Il nome del nodo ["+name+"] non è ben formato."+loc() :
+	isWellFormedName(name);
+	
+context svcorch::Node WARNING "E'consigliato specificare una breve descrizione testuale per ogni nodo" :
+	this.description != null && this.description.length>0;
+
+context svcorch::Node if name!=null && name.length>0 ERROR 
+	"Il nome dei nodi deve essere univoco all'interno di una orchestrazione" :
+	let nodes = (Nodes)eContainer :
+		nodes.nodes.select(n|n.name!=null && n.name==this.name).size==1;
+		
+context svcorch::Orchestration ERROR 
+	"E'necessario specificare il servizio (ServiceDef) a cui fa riferimento l'"
+	+" orchestrazione: "+loc() :
+	this.service!=null;
+
+context svcorch::Orchestration ERROR 
+	"E'necessario specificare l'operazione a cui fa riferimento l'"
+	+" orchestrazione: "+loc() :
+	this.operation!=null;
+		
+context svcorch::Orchestration ERROR
+	"E' necessario specificare un Binding ad un DataSlot per ogni parametro dell'operazione oggetto "+
+	"di orchestrazione: "+loc() :
+	this.inputParamBindings != null && this.inputParamBindings.inputParams.size == this.operation.params.size;
+
+context svcorch::ParamBinding ERROR 
+	"E'necessario specificare il parametro oggetto di binding:"+loc() :
+	this.param != null;
+
+context svcorch::ParamBinding ERROR 
+	"E'necessario specificare il data-slot oggetto di binding:"+loc() :
+	this.slot != null;
+		
+context svcorch::ParamBinding if eContainer.metaType==InputParamBindings ERROR
+	"il binding del parametro di input " + param +" è collegato ad uno slot già utilizzato per un'altro parametro "+loc() :
+	let bindings = ((InputParamBindings)eContainer):
+	bindings.inputParams.select(ip|ip.slot==this.slot).size==1;
+	
+context svcorch::ParamBinding if eContainer.metaType==InputParamBindings ERROR
+	"esiste più di un binding per il parametro di input "+ param :
+	let bindings = ((InputParamBindings)eContainer):
+	bindings.inputParams.select(ip|ip.param==param).size==1;
+	
+context svcorch::ParamBinding if eContainer.metaType==SrvCall ERROR
+	"il binding del parametro del servizio invocato " + param +" è collegato ad uno slot già utilizzato per un'altro parametro "+loc() :
+	let bindings = ((SrvCall)eContainer):
+	bindings.paramBindings.select(ip|ip.slot==this.slot).size==1;
+	
+
+/// OpNode
+context OpNode if next!=null ERROR "un nodo non può essere successor edi se stesso:"+loc() :
+	next!=this;
+	
+/// SrvCall
+context svcorch::SrvCall ERROR
+	"E'necessario specificare un service-connector per l'oggetto SrvCall:"+loc() :
+	this.serviceConnector!=null;
+
+context svcorch::SrvCall ERROR 
+	"E'necessario specificare l'operazione da invocare:"+loc() :
+	this.operation!=null;
+
+context svcorch::SrvCall if operation!=null && serviceConnector!=null ERROR
+	"L'operazione indicata ("+operation.name+") non fa parte del servizio referenziato "+
+	"dal serviceConnector ("+serviceConnector.serviceDef+")" :
+	serviceConnector.serviceDef.operations.contains(operation);
+
+context svcorch::SrvCall ERROR
+	"E' necessario specificare un binding per ogni parametro di input dell'operazione invocata:"+loc() :
+	this.paramBindings.size==this.operation.params.size;
+
+context svcorch::ParamBinding if eContainer.metaType==SrvCall ERROR
+	"esiste più di un binding per il parametro di chiamata di servizio "+ param :
+	let bindings = ((SrvCall)eContainer):
+	bindings.paramBindings.select(ip|ip.param==param).size==1;
+
+context svcorch::ParamBinding if eContainer.metaType==SrvCall ERROR
+	"il binding del parametro del servizio invocato non è un parametro dell'operazione "+
+	"specificata nell'oggetto SrvCall" :
+	let srvCall = ((SrvCall)eContainer) :
+	srvCall.operation.params.contains(this.param);
+	
+context svcorch::SrvCall ERROR 
+	"è necessario specificare il data-slot del risultato dell'invocazione del servizio: "+loc() :
+	this.operation.returnType==null ||
+	this.outputSlot != null;
+
+context svcorch::SrvCall if operation!=null ERROR 
+	"è necessario specificare un Exception Handler per ogni eccezione resituita dall'operazione oggetto "+
+	"di invocazione "+loc():
+	this.onException.handledException.size==operation.throws.size;
+
+context svcorch::SrvCall if operation!=null ERROR
+	"Attualmente il generatore supporta un solo exception handler per ogni invocazione:"+loc() :
+	this.onException.size<=1;
+	
+/// ExceptionHandler
+context svcorch::ExceptionHandler ERROR 
+	"Occorre specificare l'eccezione gestita dall'Exception Handler:"+loc() :
+	this.handledException!=null;
+	 
+context svcorch::ExceptionHandler 
+	if SrvCall.metaType.isAssignableFrom(eContainer.metaType) 
+	ERROR
+	"L'exception handler referenzia una eccezione non prevista dall'operazione invocata:"+loc() :
+	let srvCall = ((SrvCall)eContainer):
+	let op = srvCall.operation :
+	op.throws.contains(handledException);
+
+context svcorch::ExceptionHandler ERROR "e' necessario indicare il primo nodo della catena di gestione dell' "+
+	"eccezione:"+loc() :
+	this.firstRecoveryNode!=null;
+
+/// (TODO: verificare che non il first recovery node non sia nella catena try... => loop)
+
+/// ForEach
+context ForEach ERROR "E' necessario specificare lo slot che contiene la collection su cui iterare:"+loc() :
+	collection!=null;
+
+context ForEach if collection !=null && collection.type!=null ERROR "Lo slot della collection su cui iterare deve essere un TypedArray:"+loc() :
+	collection.type.metaType==TypedArray;
+	
+context ForEach ERROR "E' necessario specificare lo slot che conterrà l'elemento corrente per ogni iterazione:"+loc() :
+	item!=null;	 
+
+context ForEach if item!=null && item.type!=null && collection!=null && collection.type!=null 
+	ERROR "Lo slot che conterrà l'elemento corrente deve essere di un tipo corrispondente "+
+		  "al tipo degli elementi dello slot 'collection':"+loc() :
+	item.type==((TypedArray)(collection.type)).componentType;
+		
+context ForEach ERROR "E'necessario specificare il nodo di inizio loop:"+loc() :
+	firstLoopNode != null;
+
+context ForEach if firstLoopNode!=null ERROR "il primo nodo del loop non può essere il nodo for each stesso:"+loc() :
+	firstLoopNode!=this;
+	
+context ForEach ERROR "E'necessario specificare il nodo a cui saltare dopo la fine dell'ultima iterazione del loop:"+loc() :
+	afterLoopNode != null;
+
+context ForEach if afterLoopNode!=null ERROR "il nodo da eseguire al termine del loop non può essere il nodo for each stesso:"+loc() :
+	afterLoopNode!=this;
+
+/// EndLoop
+context EndLoop ERROR "E'necessario specificare il nodo ForEach che questo EndLoop chiude, nell'attributo 'loopHeadNode':"+loc() :
+	loopHeadNode != null;
+
+context EndLoop if loopHeadNode!=null ERROR "Il nodo specificato in 'loopHeadNode' deve essere di tipoo ForEach:"+loc() :
+	loopHeadNode.metaType==ForEach;
+
+/// CheckCondition
+context CheckCondition ERROR "E'necessario specificare il nodo corrispondente al ramo 'then':"+loc() :
+	thenNode!=null;
+
+context CheckCondition if thenNode!=null ERROR "il nodo 'then' non può essere il nodo CheckCondition stesso:"+loc() :
+	thenNode!=this;
+
+context CheckCondition ERROR "E'necessario specificare il nodo corrispondente al ramo 'else':"+loc() :
+	elseNode!=null;
+
+context CheckCondition if elseNode!=null ERROR "il nodo 'else' non può essere il nodo CheckCondition stesso:"+loc() :
+	elseNode!=this;
+	
