@@ -116,14 +116,14 @@ public class «serviceImplementationClassName()» implements «serviceInterfaceN
 
 «REM»Genera la property per l'iniezione via Spring della classe di business«ENDREM»
 «DEFINE businessClassInjection(SOABEModel model) FOR ServiceDef»
-private «serviceBusinessInterfaceName()» «toCamel(serviceBusinessInterfaceName())»;
+private «serviceBusinessInterfaceName()» «serviceBusinessInterfaceName().toFirstLower()»;
 
 public «serviceBusinessInterfaceName()» get«serviceBusinessInterfaceName()»() {
-	return «toCamel(serviceBusinessInterfaceName())»;
+	return «serviceBusinessInterfaceName().toFirstLower()»;
 }
 
-public void set«serviceBusinessInterfaceName()»(«serviceBusinessInterfaceName()» «toCamel(serviceBusinessInterfaceName())») {
-	this.«toCamel(serviceBusinessInterfaceName())» = «toCamel(serviceBusinessInterfaceName())»;
+public void set«serviceBusinessInterfaceName()»(«serviceBusinessInterfaceName()» «serviceBusinessInterfaceName().toFirstLower()») {
+	this.«serviceBusinessInterfaceName().toFirstLower()» = «serviceBusinessInterfaceName().toFirstLower()»;
 }
 «ENDDEFINE»
 

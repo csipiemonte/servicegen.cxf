@@ -54,51 +54,126 @@ Genera i file per webservices CXF
 «REM»
 ==========================================================================================================================
 SPRING CONFIGURATION
-Genera il file per la configurazione della Dependency Injection con Spring
+Genera i file per la configurazione di Spring (Dependency Injection, CXF configuration, DAO)
 ==========================================================================================================================
 «ENDREM»
 
-«REM»
-«DEFINE beanContextFile(SOABEModel model, boolean useExternalDaoBeans) FOR ManualImplCartridge»
-«LET (ServiceImpl)eContainer AS impl-»
-«FILE paConfigDir(impl.provides, model)+"/META-INF/"+impl.provides.codServizio.toLowerCase()+"BeanContext.xml"»<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-       					   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd"> 
-       					   
+«DEFINE springFiles(SOABEModel model, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+	«LET (ServiceImpl)eContainer AS impl»
+		«EXPAND springMainFile(model, impl, useExternalDaoBeans) FOR this»
+		«EXPAND applicationContextFile(model, impl, useExternalDaoBeans) FOR this»
+		«EXPAND cxfFile(model, impl, useExternalDaoBeans) FOR this»
+		«IF !useExternalDaoBeans»
+			«EXPAND daoBeansFile(model, impl, useExternalDaoBeans) FOR this»
+		«ENDIF»
+	«ENDLET»
+«ENDDEFINE»
+
+
+«REM»Genera il file spring MAIN (file che include tutti gli altri e viene a sua volta chiamato dal contesto«ENDREM»
+«DEFINE springMainFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"SpringMain.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<!-- DB CONFIGURATION AND DAO -->
+	<import resource="/WEB-INF/«impl.provides.codServizio.toLowerCase()»Dao-beans.xml" />
+
+    <!-- BUSINESS CONFIGURATION -->
+    <import resource="/WEB-INF/«impl.provides.codServizio.toLowerCase()»ApplicationContext.xml" />
+
+    <!-- CXF SERVICES CONFIGURATION -->
+	<import resource="/WEB-INF/«impl.provides.codServizio.toLowerCase()»Cxf.xml" />
+
+</beans>
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»Genera il file di configurazione«ENDREM»
+«DEFINE applicationContextFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"ApplicationContext.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
 	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"beancontext")»
-		<!-- Insert here your custom Spring Beans -->				
+	<!-- Insert here your custom Spring Beans -->				
 	«ENDPROTECT»
 	
 	
-	
-	<bean id="«serviceImplBeanId(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceImplClassName(impl.provides)»">			
+	<bean id="«impl.provides.codServizio»BL" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceBusinessClassName(impl.provides)»">
 	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+serviceImplBeanId(impl.provides))»
-			<!-- Insert here «impl.provides.codServizio» bean properties (Dao, customBeans, etc...) -->
+	<!-- Insert here «impl.provides.codServizio» bean properties (Dao, customBeans, etc...) -->
 	«ENDPROTECT»
 	</bean>
-	
-	
+
 </beans>
 «ENDFILE»
-«IF !useExternalDaoBeans-»
-«FILE paConfigDir(impl.provides, model)+"/META-INF/"+impl.provides.codServizio.toLowerCase()+"Dao-beans.xml"»<?xml version="1.0" encoding="UTF-8"?>
+«ENDDEFINE»
+
+
+«DEFINE cxfFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"Cxf.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:cxf="http://cxf.apache.org/core"
+	   xmlns:http="http://cxf.apache.org/transports/http/configuration"
+	   xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:sec="http://cxf.apache.org/configuration/security"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+						   http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+						   http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+						   http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+						   http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd">
+
+	<!-- import CXF resources -->
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+
+	<!-- web service implementation definition -->
+	<bean id="«serviceImplBeanId(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceImplClassName(impl.provides)»">
+		<property name="«serviceBusinessInterfaceName(impl.provides).toFirstLower()»" ref="«impl.provides.codServizio»BL" />
+	</bean>
+
+
+	<!-- web service end point definition -->
+	<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»WS"
+					implementor="#«serviceImplBeanId(impl.provides)»"
+					address="/«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»">
+	</jaxws:endpoint>
+
+
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"cxf")»
+	<!-- Other CXF configurations (bus, conduit, security, ecc) -->	
+	«ENDPROTECT»
+
+</beans>
+«ENDFILE»
+«ENDDEFINE»
+
+
+«DEFINE daoBeansFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"Dao-beans.xml"»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-       					   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
 
 	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"daobeans")»
-		<!-- Insert here your Spring Beans -->	
+	<!-- Insert here your Spring Beans -->	
 	«ENDPROTECT»
 	
 </beans>
 «ENDFILE»
-«ENDIF-»
-«ENDLET-»
 «ENDDEFINE»
-«ENDREM»
+
 
 
 «REM»

@@ -112,7 +112,19 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 «ENDREM»
 
 «DEFINE wswebxml(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
-«FILE getSpecificWarConfigRootDir("ws",removeSeparator(serviceDef.codServizio),model)+"/WEB-INF/web.xml"»<?xml version="1.0" encoding="UTF-8"?>
+	«EXPAND webxmlFile(model, serviceDef) FOR this»
+	«IF model.targetPlatform.code==TargetPlatformCodes::JBoss43»
+		«EXPAND jbossWebxmlFile(model, serviceDef) FOR this»
+	«ENDIF»
+	«IF model.targetPlatform.code==TargetPlatformCodes::WLS92»
+		«EXPAND wlWebxmlFile(model, serviceDef) FOR this»
+	«ENDIF»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE webxmlFile(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(serviceDef.codServizio), model)+"/WEB-INF/web.xml"»<?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.4"
          xmlns="http://java.sun.com/xml/ns/j2ee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -121,7 +133,7 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>WEB-INF/cxf.xml</param-value>«REM»TODO: MODIFICARE FILE DI SPRING«ENDREM»
+        <param-value>WEB-INF/«serviceDef.codServizio.toLowerCase()»SpringMain.xml</param-value>«REM»TODO: MODIFICARE FILE DI SPRING«ENDREM»
     </context-param>
 
     <listener>
@@ -142,6 +154,39 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 	</servlet-mapping>
 
 </web-app>
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE jbossWebxmlFile(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(serviceDef.codServizio), model)+"/WEB-INF/jboss-web.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web>
+	<!-- NO SPECIFIC CONFIGURATION NEEDED -->
+</jboss-web>
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE wlWebxmlFile(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(serviceDef.codServizio), model)+"/WEB-INF/weblogic.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<weblogic-web-app xmlns="http://www.bea.com/ns/weblogic/90"
+                  xmlns:j2ee ="http://java.sun.com/xml/ns/j2ee"
+                  xmlns:xsi ="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-web-app.xsd ">
+
+	<context-root>/«wsWebContext(serviceDef.codServizio, codBinding, serviceDef.serviceType.toString(), model)»</context-root>
+
+	<container-descriptor>
+		<prefer-web-inf-classes>true</prefer-web-inf-classes>
+	</container-descriptor>
+
+	<session-descriptor>
+		<persistent-store-type>replicated_if_clustered</persistent-store-type>
+	</session-descriptor>
+
+</weblogic-web-app>
 «ENDFILE»
 «ENDDEFINE»
 

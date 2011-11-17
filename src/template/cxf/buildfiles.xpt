@@ -198,7 +198,8 @@ creazione del build.xml per ANT
 	<!-- # Target: environment-recreate                              # -->
 	<!-- ############################################################# -->
 	<!-- -->
-	<target name="environment-recreate">
+	<target name="environment-recreate"
+	        description="Ricrea l&apos;environment di configurazione per il target corrente (per applicare le sostituzionidelle variabili).">
 		<mkdir dir="build/temp/conf" />
 			<copy todir="build/temp/conf" overwrite="true">
 		<fileset dir="${conf}" />
@@ -212,10 +213,8 @@ creazione del build.xml per ANT
 	<!-- ############################################################# -->
 	<!-- -->
 	<target name="environment-config"
-	        description="Predispone le configurazioni dipendenti dall'ambiente." >
+	        description="Predispone le configurazioni dipendenti dall&apos;ambiente." >
 		<!-- Gestione replace delle variabile d'ambiente create dal generatore -->
-		«REM»TODO: REPLACEMENT VARIABILI D'AMBIENTE DEL GENERATORE«ENDREM»
-		«REM»
 		«IF targetPlatform.code == TargetPlatformCodes::JBoss43»
 		<!-- JBoss replacements -->
 		<replace dir="${temp}/conf/ear/${webapp}/META-INF/">
@@ -224,9 +223,6 @@ creazione del build.xml per ANT
 			<replacefilter token="@ear-file-name@" value="${ear-file-name}" />
 		</replace>
 		«ENDIF»
-		
-		
-		«ENDREM»
 
 		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("build.environment-config")»
 		<!-- gestire qui i  replace delle proprie variabili d'ambiente -->
@@ -239,23 +235,75 @@ creazione del build.xml per ANT
 	<!-- ############################################################# -->
 	<!-- -->
 	<target name="package-all"
-	        description="esegue il packaging di ogni componente del prodotto">
+	        description="Esegue il packaging di ogni componente del prodotto">
 		<antcall target="package-ear" />
 	</target>
 
+	<!-- -->
+	<!-- ############################################################# -->
+	<!-- # [PKG]: package-ear                                        # -->
+	<!-- ############################################################# -->
+	<!-- -->
+	<target name="package-ear"
+            depends="environment-recreate, compile-all, commons-jar, package-all-ws-wars, environment-config"
+            description="costruisce l&apos;ear">
+
+		<copy todir="${temp}/${target}/${earLib}">
+			<fileset dir="${lib}" includes="${ear-libs-filter} ${ear-custom-libs-filter}" />
+		</copy>
+
+		<ear appxml="${temp}/conf/ear/META-INF/application.xml"
+		     destfile="${build}/archives/${target}/${ear-file-name}.ear">
+			<fileset dir="${build}/archives/${target}" includes="*.jar,*.war" />
+			<fileset dir="${temp}/${target}">
+				<include name="**/*" />
+			</fileset>
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Built-Date" value="${DSTAMP}" />
+				<attribute name="Target" value="${target}" />
+				<attribute name="Appl-Version" value="${version}" />
+			</manifest>
+		</ear>
+	</target>
+
+	<!-- -->
+	<!-- ############################################################# -->
+	<!-- # [PKG]: package-all-ws-wars                                # -->
+	<!-- ############################################################# -->
+	<!-- -->
+	<target name="package-all-ws-wars"
+	        description="costruisce i war di tutti i web services">
+		«FOREACH serviceimplementations AS currSrvImpl-»
+			«LET currSrvImpl.provides.bindings.typeSelect(WSBinding).first() AS ws-»
+				«IF ws != null-»
+		<!-- richiamo costruzione war ws servizio «currSrvImpl.provides.codServizio» -->
+		<antcall target="_package-ws-war">
+			<param name="component.name" value="«codComponente.toLowerCase()»"/>
+			<param name="service.name" value="«removeSeparator(currSrvImpl.provides.codServizio)»"/>
+			<param name="binding.code" value="«ws.codBinding.toLowerCase()»"/>
+			<param name="service.type" value="«currSrvImpl.provides.serviceType.toString().toLowerCase()»"/>
+		</antcall>
+				«ENDIF-»
+			«ENDLET-»
+		«ENDFOREACH-»
 
 
+	</target>
 
-
-
-
-
-
-
-
-
-
-
+	<!-- -->
+	<!-- ############################################################# -->
+	<!-- # [PKG]: _package-ws-war                                     # -->
+	<!-- ############################################################# -->
+	<!-- -->
+	<target name="_package-ws-war"
+	        description="costruisce il war per un singolo web service">
+		<!-- prende in input i parametri: component.name, service.name, binding.code -->
+		<war destfile="${build}/archives/${target}/${service.type}-${service.name}-${binding.code}.war"
+		     webxml="${conf}/web/${binding.code}/${service.name}/WEB-INF/web.xml"
+		     roundup="false">
+		</war>
+	</target>
 
 
 

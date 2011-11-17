@@ -85,7 +85,7 @@ e le limitazioni secondo i termini della Licenza.
 				«REM»«EXPAND resourceConnectorFiles(currSrvImpl.provides, this) FOREACH allRC»«ENDREM»
 			«ENDLET»
 			«IF currSrvImpl.implCartridge.metaType==ManualImplCartridge && ((ManualImplCartridge)(currSrvImpl.implCartridge)).useInjectedPojo -»
-				«REM»«EXPAND template::configfiles::beanContextFile(this, useExternalDaoBeans) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»«ENDREM»
+				«EXPAND template::cxf::configfiles::springFiles(this, useExternalDaoBeans) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»
 				«REM»«EXPAND template::manualimpl::javafiles::springStartupFiles(this) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»«ENDREM»
 			«ENDIF-»
 		«ENDFOREACH»
