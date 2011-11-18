@@ -144,6 +144,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 	<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»WS"
 					implementor="#«serviceImplBeanId(impl.provides)»"
 					address="/«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»">
+		«REM»TODO: ABILITARE MTOM IN CASO DI ATTACHMENT«ENDREM»
 	</jaxws:endpoint>
 
 
