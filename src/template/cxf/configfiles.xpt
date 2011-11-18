@@ -78,13 +78,13 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
 	<!-- DB CONFIGURATION AND DAO -->
-	<import resource="/WEB-INF/«impl.provides.codServizio.toLowerCase()»Dao-beans.xml" />
+	<import resource="«impl.provides.codServizio.toLowerCase()»Dao-beans.xml" />
 
     <!-- BUSINESS CONFIGURATION -->
-    <import resource="/WEB-INF/«impl.provides.codServizio.toLowerCase()»ApplicationContext.xml" />
+    <import resource="«impl.provides.codServizio.toLowerCase()»ApplicationContext.xml" />
 
     <!-- CXF SERVICES CONFIGURATION -->
-	<import resource="/WEB-INF/«impl.provides.codServizio.toLowerCase()»Cxf.xml" />
+	<import resource="«impl.provides.codServizio.toLowerCase()»Cxf.xml" />
 
 </beans>
 «ENDFILE»

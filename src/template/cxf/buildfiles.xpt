@@ -217,7 +217,7 @@ creazione del build.xml per ANT
 		<!-- Gestione replace delle variabile d'ambiente create dal generatore -->
 		«IF targetPlatform.code == TargetPlatformCodes::JBoss43»
 		<!-- JBoss replacements -->
-		<replace dir="${temp}/conf/ear/${webapp}/META-INF/">
+		<replace dir="${temp}/conf/ear/">
 			<include name="jboss-app.xml" />
 			<replacefilter token="@context-root@" value="${war-file-name}" />
 			<replacefilter token="@ear-file-name@" value="${ear-file-name}" />
@@ -245,19 +245,27 @@ creazione del build.xml per ANT
 	<!-- ############################################################# -->
 	<!-- -->
 	<target name="package-ear"
-            depends="environment-recreate, compile-all, commons-jar, package-all-ws-wars, environment-config"
+            depends="environment-recreate, compile-all, package-commons-jar, package-all-wsclientlibs-jars, 
+                     package-all-ws-wars, environment-config"
             description="costruisce l&apos;ear">
 
+		<!-- librerie infrastrutturali o client di servizi fruiti -->
 		<copy todir="${temp}/${target}/${earLib}">
 			<fileset dir="${lib}" includes="${ear-libs-filter} ${ear-custom-libs-filter}" />
+			<fileset dir="${build}/archives/${target}" includes="*common.jar" />
 		</copy>
 
-		<ear appxml="${temp}/conf/ear/META-INF/application.xml"
+		<ear appxml="${temp}/conf/ear/application.xml"
 		     destfile="${build}/archives/${target}/${ear-file-name}.ear">
-			<fileset dir="${build}/archives/${target}" includes="*.jar,*.war" />
+			<fileset dir="${build}/archives/${target}" includes="*.jar,*.war" excludes="*client*.jar" />
 			<fileset dir="${temp}/${target}">
 				<include name="**/*" />
 			</fileset>
+			«IF targetPlatform.code == TargetPlatformCodes::WLS92-»
+			<metainf dir="${temp}/conf/ear/" includes="weblogic-application.xml" />
+			«ELSEIF targetPlatform.code == TargetPlatformCodes::JBoss43-»
+			<metainf dir="${temp}/conf/ear/" includes="jboss-app.xml" />
+			«ENDIF-»
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Built-Date" value="${DSTAMP}" />
@@ -273,7 +281,7 @@ creazione del build.xml per ANT
 	<!-- ############################################################# -->
 	<!-- -->
 	<target name="package-all-ws-wars"
-	        description="costruisce i war di tutti i web services">
+	        description="Costruisce i war di tutti i web services">
 		«FOREACH serviceimplementations AS currSrvImpl-»
 			«LET currSrvImpl.provides.bindings.typeSelect(WSBinding).first() AS ws-»
 				«IF ws != null-»
@@ -283,56 +291,82 @@ creazione del build.xml per ANT
 			<param name="service.name" value="«removeSeparator(currSrvImpl.provides.codServizio)»"/>
 			<param name="binding.code" value="«ws.codBinding.toLowerCase()»"/>
 			<param name="service.type" value="«currSrvImpl.provides.serviceType.toString().toLowerCase()»"/>
+			<param name="service.ver" value="«currSrvImpl.provides.versione»" />
 		</antcall>
 				«ENDIF-»
 			«ENDLET-»
 		«ENDFOREACH-»
-
-
 	</target>
 
 	<!-- -->
 	<!-- ############################################################# -->
-	<!-- # [PKG]: _package-ws-war                                     # -->
+	<!-- # [PKG]: _package-ws-war                                    # -->
 	<!-- ############################################################# -->
 	<!-- -->
 	<target name="_package-ws-war"
-	        description="costruisce il war per un singolo web service">
-		<!-- prende in input i parametri: component.name, service.name, binding.code -->
+	        description="Costruisce il war per un singolo web service">
+		<!-- prende in input i parametri: component.name, service.name, binding.code, service.ver (deve essere a 2 cifre!!!) -->
 		<war destfile="${build}/archives/${target}/${service.type}-${service.name}-${binding.code}.war"
 		     webxml="${conf}/web/${binding.code}/${service.name}/WEB-INF/web.xml"
 		     roundup="false">
+			<webinf dir="${conf}/web/${binding.code}/${service.name}/WEB-INF/"
+			        includes="*.xml" />
+			<classes dir="${build}/classes">
+				<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/business/${service.name}/**"/>
+				<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
+			</classes>
+			<lib dir="${lib}" includes="*" excludes="${war-exclude-libs-filter}, ${war-exclude-custom-libs-filter}" />
+			<lib dir="${build}/archives/${target}/" includes="«codComponente.toLowerCase()»-${service.name}-client-${service.ver}.0.jar" />
 		</war>
 	</target>
 
+	<!-- -->
+	<!-- ############################################################# -->
+	<!-- # [PKG]: package-all-wsclientlibs-jars                      # -->
+	<!-- ############################################################# -->
+	<!-- -->
+	<target name="package-all-wsclientlibs-jars"
+	        description="Costruisce tutti i jar delle librerie client CXF per ogni servizio">
+		«FOREACH getProvidedServices() AS sd-»
+		<!-- costruzione delle librerie client per il servizio «sd.codServizio» -->
+		<antcall target="_package-wsclientlibs-jar">
+			<param name="service.name" value="«removeSeparator(sd.codServizio)»" />
+			<param name="service.ver" value="«sd.versione»" />
+		</antcall>
+		«ENDFOREACH-»	
+	</target>
 
+	<!-- -->
+	<!-- ############################################################# -->
+	<!-- # [PKG]: _package-wsclientlibs-jar                          # -->
+	<!-- ############################################################# -->
+	<!-- -->
+	<target name="_package-wsclientlibs-jar"
+	        description="Costruisce il jar delle librerie client CXF per un singolo servizio">
+		<!-- prende come parametro il codice servizio service.name e la versione service.ver (deve essere a 2 cifre!!!) -->
+		<jar destfile="${build}/archives/${target}/«codComponente.toLowerCase()»-${service.name}-client-${service.ver}.0.jar"
+		     basedir="${build}/classes"
+		     includes="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/dto/${service.name}/**,
+		               «getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/exception/${service.name}/**,
+		               «getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/interfacews/${service.name}/**">
+		</jar>
+	</target>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	<!-- -->
+	<!-- ############################################################# -->
+	<!-- # [PKG]: package-commons-jar                                # -->
+	<!-- ############################################################# -->
+	<!-- -->
+	<target name="package-commons-jar" description="Genera il jar per le classi comuni.">
+		<jar destfile="${build}/archives/${target}/«this.codComponente»-common.jar"
+		     basedir="${build}/classes"
+		     includes="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/business/**,
+		               «getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/util/**">
+			«FOREACH getProvidedServices() AS sd-»
+			<exclude name="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/business/«removeSeparator(sd.codServizio)»/**" />
+			«ENDFOREACH-»
+		</jar>
+	</target>
 
 	<!-- -->
 	<!-- ############################################################# -->
