@@ -7,4 +7,10 @@ Require-Bundle: org.openarchitectureware.dependencies,
  servicegen;bundle-version="1.1.1"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Vendor: %providerName
-Export-Package: it.csi.mddtools.servicegen.cxf.genutils
+Export-Package: check,
+ it.csi.mddtools.servicegen.cxf.genutils,
+ it.csi.mddtools.servicegen.cxf.workflow,
+ template.cxf,
+ template.cxf.flowmodel,
+ template.cxf.manualimpl,
+ workflow
