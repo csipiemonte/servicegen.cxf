@@ -86,7 +86,8 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
 «FILE "conf/ear/META-INF/weblogic-application.xml"»<?xml version="1.0" encoding="UTF-8"?> 
 <wls:weblogic-application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 		xmlns:wls="http://www.bea.com/ns/weblogic/90" 
-		xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/j2ee_1_4.xsd http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-application.xsd"> 
+		xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/j2ee_1_4.xsd
+		                    http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-application.xsd"> 
 
 	<wls:application-param>
 		<wls:param-name>webapp.encoding.default</wls:param-name>

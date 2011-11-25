@@ -639,7 +639,7 @@ creazione del file di configurazione IVY
 ****************************************
 «ENDREM»
 
-«DEFINE ivyfiles  FOR SOABEModel»
+«DEFINE ivyfiles FOR SOABEModel»
 «FILE "buildfiles/ivy.xml"»<ivy-module version="1.0">
 	<info organisation="csipiemonte" module="«codComponente.toLowerCase()»" />
 	<dependencies>
@@ -663,10 +663,14 @@ creazione del file di configurazione IVY
 
 		<!-- Spring 2.5.6 (CXF 2.2.12 dependency) -->
 		<dependency org="others" name="spring" rev="2.5.6">
+			<artifact name="aopalliance-1.0" type="jar" />
+			<artifact name="spring-aop-2.5.6" type="jar" />
 			<artifact name="spring-beans-2.5.6" type="jar" />
-			<artifact name="spring-core-2.5.6" type="jar" />
 			<artifact name="spring-context-2.5.6" type="jar" />
 			<artifact name="spring-context-support-2.5.6" type="jar" />
+			<artifact name="spring-core-2.5.6" type="jar" />
+			<artifact name="spring-jdbc-2.5.6" type="jar" />
+			<artifact name="spring-tx-2.5.6" type="jar" />			
 			<artifact name="spring-web-2.5.6" type="jar" />
 		</dependency>
 
@@ -750,11 +754,20 @@ creazione del file di configurazione IVY
 creazione dei file 'about' previsto dagli standard
 **************************************************
 «ENDREM»
-«DEFINE aboutfiles  FOR SOABEModel»
+«DEFINE aboutfiles FOR SOABEModel»
+	«EXPAND aboutFile FOR this»
+	«EXPAND aboutCustomFile FOR this»
+«ENDDEFINE»
+
+«REM»File about.txt«ENDREM»
+«DEFINE aboutFile FOR SOABEModel»
 «FILE "buildfiles/about.txt"»
 
 «ENDFILE»
+«ENDDEFINE»
 
+«REM»File aboutCustom.txt«ENDREM»
+«DEFINE aboutCustomFile FOR SOABEModel»
 «FILE "buildfiles/aboutCustom.txt"»
 
 «ENDFILE»

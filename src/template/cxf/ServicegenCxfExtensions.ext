@@ -95,6 +95,10 @@ String defaultPrimitiveInitVal(PrimitiveType type) :
 	let binding = type.languageBindings.select(a|a.lang=="java").first() :
 	binding.defaultInitValue;
 
+// verifica se 
+boolean hasAttachment(List[Operation] operations) : JAVA
+	it.csi.mddtools.servicegen.cxf.genutils.CodeGenetationUtils.hasAttachment(java.util.List);
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,12 +117,6 @@ String getWsTargetNamespaceAnnotation(ServiceDef sd, SOABEModel model) :
 		", targetNamespace = \"" + sdannTns + "\""
 	else
 		"";
-
-
-
-
-
-
 
 
 
