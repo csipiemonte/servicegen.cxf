@@ -29,6 +29,12 @@ creazione del build.xml per ANT
 ********************************
 «ENDREM»
 «DEFINE buildfile FOR SOABEModel»
+	«EXPAND buildXmlFile FOR this»
+	«REM»«EXPAND buildJavadocXmlFile FOR this»«ENDREM»
+«ENDDEFINE»
+
+
+«DEFINE buildXmlFile FOR SOABEModel»
 «FILE "build.xml"»<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ##################################################### -->
@@ -224,6 +230,8 @@ creazione del build.xml per ANT
 		</replace>
 		«ENDIF»
 
+		«EXPAND varSubstForRC FOREACH getAllResourceConnectors()»
+
 		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("build.environment-config")»
 		<!-- gestire qui i  replace delle proprie variabili d'ambiente -->
 		«ENDPROTECT»
@@ -314,6 +322,7 @@ creazione del build.xml per ANT
 			<classes dir="${build}/classes">
 				<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/business/${service.name}/**"/>
 				<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
+				<include name="${temp}/conf/pd/${service.name}/*.xml"/>
 			</classes>
 			<lib dir="${lib}" includes="*" excludes="${war-exclude-libs-filter}, ${war-exclude-custom-libs-filter}" />
 			<lib dir="${build}/archives/${target}/" includes="«codComponente.toLowerCase()»-${service.name}-client-${service.ver}.0.jar" />
@@ -511,12 +520,26 @@ creazione del build.xml per ANT
 
 </project>
 «ENDFILE»
+«ENDDEFINE»
+
+«REM»Sostituzione delle variabili: ResourceConnector non definito«ENDREM»
+«DEFINE varSubstForRC FOR ResourceConnector»
+«ENDDEFINE»
+
+«REM»Sostituzione delle variabili: PDPAServiceConnector«ENDREM»
+«DEFINE varSubstForRC FOR PDPAServiceConnector»
+<replace dir="${temp}/conf/pd/" token="«getPAURLPlaceHolder(serviceDef)»"  value="${«getPAURLVar(serviceDef)»}"/>
+«ENDDEFINE»
+
+
+
 
 «REM»
+«DEFINE buildJavadocXmlFile FOR SOABEModel»
 «FILE "buildfiles/build.javadoc.xml"»
 «ENDFILE»
-«ENDREM»
 «ENDDEFINE»
+«ENDREM»
 
 
 «REM»
@@ -713,6 +736,57 @@ creazione del file di configurazione IVY
 		<!-- Customizzazione librerie CXF [vedere http://jiradsp.csi.it:8081/browse/STDSA-307 -->
         <dependency org="csipiemonte" name="cxf" rev="2.2.12" transitive="false" />
 
+		
+		«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0»
+		<!-- 
+		SERVIZIO ORCHESTRATO: DIPENDENZE NECESSARIE
+		-->
+
+	    <!-- dipendenze per svcflow 1.2.1 -->
+	    <dependency org="csipiemonte" name="svcflow" rev="1.2.1">
+	    	<artifact name="svcflow-1.2.1" type="jar" />
+	    </dependency>		
+		
+		«LET getAllResourceConnectors(this) AS allResConn-»
+
+		«IF allResConn.select(rc|rc.metaType==PDPAServiceConnector).size>0»
+		<!-- librerie Core di C.S.I -->
+		<dependency org="csipiemonte" name="csi" rev="1.4.5">
+			<artifact name="csi-apachesoap-1.4.5" type="jar" />
+			<artifact name="csi-core-1.4.5" type="jar" />
+			<artifact name="csi-ejb-1.4.5" type="jar" />
+			<artifact name="csi-ejb-weblogic-1.4.5" type="jar" />
+			<artifact name="csi-rmi-1.4.5" type="jar" />
+			<artifact name="csi-stadapter-1.4.5" type="jar" />
+			<artifact name="csi-tools-1.4.5" type="jar" />
+		</dependency>		
+		
+	    <!-- librerie necessarie per i binding WSFAD -->
+	    <dependency org="csipiemonte" name="wsadp" rev="2.0.2">
+	    	<artifact name="wsadp-2.0.2" type="jar" />
+	    </dependency>
+		
+		«IF this.targetPlatform.code==TargetPlatformCodes::JBoss43»
+		<!-- librerie necessarie per la connessione a servizi su WLS92 -->
+		<dependency org="csipiemonte" name="weblogic-client" rev="3.0.0">
+			<artifact name="weblogic-client-3.0.0" type="jar" /> 
+		</dependency>
+		«ENDIF»
+		
+		«FOREACH allResConn.select(rc|rc.metaType==PDPAServiceConnector) AS currPDPARC-»
+		«EXPAND template::buildfiles::pdpaIvyDependency FOR (PDPAServiceConnector)currPDPARC»
+		«ENDFOREACH-»
+		«ENDIF»
+		
+		«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0»
+		«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+	    «EXPAND wsIvyDependency FOR (RPCWebServiceConnector)currRPCWSC»
+	    «ENDFOREACH-»
+		«ENDIF»
+
+		«ENDLET-»
+		«ENDIF-»
+
 
 		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("ivyExtraDependencies")»
 		<!-- Inserire qui le dipendenze aggiuntive -->
@@ -747,6 +821,29 @@ creazione del file di configurazione IVY
 «ENDFILE»
 
 «ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE wsIvyDependency FOR RPCWebServiceConnector»
+		<!-- dipendenze necessarie per il RPCWebServiceConnector [«code»] -->
+		«LET this.annotations.select(a|a.source=="appresources") AS allAppresAnnotations-»
+		«FOREACH allAppresAnnotations AS currAppresAnnotation-»
+		«LET currAppresAnnotation.details.select(ad|ad.key=="repart-position").first() AS repPosAD-»
+		«IF repPosAD!=null-»
+		<dependency org="«getRepartOrganization(repPosAD.value)»" name="«getRepartName(repPosAD.value)»" rev="«getRepartVer(repPosAD.value)»">
+		«FOREACH currAppresAnnotation.details.select(ad|ad.key=="repart-artifact") AS repArtAD-»
+		«IF repArtAD!=null-»
+			<artifact name="«repArtAD.value»" type="jar" />
+		«ENDIF-»
+		«ENDFOREACH-»
+		</dependency>
+		«ENDIF-»
+		«ENDLET-»
+		«ENDFOREACH-»
+		«ENDLET-»
+	    
+«ENDDEFINE»
+
 
 
 «REM»

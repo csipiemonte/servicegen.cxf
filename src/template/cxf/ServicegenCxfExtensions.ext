@@ -43,6 +43,12 @@ String wsWebContext(String codServ, String codBinding, String serviceType, SOABE
 String fullWebServiceInterfaceDir(ServiceDef sd, String codServ, SOABEModel model) :
     getGeneratedJavaSrcDir(model)+"/"+getOrganizationNamePathPrefix()+"/"+model.codProdotto.toLowerCase()+"/"+model.codComponente.toLowerCase()+"/interfacews/"+removeSeparator(codServ);	
 
+String getPdConfigRootDir(SOABEModel model) :
+  getConfigRootDir(model)+"/pd";
+
+String getSpecificPdConfigRootDir(String codServizio, SOABEModel model) :
+  getPdConfigRootDir(model)+"/"+removeSeparator(codServizio);
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///// NAMING PACKAGE JAVA

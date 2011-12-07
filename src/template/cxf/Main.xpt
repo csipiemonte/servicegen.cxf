@@ -28,6 +28,7 @@ e le limitazioni secondo i termini della Licenza.
 «EXTENSION template::cxf::ServicegenCxfExtensions»
 
 
+«REM»Main Method (chiamato dal workflow OAW)«ENDREM»
 «DEFINE main(boolean useExternalDaoBeans) FOR SOABEModel»
 «EXPAND main2(useExternalDaoBeans) FOR this»
 «ENDDEFINE»
@@ -42,7 +43,10 @@ e le limitazioni secondo i termini della Licenza.
 
 
 
-
+«REM»
+REAL MAIN INTERNAL METHOD
+Metodo centralizzato per la genarazione del progetto
+«ENDREM»
 «DEFINE svn_project(boolean useExternalDaoBeans) FOR SOABEModel»
 	«LET codComponente AS svn_project_dir»
 		«REM»
@@ -74,20 +78,24 @@ e le limitazioni secondo i termini della Licenza.
 		 «REM»TODO: il file log4j è unico per tutto il componente«ENDREM»
 		 «REM»«EXPAND configfiles::log4jfiles FOR this»«ENDREM»
 
-		«REM»TODO:se c'è almeno una cartridge FlowModelImpl creo le classi base degli handler«ENDREM»
-		«REM»«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0»
-			«EXPAND template::flowmodel::handlerfiles::baseHandlers FOR this»
+		«REM»Se c'e' almeno un servizio cooptrace enabled creao le config di log apposite«ENDREM»
+		«REM»«IF serviceimplementations.select(srvimpl|srvimpl.provides.traceEnabled==true).size>0»
+			«EXPAND papdconfigfiles::cooptracefiles FOR this»
 		«ENDIF»«ENDREM»
 
-		«REM»TODO:files associati ai resource set«ENDREM»
+		«REM»Se c'è almeno una cartridge FlowModelImpl creo le classi base degli handler«ENDREM»
+		«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0»
+			«EXPAND template::flowmodel::handlerfiles::baseHandlers FOR this»
+		«ENDIF»
+
+		«REM»Risorse della ServiceImplementation«ENDREM»
 		«FOREACH this.serviceimplementations AS currSrvImpl»
+			«REM»Files associati ai resource set«ENDREM»
 			«LET getAllResourceConnectors(currSrvImpl) AS allRC»
-				«REM»«EXPAND resourceConnectorFiles(currSrvImpl.provides, this) FOREACH allRC»«ENDREM»
+				«EXPAND template::cxf::resourceconnectorfiles::resourceConnectorFiles(currSrvImpl.provides, this) FOREACH allRC»
 			«ENDLET»
-			«IF currSrvImpl.implCartridge.metaType==ManualImplCartridge && ((ManualImplCartridge)(currSrvImpl.implCartridge)).useInjectedPojo -»
-				«EXPAND template::cxf::configfiles::springFiles(this, useExternalDaoBeans) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»
-				«REM»«EXPAND template::manualimpl::javafiles::springStartupFiles(this) FOR (ManualImplCartridge)(currSrvImpl.implCartridge)»«ENDREM»
-			«ENDIF-»
+			«REM»I files di Spring vengono SEMPRE generati«ENDREM»
+			«EXPAND template::cxf::configfiles::springFiles(this, useExternalDaoBeans) FOR currSrvImpl.implCartridge»
 		«ENDFOREACH»
 
 	«ENDLET»

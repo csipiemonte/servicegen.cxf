@@ -1,0 +1,44 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;                                             
+                                                                            
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.       
+E' possibile ottenere una copia della Licenza al seguente indirizzo:        
+                                                                            
+http://www.eupl.it/opensource/eupl-1-1                                      
+                                                                            
+Salvo diversamente indicato dalla legge applicabile o concordato per        
+iscritto, il software distribuito secondo i termini della Licenza e'        
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,         
+esplicite o implicite.                                                      
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
+e le limitazioni secondo i termini della Licenza.                           
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef»
+«IMPORT appresources»
+«IMPORT template::configfiles»
+«IMPORT template::papdconfigfiles»
+«IMPORT papdconfigfiles»
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«REM»Delego al template ServiceGen CSI la creazione del file PD nella directory corretta«ENDREM»
+«DEFINE defpdejbclientfile(SOABEModel model, ServiceDef sd, ServiceDef context, TargetPlatformCodes paplatform, String pdPluginFQN, String customPAJndi) FOR EJBPABinding»
+	«EXPAND template::papdconfigfiles::defpdejbfile(model, sd, getSpecificPdConfigRootDir(context.codServizio, model)+"/"+pdEJBDefFileName(sd), paplatform, pdPluginFQN, customPAJndi) FOR this»
+«ENDDEFINE»
+
+«REM»Delego al template ServiceGen CSI la creazione del file nella directory corretta«ENDREM»
+«DEFINE defpdsoapclientfile(SOABEModel model, ServiceDef sd, ServiceDef context, String customPAUrl, String customPAUri) FOR SOAPPABRBinding»
+	«EXPAND template::papdconfigfiles::defpdsoapfile(model, sd, getSpecificPdConfigRootDir(context.codServizio, model)+"/"+pdSOAPDefFileName(sd), customPAUrl, customPAUri) FOR this»
+«ENDDEFINE»
+
+
+«REM»PD Selector«ENDREM»
+«DEFINE pdSelectorFile(ServiceDef context, SOABEModel model) FOR PDPAServiceConnector»
+	«EXPAND template::papdconfigfiles::pdSelectorFile(context, model,getSpecificPdConfigRootDir(context.codServizio, model)+"/"+pdSelectorFileName()) FOR this»
+«ENDDEFINE»

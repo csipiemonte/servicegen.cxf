@@ -10,7 +10,51 @@ extension template::flowmodel::FlowModelExtensions;
 extension org::openarchitectureware::util::stdlib::naming;
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Vincoli di elementi non validi per la cartuccia CXF
+///  Check per disabilitare gli elementi WSBinding e PrimitiveType
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+context EJBPABinding ERROR "Il EJBPABinding non è ammesso per la cartuccia basata su framework CXF" :
+	false;
+
+context SOAPPABRBinding ERROR "Il SOAPPABRBinding non è ammesso per la cartuccia basata su framework CXF" :
+	false;
+
+context WSFADBinding ERROR "Il WSFADBinding non è ammesso per la cartuccia basata su framework CXF" :
+	false;
+
+context CSIDatatype ERROR "Il tipo 'CSIDatatype' non è ammesso per la cartuccia basata su framework CXF" :
+	false;
+
+// Sono ammesse solamente operazioni sincrone (NO asynch e notify)
+context Operation ERROR "Sono ammesse solamente operazioni SINCRONE" :
+	opType==OpTypeEnum::synch;
+
+// SD5: un servizio pubblico non può avere ruoli associati
+context ServiceDef ERROR "Sono ammessi unicamente servizi con livello di securizzazione A0 (pubblici)" :
+	this.authLevel==AuthLevelEnum::A0;
+
+// SD7: in un servizio non pubblico ci deve essere almeno un ruolo definito
+context ServiceDef ERROR "Un servizio con security 'A0' NON deve definire nessun ruolo" :
+	this.authLevel==AuthLevelEnum::A0 && this.roles.size==0;
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// VINCOLI SPECIFICI DELLA CARTUCCIA CXF
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// TD6(ERROR): i tipi definiti nei servizi possono solo essere entity o eccezioni o array di entity
+context Types ERROR "TD6: i tipi definiti nel contesto di un servizio possono solo essere Entity o Array di entity o eccezioni" :
+	this.types.select(e|e.metaType==PrimitiveType).size==0 &&
+	this.types.select(e|e.metaType==TypedArray && ((TypedArray)e).componentType.metaType==PrimitiveType).size==0;
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// CHECK COMUNI ALLA CARTUCCIA CSI
+//// TODO: RIPORTARE IN FUTURO IN UNA SEZIONE COMUNE
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // validazioni generali (prodotto/componente etc..)
 context SOABEModel ERROR "E'necessario specificare il codice prodotto (max 10 caratteri)" :
@@ -27,23 +71,6 @@ context SOABEModel ERROR "E'necessario specificare la versione del componente ne
 
 context SOABEModel ERROR "E' necessario scegliere la Target Platform" :
 	targetPlatform!=null;
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//// Vincoli di elementi non validi per la cartuccia CXF
-///  Check per disabilitare gli elementi WSBinding e PrimitiveType
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-context EJBPABinding ERROR "Il EJBPABinding non è ammesso per la cartuccia basata su framework CXF":
-	false;
-
-context SOAPPABRBinding ERROR "Il SOAPPABRBinding non è ammesso per la cartuccia basata su framework CXF":
-	false;
-
-context WSFADBinding ERROR "Il WSFADBinding non è ammesso per la cartuccia basata su framework CXF":
-	false;
-
-context CSIDatatype ERROR "Il tipo 'CSIDatatype' non è ammesso per la cartuccia basata su framework CXF":
-	false;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,32 +89,21 @@ context Entity ERROR "TD2: almeno una feature dell'entita' "+this.name+" non ha 
 context Entity ERROR "TD3: almeno una feature dell'entita' "+this.name+" non ha tipo":
 	(this.features.select(e|e.type==null).size)==0;
     
-// TD4(ERROR): un csi datatype deve avere un codice tipo specificato
-//context CSIDatatype ERROR "TD4: ogni CSIDatatype deve avere un codice tipo specificato" :
-//    this.code!=null;
-
 // TD5(ERROR): i tipi definiti in "baseTypes" possono essere o semplici o array di semplici
 context BaseTypes ERROR "TD5: i tipi definiti a livello globale possono essere solo tipi semplici o array di tipi semplici" :
 	(this.baseTypes.select(e|e.metaType==Entity).size==0)&&
 	(this.baseTypes.select(e|e.metaType==TypedArray&&((TypedArray)e).componentType.metaType==Entity)).size==0&&
 	(this.baseTypes.select(e|e.metaType==Exception).size==0);
-
-// TD6(ERROR): i tipi definiti nei servizi possono solo essere entity o eccezioni o array di entity
-context Types ERROR "TD6: i tipi definiti nel contesto di un servizio possono solo essere Entity o Array di entity o eccezioni" :
-	this.types.select(e|e.metaType==PrimitiveType).size==0 &&
-	this.types.select(e|e.metaType==TypedArray && ((TypedArray)e).componentType.metaType==PrimitiveType).size==0;
 	
 // TD7(ERROR): un typed array non può contenere classi eccezione nè tipi array
 context TypedArray ERROR "TD7: un array tipato non può contenere eccezioni o tipi array annidati" :
     this.componentType.metaType!=Exception &&
     this.componentType.metaType!=TypedArray;
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // vincoli sulla definizione di servizio
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//context ServiceDef ERROR "Definizione duplicata di servizio con nome "+codServizio :
-//    ((DocumentRoot)this.eRootContainer).model.serviceDefs.select(e|e.codServizio==codServizio).size==1;
 
 // SD1: una definizione di servizio deve avere un nome
 context ServiceDef ERROR "Codice servizio non specificato " :
@@ -101,30 +117,16 @@ context ServiceDef ERROR "Deve essere definito almeno un binding " :
 context ServiceDef ERROR "Il codice servizio deve essere alfanumerico minuscolo e l'unico separatore ammesso è l'underscore" : 
      validateCodServ(this.codServizio);
      
-// SD4: il tipo di ritorno deve essere CSIString in caso di operazione asincrona o pubsub (TODO!!)
-// context Operation ERROR "Un operazione asincrona (p2p o pubsub) deve avere tipo di ritorno CSIString" :
-// 	(opType==OpTypeEnum::synch) ||
-// 	(opType==OpTypeEnum::asynch || opType==OpTypeEnum::notify) && 
-// 		(this.returnType.metaType==CSIDatatype && ((CSIDatatype)returnType).code==CSIDatatypeCodes::CSIString);
-
 // SD5: un servizio pubblico non può avere ruoli associati
-// context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non può avere Ruoli definiti" :
-// 	(this.authLevel==AuthLevelEnum::A0 && this.roles.size==0) || authLevel != AuthLevelEnum::A0; 
+context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non può avere Ruoli definiti" :
+	(this.authLevel==AuthLevelEnum::A0 && this.roles.size==0) || authLevel != AuthLevelEnum::A0; 
 
-// SD6: in un servizio non pubblico tutte le operazioni devono avere almeno un ruolo associato
-// context Operation ERROR "Un operazione appartenente ad un servizio con security non A0 deve avere almeno un ruolo associato" :
-//    (((ServiceDef)this.eContainer).authLevel == AuthLevelEnum::A0) || 
-//    ((((ServiceDef)this.eContainer).authLevel != AuthLevelEnum::A0 && this.authorizedRoles.size>0));
-
-// SD7: in un servizio non pubblico ci deve essere almeno un ruolo definito
-// context ServiceDef ERROR "Il servizio (con security non 'A0') deve definire almeno un ruolo" :
-//     (this.authLevel!=AuthLevelEnum::A0 && this.roles.size!=0) || authLevel == AuthLevelEnum::A0;
-    
 context ServiceDef ERROR "E'necessario specificare il codice prodotto (max 10 caratteri)"+loc() :
 	codProdotto!=null && codProdotto.length<=10;
 
 context ServiceDef ERROR "E'necessario specificare il codice componente (max 20 caratteri)"+loc() :
 	codComponente!=null && codComponente.length<=20;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// cartridge e service component
@@ -134,7 +136,7 @@ context ServiceImpl WARNING
 	"Non è stata specificata la cartuccia di implementazione e/o il tipo di service "+
 	"component: viene assunta la cartuccia ManualImplCartridge, mentre il tipo di service component"+
 	" non è utilizzato "+loc()+", "+this.provides :
-this.implCartridge!=null && this.serviceComponent!=null;
+	this.implCartridge!=null && this.serviceComponent!=null;
 
 context ServiceImpl 
 	if serviceComponent.metaType==OrchestrationFlowCompositeSC && implCartridge==ManualImplCartridge 
@@ -156,11 +158,16 @@ context ServiceImpl
 
 context ResourceBasedSimpleSC ERROR "E' necessario specificare un ResourceSet:" +loc() :
 	resourceSet != null;
-	
-////// WARNINGS ///////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// SERVICEDEF checks
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 context Operation WARNING "Tipo di ritorno non specificato per operazione "+name+": assumo che sia VOID " :
 	this.returnType != null;
-	
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// APPRESOURCES checks
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -25,19 +25,19 @@ e le limitazioni secondo i termini della Licenza.
 
 «REM»
 ==========================================================================================================================
-CLASSE DI BUSINESS
+CLASSI DI BUSINESS (Servizio APPLICATIVO)
 Classe che contiene la vera implementazione del servizio
 ==========================================================================================================================
 «ENDREM»
 
-«DEFINE javaServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
-	«EXPAND javaServiceBusinessInterfaceFile(model) FOR this»
-	«EXPAND javaServiceBusinessClassFile(model) FOR this»
+«DEFINE javaApplServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND javaApplServiceBusinessInterfaceFile(model) FOR this»
+	«EXPAND javaApplServiceBusinessClassFile(model) FOR this»
 «ENDDEFINE»
 
 
 «REM»Interfaccia del delegate«ENDREM»
-«DEFINE javaServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
+«DEFINE javaApplServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.List;
@@ -56,7 +56,7 @@ public interface «serviceBusinessInterfaceName()» {
 
 
 «REM»Classe di implementazione del delegate«ENDREM»
-«DEFINE javaServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«DEFINE javaApplServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.List;
@@ -117,20 +117,20 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceNa
 
 «REM»
 ==========================================================================================================================
-CLASSE DI BUSINESS
+CLASSI DI BUSINESS (Servizio ORCHESTRATO)
 Classe che contiene la vera implementazione del servizio
 ==========================================================================================================================
 «ENDREM»
 
 «DEFINE javaOrchServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND javaOrchServiceBusinessInterfaceFile(model) FOR this»
 	«EXPAND javaOrchServiceBusinessClassFile(model) FOR this»
-	«EXPAND javaServiceBusinessClassFile(model) FOR this»
 «ENDDEFINE»
 
 
 «REM»Interfaccia del delegate«ENDREM»
 «DEFINE javaOrchServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
-«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.List;
 

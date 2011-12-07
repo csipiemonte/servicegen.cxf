@@ -58,7 +58,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 ==========================================================================================================================
 «ENDREM»
 
-«DEFINE springFiles(SOABEModel model, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«DEFINE springFiles(SOABEModel model, boolean useExternalDaoBeans) FOR LogicImplCartridge»
 	«LET (ServiceImpl)eContainer AS impl»
 		«EXPAND springMainFile(model, impl, useExternalDaoBeans) FOR this»
 		«EXPAND applicationContextFile(model, impl, useExternalDaoBeans) FOR this»
@@ -71,7 +71,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 
 
 «REM»Genera il file spring MAIN (file che include tutti gli altri e viene a sua volta chiamato dal contesto«ENDREM»
-«DEFINE springMainFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«DEFINE springMainFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
 «FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"SpringMain.xml"»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" 
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -92,7 +92,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 
 
 «REM»Genera il file di configurazione«ENDREM»
-«DEFINE applicationContextFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«DEFINE applicationContextFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
 «FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"ApplicationContext.xml"»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" 
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -114,7 +114,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 «ENDDEFINE»
 
 
-«DEFINE cxfFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«DEFINE cxfFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
 «FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"Cxf.xml"»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -161,7 +161,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 «ENDDEFINE»
 
 
-«DEFINE daoBeansFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR ManualImplCartridge»
+«DEFINE daoBeansFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
 «FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"Dao-beans.xml"»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

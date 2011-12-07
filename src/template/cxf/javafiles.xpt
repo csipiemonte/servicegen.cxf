@@ -35,9 +35,10 @@ Metodo centralizzato per la generazione delle classi dei servizi
 	
 	«REM»Files della implementation cartridge (classe di business)«ENDREM»
 	«IF this.serviceType==SrvTypeEnum::orch»
-		«EXPAND javaOrchServiceBusinessClassFile(model) FOR this»
+		«EXPAND javaOrchServiceBusinessFiles(model) FOR this»
+		«EXPAND svcflowFiles(model) FOR this»
 	«ELSE»
-		«EXPAND javaApplServiceBusinessClassFile(model) FOR this»
+		«EXPAND javaApplServiceBusinessFiles(model) FOR this»
 	«ENDIF»
 «ENDDEFINE»
 
@@ -141,21 +142,21 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»
 
 «REM»
 ==========================================================================================================================
-CLASSE DI BUSINESS
+CLASSI DI BUSINESS
 Classe che contiene la vera implementazione del servizio
 ==========================================================================================================================
 «ENDREM»
 
 «REM»Classi di business per servizi applicativi«ENDREM»
-«DEFINE javaApplServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«DEFINE javaApplServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
 	«LET getServiceImpl(this, model) AS impl-»
 		«IF impl != null-»
 			«LET impl.serviceComponent AS sc»
 				«LET impl.implCartridge AS crt»
 					«IF crt==null || crt.metaType==ManualImplCartridge»
-						«EXPAND template::cxf::manualimpl::javafiles::javaServiceBusinessFiles(model) FOR this»
+						«EXPAND template::cxf::manualimpl::javafiles::javaApplServiceBusinessFiles(model) FOR this»
 					«ELSEIF crt!=null && crt.metaType==FlowModelImplCartridge»
-						«EXPAND template::cxf::flowmodel::javafiles::javaServiceBusinessFiles(model) FOR this»
+						«EXPAND template::cxf::flowmodel::javafiles::javaApplServiceBusinessFiles(model) FOR this»
 					«ELSE»
 						«ERROR "tipo di cartridge non gestita per implementazione "+impl»
 					«ENDIF»
@@ -169,7 +170,7 @@ Classe che contiene la vera implementazione del servizio
 
 
 «REM»Classi di business per servizi orchestrati«ENDREM»
-«DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«DEFINE javaOrchServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
 	«LET getServiceImpl(this, model) AS impl-»
 		«IF impl != null-»
 			«LET impl.serviceComponent AS sc»
@@ -349,4 +350,17 @@ COMMON METHODS
 «REM»comment«ENDREM»
 «DEFINE exceptionInThrowsClause(SOABEModel model, ServiceDef def) FOR Exception-»
 	«map2JavaTypeSDRelative(this)»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+OS WORKFLOW FILES
+==========================================================================================================================
+«ENDREM»
+
+«REM»Riutilizza le definition di ServiceGen CSi«ENDREM»
+«DEFINE svcflowFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND template::javafiles::svcflowFiles(model) FOR this»
 «ENDDEFINE»
