@@ -250,10 +250,9 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 		 «IF returnType!=null»return «defaultInitVal(returnType)»;«ENDIF»
 	 
 	 // aggiungere qui anche la GESTIONE DELLE ECCEZIONI (log e lancio delle eccezioni corrette)
-	 //} catch (Exception e) {
+	 //} catch (Exception ex) {
 	 //	logger.error("[«implClassName»::«name»] - Errore occorso durante l'esecuzione del metodo:"+ex, ex);
-	 //	throw e;
-	 //}
+	 //	throw ex;
 	 «ENDPROTECT»	
 	} finally {
 		// fine misurazione
