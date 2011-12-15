@@ -85,7 +85,7 @@ Metodo centralizzato per la genarazione del progetto
 
 		«REM»Se c'è almeno una cartridge FlowModelImpl creo le classi base degli handler«ENDREM»
 		«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0»
-			«EXPAND template::flowmodel::handlerfiles::baseHandlers FOR this»
+			«EXPAND template::flowmodel::handlerfiles::baseHandlers("cxf") FOR this»
 		«ENDIF»
 
 		«REM»Risorse della ServiceImplementation«ENDREM»

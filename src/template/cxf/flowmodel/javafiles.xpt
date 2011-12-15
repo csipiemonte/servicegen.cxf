@@ -152,12 +152,16 @@ public interface «serviceBusinessInterfaceName()» {
 «DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
+import java.util.HashMap;
 import java.util.List;
 
 import «fullQualifiedEntitiesPkg(codServizio, model)».*;
 import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
 
 import org.apache.log4j.*;
+
+import it.csi.svcflow.orchestrator.engine.OswMainEngine;
+import com.opensymphony.workflow.WorkflowException;
 
 «PROTECT CSTART '/*' CEND '*/' ID getRegionUID("extraImport"+codServizio)»
 // aggiungere qui eventuali import aggiuntive.
@@ -269,9 +273,66 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
 )«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
+	Logger logger = getLogger(null);
+	logger.debug("[«implClassName»::«name»] - START");
 
-	«REM»TODO: AGGIUNGERE IMPLEMENTAZIONE«ENDREM»
-	«IF returnType!=null»return «defaultInitVal(returnType)»;«ENDIF»
+	// inizio misurazione
+	it.csi.util.performance.StopWatch watcher = new it.csi.util.performance.StopWatch("«model.codComponente»");
+	watcher.start();
+
+	String remoteUser = "<???>";
+	String workflowDescriptor = "«removeSeparator(def.codServizio)+name.toFirstUpper()»";
+	HashMap persistentParams = new HashMap();
+
+	try {
+		// inserimento nel context dei parametri del metodo (senza trasformazioni)
+	 	«FOREACH params AS currPar-»
+	 	persistentParams.put("input.parameter.«currPar.name»", «currPar.name»);
+	 	«ENDFOREACH-»
+
+		// inizializzazione e richiamo del flusso
+		try {
+			OswMainEngine.esecuzioneWorkflow(remoteUser, workflowDescriptor, new Integer(0), persistentParams);
+		}
+		catch(WorkflowException wfe) {
+			logger.error("[«implClassName»::«name»] - errore non gestito nell'esecuzione del flusso", wfe);
+			throw new javax.xml.ws.WebServiceException("Errore non gestito nell'esecuzione del flusso: "+wfe.getMessage(), wfe);
+		}
+	 
+	 	Object retVal = persistentParams.get("result");
+     	// se il valore di ritorno e' un'eccezione occorre rilanciarla (anche se metodo void)
+      	if (retVal != null && retVal instanceof Throwable) {
+     		«errorLog(implClassName, this.name, "Errore occorso nell'esecuzione del flusso\"+retVal+\"","(Throwable)retVal" )»
+     		throw (Throwable)retVal;
+     	}
+		«IF returnType!=null-»
+     	else {
+     		return («map2javaWsType(returnType, def.codServizio, model)»)persistentParams.get("result");
+     	}
+		«ENDIF-»
+	} catch(Throwable ex){
+		«EXPAND throwsCatch(model, def, implClassName) FOR this-»
+	} finally {
+		// fine misurazione
+		watcher.stop();
+		watcher.dumpElapsed("«implClassName»", "«name»()", "invocazione servizio [«removeSeparator(def.codServizio)»]::[«name»]", "(valore input omesso)");
+		logger.debug("[«implClassName»::«name»] - END");
+	}
 
 }
+«ENDDEFINE»
+
+
+«REM»Gestione e rilancio delle eccezioni («ENDREM»
+«DEFINE throwsCatch(SOABEModel model, ServiceDef def, String implClassName) FOR Operation-»
+«FOREACH this.throws AS exc ITERATOR i -»
+        «IF !i.firstIteration»} else «ENDIF»if (ex instanceof «map2JavaTypeSDRelative(exc)») {
+        	logger.error("[«implClassName»::«name»] - Errore occorso durante l'esecuzione del metodo:"+ex, ex);
+     		throw («map2JavaTypeSDRelative(exc)»)ex;
+        }
+«ENDFOREACH-»
+        else {
+			logger.error("[«implClassName»::«name»] - Errore imprevisto occorso durante l'esecuzione del metodo:"+ex, ex);
+			throw new javax.xml.ws.WebServiceException("Errore imprevisto occorso durante l'esecuzione del metodo:"+ex, ex);
+		} 
 «ENDDEFINE»

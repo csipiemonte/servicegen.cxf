@@ -365,3 +365,19 @@ context CheckCondition ERROR "E'necessario specificare il nodo corrispondente al
 context CheckCondition if elseNode!=null ERROR "il nodo 'else' non può essere il nodo CheckCondition stesso:"+loc() :
 	elseNode!=this;
 	
+
+//cod binding names
+context WSBinding ERROR "Il parametro CodBinding deve valere ws nel caso di WSBinding: "+loc():
+	this.codBinding=="ws";
+
+context EJBPABinding ERROR "Il parametro CodBinding deve valere ejbpa nel caso di EJBPABinding: "+loc():
+	this.codBinding=="ejbpa";
+	
+context WSFADBinding ERROR "Il parametro CodBinding deve valere wsfad nel caso di WSFADBinding: "+loc():
+	this.codBinding=="wsfad";		
+	
+context SOAPPABRBinding ERROR "Il parametro CodBinding deve valere pabr nel caso di SOAPPABRBinding: "+loc():
+	this.codBinding=="pabr";	
+	
+context ServiceBinding ERROR "Il parametro codBinding deve essere valorizzato : "+loc()	:
+	this.codBinding != null && this.codBinding.length>0;

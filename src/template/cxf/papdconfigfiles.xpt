@@ -27,6 +27,12 @@ e le limitazioni secondo i termini della Licenza.
 «EXTENSION template::cxf::ServicegenCxfExtensions»
 
 
+«REM»
+==========================================================================================================================
+RESOURCE CONNECTOR FILES PER C.S.I
+==========================================================================================================================
+«ENDREM»
+
 «REM»Delego al template ServiceGen CSI la creazione del file PD nella directory corretta«ENDREM»
 «DEFINE defpdejbclientfile(SOABEModel model, ServiceDef sd, ServiceDef context, TargetPlatformCodes paplatform, String pdPluginFQN, String customPAJndi) FOR EJBPABinding»
 	«EXPAND template::papdconfigfiles::defpdejbfile(model, sd, getSpecificPdConfigRootDir(context.codServizio, model)+"/"+pdEJBDefFileName(sd), paplatform, pdPluginFQN, customPAJndi) FOR this»
@@ -40,5 +46,54 @@ e le limitazioni secondo i termini della Licenza.
 
 «REM»PD Selector«ENDREM»
 «DEFINE pdSelectorFile(ServiceDef context, SOABEModel model) FOR PDPAServiceConnector»
-	«EXPAND template::papdconfigfiles::pdSelectorFile(context, model,getSpecificPdConfigRootDir(context.codServizio, model)+"/"+pdSelectorFileName()) FOR this»
+	«EXPAND template::papdconfigfiles::pdSelectorFile(context, model, getSpecificPdConfigRootDir(context.codServizio, model)+"/"+pdSelectorFileName()) FOR this»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+RESOURCE CONNECTOR FILES PER CXF
+==========================================================================================================================
+«ENDREM»
+
+«REM»File Spring di definizione del client«ENDREM»
+«DEFINE cxfClientConfigFile(ServiceDef context, SOABEModel model, ServiceDef sd) FOR RPCWebServiceConnector»
+«FILE getSpecificWscliConfigRootDir(context.codServizio, model) +"/"+sd.codServizio.toLowerCase()+"ClientCxf.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:cxf="http://cxf.apache.org/core"
+	   xmlns:http="http://cxf.apache.org/transports/http/configuration"
+	   xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:sec="http://cxf.apache.org/configuration/security"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+						   http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+						   http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+						   http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+						   http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd">
+
+	<!-- import CXF resources -->
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+
+	<!-- the client bean -->
+	<bean id="«wsCallClientBeanId(sd)»"
+		  class="«fullQualifiedWebServiceInterfaceName(sd)»"
+		  factory-bean="«wsCallClientFactoryBeanId(sd)»"
+		  factory-method="create"/>
+
+	<!-- and its factory -->
+	<bean id="«wsCallClientFactoryBeanId(sd)»" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="address" value="«getWSURLPlaceHolder(sd)»" />
+	</bean>
+
+
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+sd.codServizio+"cxf.client")»
+	<!-- Other CXF configurations (bus, conduit, security, ecc) -->	
+	«ENDPROTECT»
+
+</beans>
+«ENDFILE»
 «ENDDEFINE»

@@ -71,9 +71,9 @@ RESOURCE CONNECTOR FILES
 «ENDDEFINE»
 
 
-«REM»PDPAServiceConnector: delego alle definizioni di servicegen la generazione«ENDREM»
+«REM»RPCWebServiceConnector«ENDREM»
 «DEFINE resourceConnectorFiles(ServiceDef context, SOABEModel model) FOR RPCWebServiceConnector»
-	«ERROR "tipo di risorsa "+this.metaType+" non gestito"»«REM»TODO: IMPLEMENTARE«ENDREM»
+	«EXPAND template::cxf::papdconfigfiles::cxfClientConfigFile(context, model, this.serviceDef) FOR this»
 «ENDDEFINE»
 
 

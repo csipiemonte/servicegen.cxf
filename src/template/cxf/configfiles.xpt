@@ -18,6 +18,7 @@ e le limitazioni secondo i termini della Licenza.
 «IMPORT servicegen»
 «IMPORT servicedef»
 «IMPORT typedef»
+«IMPORT appresources»
 «IMPORT template::cxf::j2eeconfigfiles»
 
 «EXTENSION template::ServicegenExtensions»
@@ -86,6 +87,16 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
     <!-- CXF SERVICES CONFIGURATION -->
 	<import resource="«impl.provides.codServizio.toLowerCase()»Cxf.xml" />
 
+	«REM»
+	«LET getAllResourceConnectors(model) AS allResConn-»
+	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+     <!-- CXF CLIENT CONFIGURATION for «((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio» WS -->
+	<import resource="«((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio.toLowerCase()»ClientCxf.xml" />   
+    «ENDFOREACH-»
+	«ENDIF-»
+	«ENDLET-»
+	«ENDREM»
 </beans>
 «ENDFILE»
 «ENDDEFINE»

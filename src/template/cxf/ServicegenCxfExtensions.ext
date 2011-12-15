@@ -50,12 +50,19 @@ String getSpecificPdConfigRootDir(String codServizio, SOABEModel model) :
   getPdConfigRootDir(model)+"/"+removeSeparator(codServizio);
 
 
+String getWscliConfigRootDir(SOABEModel model) :
+  getConfigRootDir(model)+"/ws";
+
+String getSpecificWscliConfigRootDir(String codServizio, SOABEModel model) :
+  getWscliConfigRootDir(model)+"/"+removeSeparator(codServizio);
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///// NAMING PACKAGE JAVA
 	
 // full qualified name dell'interfaccia del servizio (SEI)
-String fullQualifiedWebServiceInterfacePkg(servicedef::ServiceDef sd, SOABEModel model) :
-    getOrganizationNamePkgPrefix()+"."+model.codProdotto.toLowerCase()+"."+model.codComponente.toLowerCase()+".interfacews."+removeSeparator(sd.codServizio);	
+String fullQualifiedWebServiceInterfacePkg(ServiceDef sd, SOABEModel model) :
+    getOrganizationNamePkgPrefix()+"."+model.codProdotto.toLowerCase()+"."+model.codComponente.toLowerCase()+".interfacews."+removeSeparator(sd.codServizio);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,6 +76,16 @@ String serviceBusinessInterfaceName(ServiceDef sd) :
 	
 String serviceBusinessClassName(ServiceDef sd) :
 	toCamel(sd.codServizio)+"BusinessImpl";
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//// NAMING BEAN SPRING
+
+String wsCallClientBeanId(ServiceDef sd) :
+	toCamel(sd.codServizio).toFirstLower()+"Client";
+
+String wsCallClientFactoryBeanId(ServiceDef sd) :
+	wsCallClientBeanId(sd)+"Factory";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +123,6 @@ boolean hasAttachment(List[Operation] operations) : JAVA
 	it.csi.mddtools.servicegen.cxf.genutils.CodeGenetationUtils.hasAttachment(java.util.List);
 
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///// GENERAZIONE ELEMENTI JAVA
 
@@ -123,6 +139,19 @@ String getWsTargetNamespaceAnnotation(ServiceDef sd, SOABEModel model) :
 		", targetNamespace = \"" + sdannTns + "\""
 	else
 		"";
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+///// VARIABILI DI BUILD
+
+String getWSVarsPrefix(ServiceDef sd) :
+	removeSeparator(sd.codProdotto)+"."+removeSeparator(sd.codComponente)+"."+removeSeparator(sd.codServizio);
+	
+String getWSURLVar(ServiceDef sd) :
+	getWSVarsPrefix(sd)+".ws.url";
+
+String getWSURLPlaceHolder(ServiceDef sd) :
+	"@"+getWSURLVar(sd)+"@";
 
 
 
