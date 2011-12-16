@@ -18,6 +18,7 @@ e le limitazioni secondo i termini della Licenza.
 «IMPORT servicegen»
 «IMPORT servicedef»
 «IMPORT typedef»
+«IMPORT appresources»
 
 «EXTENSION template::ServicegenExtensions»
 «EXTENSION template::cxf::ServicegenCxfExtensions»
@@ -36,7 +37,9 @@ Classe che contiene la vera implementazione del servizio
 «ENDDEFINE»
 
 
-«REM»Interfaccia del delegate«ENDREM»
+«REM»
+Interfaccia del delegate
+«ENDREM»
 «DEFINE javaApplServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
@@ -55,7 +58,9 @@ public interface «serviceBusinessInterfaceName()» {
 «ENDDEFINE»
 
 
-«REM»Classe di implementazione del delegate«ENDREM»
+«REM»
+Classe di implementazione del delegate
+«ENDREM»
 «DEFINE javaApplServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
@@ -129,7 +134,9 @@ Classe che contiene la vera implementazione del servizio
 «ENDDEFINE»
 
 
-«REM»Interfaccia del delegate«ENDREM»
+«REM»
+Interfaccia del delegate
+«ENDREM»
 «DEFINE javaOrchServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
@@ -148,7 +155,9 @@ public interface «serviceBusinessInterfaceName()» {
 «ENDDEFINE»
 
 
-«REM»Classe di implementazione del delegate«ENDREM»
+«REM»
+Classe di implementazione del delegate
+«ENDREM»
 «DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
@@ -177,7 +186,9 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceNa
 	 * @generated
 	 */
 	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto,model.codComponente)»";
-	
+
+	«EXPAND wsCallClientClassInjection(model) FOR this-»
+
 	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implLocalVars"+codServizio)»
 	// inserire qui la definizione di varibili locali o costanti dell'implementazione.
 	// non verranno sovrascritte da successive rigenerazioni
@@ -200,7 +211,7 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceNa
 		}
 	}
 
-	
+
 	/*
 	 * Eventuali metodi aggiuntivi
 	 */
@@ -210,6 +221,31 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceNa
 	«ENDPROTECT»
 }
 «ENDFILE»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE wsCallClientClassInjection(SOABEModel model) FOR ServiceDef»
+	«LET getAllResourceConnectors(model) AS allResConn-»
+	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+	«LET ((RPCWebServiceConnector)currRPCWSC).serviceDef AS currServiceDef-»
+	/**
+	 * CXF CLIENT for «currServiceDef.codServizio» WS
+	 */
+	private «fullQualifiedWebServiceInterfaceName(currServiceDef)» «wsCallClientBeanId(currServiceDef)»;
+	
+	public «fullQualifiedWebServiceInterfaceName(currServiceDef)» get«wsCallClientBeanId(currServiceDef).toFirstUpper()»() {
+		return «wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef)»;
+	}
+
+	public void set«wsCallClientBeanId(currServiceDef).toFirstUpper()»(«fullQualifiedWebServiceInterfaceName(currServiceDef)» «wsCallClientBeanId(currServiceDef)») {
+		this.«wsCallClientBeanId(currServiceDef)» = «wsCallClientBeanId(currServiceDef)»;
+	}
+	«ENDLET-»
+    «ENDFOREACH-»
+	«ENDIF-»
+	«ENDLET-»
 «ENDDEFINE»
 
 
@@ -290,6 +326,8 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	 	persistentParams.put("input.parameter.«currPar.name»", «currPar.name»);
 	 	«ENDFOREACH-»
 
+		«EXPAND wsCallClientParameters(model) FOR this-»
+
 		// inizializzazione e richiamo del flusso
 		try {
 			OswMainEngine.esecuzioneWorkflow(remoteUser, workflowDescriptor, new Integer(0), persistentParams);
@@ -336,3 +374,19 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 			throw new javax.xml.ws.WebServiceException("Errore imprevisto occorso durante l'esecuzione del metodo:"+ex, ex);
 		} 
 «ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE wsCallClientParameters(SOABEModel model) FOR Operation»
+	«LET getAllResourceConnectors(model) AS allResConn-»
+	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+	// inserimento nel context dei client per il wscall
+	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+	«LET ((RPCWebServiceConnector)currRPCWSC).serviceDef AS currServiceDef-»
+	persistentParams.put("wscall.client.«wsCallClientBeanId(currServiceDef)»", get«wsCallClientBeanId(currServiceDef).toFirstUpper()»());
+	«ENDLET-»
+    «ENDFOREACH-»
+	«ENDIF-»
+	«ENDLET-»
+«ENDDEFINE»
+

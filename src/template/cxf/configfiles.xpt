@@ -78,8 +78,22 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
+	<!-- CENTRALIZED CXF resources import -->
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
 	<!-- DB CONFIGURATION AND DAO -->
 	<import resource="«impl.provides.codServizio.toLowerCase()»Dao-beans.xml" />
+
+	«LET getAllResourceConnectors(model) AS allResConn-»
+	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+     <!-- CXF CLIENT CONFIGURATION for «((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio» WS -->
+	<import resource="classpath:«((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio.toLowerCase()»ClientCxf.xml" />   
+    «ENDFOREACH-»
+	«ENDIF-»
+	«ENDLET-»
 
     <!-- BUSINESS CONFIGURATION -->
     <import resource="«impl.provides.codServizio.toLowerCase()»ApplicationContext.xml" />
@@ -87,16 +101,6 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
     <!-- CXF SERVICES CONFIGURATION -->
 	<import resource="«impl.provides.codServizio.toLowerCase()»Cxf.xml" />
 
-	«REM»
-	«LET getAllResourceConnectors(model) AS allResConn-»
-	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
-	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
-     <!-- CXF CLIENT CONFIGURATION for «((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio» WS -->
-	<import resource="«((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio.toLowerCase()»ClientCxf.xml" />   
-    «ENDFOREACH-»
-	«ENDIF-»
-	«ENDLET-»
-	«ENDREM»
 </beans>
 «ENDFILE»
 «ENDDEFINE»
@@ -115,9 +119,18 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 	
 	
 	<bean id="«impl.provides.codServizio»BL" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceBusinessClassName(impl.provides)»">
-	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+serviceImplBeanId(impl.provides))»
-	<!-- Insert here «impl.provides.codServizio» bean properties (Dao, customBeans, etc...) -->
-	«ENDPROTECT»
+		«LET getAllResourceConnectors(model) AS allResConn-»
+		«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+		«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+		<!-- CXF CLIENT for «((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio» WS -->
+		<property name="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef)»" ref="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef)»" />
+	    «ENDFOREACH-»
+		«ENDIF-»
+		«ENDLET-»
+
+		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+serviceImplBeanId(impl.provides))»
+		<!-- Insert here «impl.provides.codServizio» bean properties (Dao, customBeans, etc...) -->
+		«ENDPROTECT»
 	</bean>
 
 </beans>
@@ -138,12 +151,6 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 						   http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
 						   http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
 						   http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd">
-
-	<!-- import CXF resources -->
-	<import resource="classpath:META-INF/cxf/cxf.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-
 
 	<!-- web service implementation definition -->
 	<bean id="«serviceImplBeanId(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceImplClassName(impl.provides)»">

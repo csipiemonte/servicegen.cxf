@@ -36,7 +36,9 @@ Classe che contiene la vera implementazione del servizio
 «ENDDEFINE»
 
 
-«REM»Interfaccia del delegate«ENDREM»
+«REM»
+Interfaccia del delegate
+«ENDREM»
 «DEFINE javaApplServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
@@ -55,7 +57,9 @@ public interface «serviceBusinessInterfaceName()» {
 «ENDDEFINE»
 
 
-«REM»Classe di implementazione del delegate«ENDREM»
+«REM»
+Classe di implementazione del delegate
+«ENDREM»
 «DEFINE javaApplServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
@@ -128,7 +132,9 @@ Classe che contiene la vera implementazione del servizio
 «ENDDEFINE»
 
 
-«REM»Interfaccia del delegate«ENDREM»
+«REM»
+Interfaccia del delegate
+«ENDREM»
 «DEFINE javaOrchServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
 «FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 

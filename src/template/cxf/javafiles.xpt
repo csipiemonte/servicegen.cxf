@@ -362,5 +362,5 @@ OS WORKFLOW FILES
 
 «REM»Riutilizza le definition di ServiceGen CSi«ENDREM»
 «DEFINE svcflowFiles(SOABEModel model) FOR ServiceDef»
-	«EXPAND template::javafiles::svcflowFiles(model) FOR this»
+	«EXPAND template::javafiles::svcflowFiles(model, "cxf") FOR this»
 «ENDDEFINE»

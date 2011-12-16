@@ -58,7 +58,7 @@ RESOURCE CONNECTOR FILES PER CXF
 «ENDREM»
 
 «REM»File Spring di definizione del client«ENDREM»
-«DEFINE cxfClientConfigFile(ServiceDef context, SOABEModel model, ServiceDef sd) FOR RPCWebServiceConnector»
+«DEFINE cxfClientConfigFile(ServiceDef context, SOABEModel model, ServiceDef sd, boolean includeCxfImports) FOR RPCWebServiceConnector»
 «FILE getSpecificWscliConfigRootDir(context.codServizio, model) +"/"+sd.codServizio.toLowerCase()+"ClientCxf.xml"»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -71,12 +71,12 @@ RESOURCE CONNECTOR FILES PER CXF
 						   http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
 						   http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
 						   http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd">
-
+	«IF includeCxfImports»
 	<!-- import CXF resources -->
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-
+	«ENDIF»
 
 	<!-- the client bean -->
 	<bean id="«wsCallClientBeanId(sd)»"
@@ -86,6 +86,7 @@ RESOURCE CONNECTOR FILES PER CXF
 
 	<!-- and its factory -->
 	<bean id="«wsCallClientFactoryBeanId(sd)»" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass" value="«fullQualifiedWebServiceInterfaceName(sd)»"/>
 		<property name="address" value="«getWSURLPlaceHolder(sd)»" />
 	</bean>
 
