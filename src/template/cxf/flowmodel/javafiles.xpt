@@ -70,6 +70,10 @@ import «fullQualifiedEntitiesPkg(codServizio, model)».*;
 import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
 
 import org.apache.log4j.*;
+«IF this.operations.select(e|e.txType==servicedef::TXTypeEnum::newLocalTX).size > 0-»
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+«ENDIF-»
 
 «PROTECT CSTART '/*' CEND '*/' ID getRegionUID("extraImport"+codServizio)»
 // aggiungere qui eventuali import aggiuntive.
@@ -168,6 +172,10 @@ import «fullQualifiedEntitiesPkg(codServizio, model)».*;
 import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
 
 import org.apache.log4j.*;
+«IF this.operations.select(e|e.txType==servicedef::TXTypeEnum::newLocalTX).size > 0-»
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+«ENDIF-»
 
 import it.csi.svcflow.orchestrator.engine.OswMainEngine;
 import com.opensymphony.workflow.WorkflowException;
@@ -267,6 +275,10 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 
 «REM»Genera ciascuna operation (metodo) del servizio«ENDREM»
 «DEFINE operationImplemetation(SOABEModel model, ServiceDef def, String implClassName) FOR Operation»
+/**
+ * @generated
+ */
+«IF this.txType==TXTypeEnum::newLocalTX-»@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)«ENDIF-»
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
 )«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
@@ -306,6 +318,10 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 
 «REM»Genera ciascuna operation (metodo) del servizio«ENDREM»
 «DEFINE operationOrchImplementation(SOABEModel model, ServiceDef def, String implClassName) FOR Operation»
+/**
+ * @generated
+ */
+«IF this.txType==TXTypeEnum::newLocalTX-»@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)«ENDIF-»
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
 )«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
