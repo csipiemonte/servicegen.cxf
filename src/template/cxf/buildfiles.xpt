@@ -265,7 +265,7 @@ creazione del build.xml per ANT
 
 		<ear appxml="${temp}/conf/ear/application.xml"
 		     destfile="${build}/archives/${target}/${ear-file-name}.ear">
-			<fileset dir="${build}/archives/${target}" includes="*.jar,*.war" excludes="*client*.jar" />
+			<fileset dir="${build}/archives/${target}" includes="*.jar,*.war" excludes="*client*.jar,*common.jar" />
 			<fileset dir="${temp}/${target}">
 				<include name="**/*" />
 			</fileset>
@@ -401,9 +401,11 @@ creazione del build.xml per ANT
 		<jar destfile="${build}/archives/${target}/«this.codComponente»-common.jar"
 		     basedir="${build}/classes"
 		     includes="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/business/**,
+		               «getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/integration/**,
 		               «getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/util/**">
 			«FOREACH getProvidedServices() AS sd-»
 			<exclude name="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/business/«removeSeparator(sd.codServizio)»/**" />
+			<exclude name="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/integration/«removeSeparator(sd.codServizio)»/**" />
 			«ENDFOREACH-»
 		</jar>
 	</target>
@@ -864,6 +866,16 @@ creazione del file di configurazione IVY
 			<artifact name="weblogic-client-3.0.0" type="jar" />
 		</dependency>
 		«ENDIF-»
+
+		<!-- librerie per l'implementazione di monitoraggio e diagnostica -->
+		<dependency org="csipiemonte" name="coop-diag" rev="1.2.1" transitive="false">
+			<artifact name="coop-diag-1.2.1" type="jar" />
+		</dependency>
+		
+	    <!-- librerie necessarie se si attiva il supporto coop trace -->
+	    <dependency org="csipiemonte" name="coop-trace" rev="1.2.0">
+	    	<artifact name="coop-trace-1.2.0" type="jar" />
+	    </dependency>
 
 		«LET getAllResourceConnectors(this) AS allResConn-»
 
