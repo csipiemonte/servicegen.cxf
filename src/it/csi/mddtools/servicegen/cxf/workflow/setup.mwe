@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<workflow>
+
+	<!-- Properties file -->
+	<component class="org.eclipse.xtend.util.stdlib.PropertiesReader">
+  		<propertiesFile value="src/workflow/workflow.properties"/>
+	</component>
+
+	<!-- set up EMF for standalone execution -->
+	<bean class="org.eclipse.emf.mwe.utils.StandaloneSetup">
+		<platformUri value=".." />
+		<registerGeneratedEPackage value="it.csi.mddtools.servicegen.ServicegenPackage"/>
+		<registerGeneratedEPackage value="it.csi.mddtools.servicedef.ServicedefPackage"/>
+		<registerGeneratedEPackage value="it.csi.mddtools.typedef.TypedefPackage"/>
+		<registerGeneratedEPackage value="it.csi.mddtools.appresources.AppresourcesPackage"/>
+		<registerGeneratedEPackage value="it.csi.mddtools.svcorch.SvcorchPackage"/>
+	</bean>
+
+</workflow>

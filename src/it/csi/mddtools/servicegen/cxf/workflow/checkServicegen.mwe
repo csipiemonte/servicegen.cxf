@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<workflow>
+
+	<!-- Properties file (not neeed) -->
+	<!--<component class="org.eclipse.xtend.util.stdlib.PropertiesReader">
+  		<propertiesFile value="src/workflow/workflow.properties"/>
+	</component>-->
+
+	<!-- ??? -->
+	<!--<property name="model" value="${modelfile}" />-->
+
+	<!-- load model and store it in slot 'model' -->
+	<component class="org.eclipse.emf.mwe.utils.Reader">
+		<!-- usare se modalita' a plugin -->
+		<uri value="platform:/resource/${model}" />
+
+		<!-- invariante rispetto alla modalita'-->
+		<modelSlot value="model" />
+	</component>
+
+	<!-- check model -->
+	<component class="org.eclipse.xtend.check.CheckComponent">
+		<metaModel id="mm"
+			class="org.eclipse.xtend.typesystem.emf.EmfRegistryMetaModel"/>
+		<checkFile value="metamodel::ServicegenCXFChecks" />
+		<emfAllChildrenSlot value="model" />
+	</component>
+
+</workflow>

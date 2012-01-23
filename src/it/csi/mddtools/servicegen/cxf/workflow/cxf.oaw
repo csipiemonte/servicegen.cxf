@@ -1,66 +1,20 @@
 <?xml version="1.0"?>
 <workflow>
-	<component class="oaw.util.stdlib.PropertiesReader">
-  		<propertiesFile value="src/workflow/workflow.properties"/>
-	</component>
-	
-	<property name="useExternalDaoBeans" value="true"/>
-	
-	<property name="src-gen" value="../${targetProjectName}" />
-	
-	<!-- TRACK! -->
-	<bean class="it.csi.mddtools.servicegen.workflow.component.TrackingInvoker">
-		<modelName value="${model}"/>
-		<targetProjectName value="${targetProjectName}"/>
-		<track value="true"/>
-	</bean>
-	
-	<!-- set up EMF for standalone execution -->
-	<bean class="org.eclipse.mwe.emf.StandaloneSetup" >
-		<platformUri value=".." />
-		<registerGeneratedEPackage value="it.csi.mddtools.servicegen.ServicegenPackage"/>
-		<registerGeneratedEPackage value="it.csi.mddtools.servicedef.ServicedefPackage"/>
-		<registerGeneratedEPackage value="it.csi.mddtools.typedef.TypedefPackage"/>
-		<registerGeneratedEPackage value="it.csi.mddtools.appresources.AppresourcesPackage"/>
-		<registerGeneratedEPackage value="it.csi.mddtools.svcorch.SvcorchPackage"/>
-	</bean>
 
-	<!-- Clean de build directory -->
-	<component class="org.openarchitectureware.workflow.common.DirectoryCleaner">
-		<directory value="${src-gen}/build" />
-	</component>
-	
-	<component class="org.eclipse.mwe.emf.Reader">
-		<!-- usare se modalita' a plugin -->
-		<uri value="platform:/resource/${model}" />
-		
-		<!-- usare se modalita' standalone -->
-		<!--<uri value="${modelfile}" />-->
-		
-		<!-- invariante rispetto alla modalita'-->
-		<modelSlot value="model" />
-	</component>
+	<!-- EXTERNAL DAO: valore di default se non specificato -->
+	<property name="useExternalDaoBeans" value="false" />
 
-	<!-- check model -->
-	<component class="oaw.check.CheckComponent">
-		<metaModel id="mm"
-			class="org.eclipse.m2t.type.emf.EmfRegistryMetaModel"/>
-		<checkFile value="metamodel::ServicegenChecks" />
-		<emfAllChildrenSlot value="model" />
-	</component>
-	
-	<!--  generate code -->
-	<component class="org.openarchitectureware.xpand2.Generator">
-		<metaModel idRef="mm"/>
-		<expand
-			value="template::cxf::Main::main(${useExternalDaoBeans}) FOR model" />
-		<!-- protected regions configurator -->
-		<prSrcPaths value="${src-gen}" />
-		<prDefaultExcludes value="true"/>
-		<prExcludes value="*.jar, *.svn-base, .metadata"/>
-		<outlet path="${src-gen}" >
-			 <postprocessor class="org.openarchitectureware.xpand2.output.JavaBeautifier"/>
-		</outlet>
-		
-	</component>
+
+	<!-- ***************************************************
+         ALIAS per cxf.mwe
+         Lasciata per retrocompatibilita', si limita a invocare la nuova cartuccia MWE
+         passando i parametri ricevuti
+	-->
+
+	<cartridge file="it/csi/mddtools/servicegen/cxf/workflow/cxf.mwe"
+		model="${model}"
+		targetProjectName="${targetProjectName}"
+		useExternalDaoBeans="${useExternalDaoBeans}"
+	/>
+
 </workflow>

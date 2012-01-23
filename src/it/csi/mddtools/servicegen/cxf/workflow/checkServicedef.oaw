@@ -1,24 +1,14 @@
 <?xml version="1.0"?>
 <workflow>
 
-	<!--  -->
-	<property name="model" value="${modelfile}" />-->
+	<!-- ***************************************************
+         ALIAS per checkServicedef.mwe
+         Lasciata per retrocompatibilita', si limita a invocare la nuova cartuccia MWE
+         passando i parametri ricevuti
+	-->
 
-	<!--  -->	
-	<component class="org.eclipse.mwe.emf.Reader">
-		<!-- usare se modalita' a plugin -->
-		<uri value="platform:/resource/${model}" />
-		
-		<!-- invariante rispetto alla modalita'-->
-		<modelSlot value="model" />
-	</component>
-
-	<!-- check model -->
-	<component class="oaw.check.CheckComponent">
-		<metaModel id="mm"
-			class="org.eclipse.m2t.type.emf.EmfRegistryMetaModel"/>
-		<checkFile value="check::ServicegenCXFChecks" />
-		<emfAllChildrenSlot value="model" />
-	</component>
+	<cartridge file="it/csi/mddtools/servicegen/cxf/workflow/checkServicedef.mwe"
+		model="${model}"
+	/>
 
 </workflow>
