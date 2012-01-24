@@ -32,10 +32,13 @@
 		<registerGeneratedEPackage value="it.csi.mddtools.svcorch.SvcorchPackage"/>
 	</bean>
 
-	<!-- Clean de build directory -->
-	<component class="org.eclipse.emf.mwe.utils.DirectoryCleaner">
-		<directory value="${src-gen}/build" />
-	</component>
+	<!-- Clean the build directory -->
+	<component class="org.eclipse.emf.mwe.utils.DirectoryCleaner"
+	           directory="${src-gen}/build/cache" />
+	<component class="org.eclipse.emf.mwe.utils.DirectoryCleaner"
+	           directory="${src-gen}/build/classes" />
+	<component class="org.eclipse.emf.mwe.utils.DirectoryCleaner"
+		       directory="${src-gen}/build/temp/conf" />
 
 	<!-- load model and store it in slot 'model' -->
 	<component class="org.eclipse.emf.mwe.utils.Reader">
@@ -65,7 +68,7 @@
 		<!-- protected regions configurator -->
 		<prSrcPaths value="${src-gen}" />
 		<prDefaultExcludes value="true"/>
-		<prExcludes value="*.jar, *.svn-base, .metadata"/>
+		<prExcludes value="*.ear, *.war, *.jar, *.zip, *.class, *.svn-base, .metadata"/>
 		<outlet path="${src-gen}" >
 			 <postprocessor class="org.eclipse.xpand2.output.JavaBeautifier"/>
 		</outlet>
