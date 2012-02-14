@@ -1,4 +1,3 @@
-import csiserviceapp;
 import typedef;
 import servicedef;
 import appresources;
@@ -7,7 +6,7 @@ import servicegen;
 
 extension template::ServicegenExtensions;
 extension template::flowmodel::FlowModelExtensions;
-extension org::openarchitectureware::util::stdlib::naming;
+extension org::eclipse::xtend::util::stdlib::naming;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,13 +30,17 @@ context CSIDatatype ERROR "Il tipo 'CSIDatatype' non è ammesso per la cartuccia 
 context Operation ERROR "Sono ammesse solamente operazioni SINCRONE" :
 	opType==OpTypeEnum::synch;
 
+// Sono ammessi unicamente servizi con livello di securizzazione A0 o A1
+context ServiceDef ERROR "Sono ammessi unicamente servizi con livello di securizzazione A0 (pubblici) o A1 (authentication)" :
+	this.authLevel==AuthLevelEnum::A0 || this.authLevel==AuthLevelEnum::A1;
+
 // SD5: un servizio pubblico non può avere ruoli associati
-context ServiceDef ERROR "Sono ammessi unicamente servizi con livello di securizzazione A0 (pubblici)" :
-	this.authLevel==AuthLevelEnum::A0;
+context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non può avere Ruoli definiti" :
+	(this.authLevel==AuthLevelEnum::A0 && this.roles.size==0) || authLevel != AuthLevelEnum::A0; 
 
 // SD7: in un servizio non pubblico ci deve essere almeno un ruolo definito
-context ServiceDef ERROR "Un servizio con security 'A0' NON deve definire nessun ruolo" :
-	this.authLevel==AuthLevelEnum::A0 && this.roles.size==0;
+context ServiceDef ERROR "Il servizio (con security non 'A0') deve definire almeno un ruolo" :
+    (this.authLevel!=AuthLevelEnum::A0 && this.roles.size!=0) || authLevel == AuthLevelEnum::A0;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -40,6 +40,11 @@ Metodo centralizzato per la generazione delle classi dei servizi
 	«ELSE»
 		«EXPAND javaApplServiceBusinessFiles(model) FOR this»
 	«ENDIF»
+	
+	«REM»Helper per il recupero del Principal (Autenticazione)«ENDREM»
+	«IF this.authLevel!=AuthLevelEnum::A0»
+		«EXPAND javaAuthenticationHelperFile(model) FOR this»
+	«ENDIF»
 «ENDDEFINE»
 
 
@@ -363,4 +368,121 @@ OS WORKFLOW FILES
 «REM»Riutilizza le definition di ServiceGen CSi«ENDREM»
 «DEFINE svcflowFiles(SOABEModel model) FOR ServiceDef»
 	«EXPAND template::javafiles::svcflowFiles(model, "cxf") FOR this»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+AUTHETICATION FILES
+==========================================================================================================================
+«ENDREM»
+
+«REM»Crea la classe di helper per il recupero del Principal«ENDREM»
+«DEFINE javaAuthenticationHelperFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+authenticationHelperClassName(this)+".java" »package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.security.Principal;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+/**
+ * Classe di utilit&agrave; per il recupero dell'utente autenticato.
+ *
+ * @author CSI
+ * @generated
+ */
+public class «authenticationHelperClassName(this)» {
+
+	/**
+	 * @generated
+	 */
+	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto, model.codComponente)»";
+
+	«IF hasWSAuthentication()-»
+	«IF model.targetPlatform.code==TargetPlatformCodes::WLS92-»
+	/** Header di request che contiene lo user principal name in BEA. */
+	public static final String WL_PRINCIPAL_NAME_HEADER = "Proxy-remote-user";
+	«ENDIF-»
+	
+	/**
+	 * Recupera lo Username dell'utente autenticato dalla request.
+	 * @return Lo username dell'utente autenticato
+	 */
+	public String getWebServerPrincipalName() {
+		Logger logger = getLogger(null);
+
+		// recupero la request dal contesto di Spring
+		HttpServletRequest request = getRequest();
+
+		// Recupero lu username
+		String userPrincipalName = null;
+		if (request != null) {
+			«IF model.targetPlatform.code==TargetPlatformCodes::WLS92-»
+			// BEA
+			userPrincipalName = request.getHeader(WL_PRINCIPAL_NAME_HEADER);
+			«ELSEIF model.targetPlatform.code==TargetPlatformCodes::JBoss43-»
+			// JBOSS
+			Principal userPrincipal = request.getUserPrincipal();
+			if (userPrincipal != null) {
+				userPrincipalName = userPrincipal.getName();
+			} else {
+				logger.error("[«authenticationHelperClassName()»::getWebServerPrincipalName] - ERRORE: JBOSS: impossibile recuperare il Principal dalla HttpServletRequest");
+			}
+			«ENDIF-»
+		} else {
+			logger.error("[«authenticationHelperClassName()»::getWebServerPrincipalName] - ERRORE: impossibile recuperare la HttpServletRequest dal contesto Spring");
+		}
+		return userPrincipalName;
+	}
+	«ENDIF-»
+
+
+	«IF hasASAuthentication()-»
+	/**
+	 * Recupera il Principal dell'utente autenticato dalla request.
+	 * @return il Principal dell'utente autenticato
+	 */
+	public Principal getApplicationServerPrincipal() {
+		Logger logger = getLogger(null);
+
+		// recupero la request dal contesto di Spring
+		HttpServletRequest request = getRequest();
+
+		// recupero il Principal dalla request
+		Principal userPrincipal = request.getUserPrincipal();
+		if (request != null) {
+			userPrincipal = request.getUserPrincipal();
+		} else {
+			logger.error("[«authenticationHelperClassName()»::getApplicationServerPrincipal] - ERRORE: impossibile recuperare la HttpServletRequest dal contesto Spring");
+		}
+		return userPrincipal;
+	}
+	«ENDIF-»
+
+	/**
+	 * Recupera la HttpServletRequest dal contesto di Spring.
+	 * @return
+	 */
+	private HttpServletRequest getRequest() {
+		return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+	}
+
+	/**
+	 * @generated
+	 */
+	private Logger getLogger(String subsystem) {
+		if (subsystem != null) {
+			return Logger.getLogger(LOGGER_PREFIX + "." + subsystem);
+		} else {
+			return Logger.getLogger(LOGGER_PREFIX);
+		}
+	}
+
+}
+«ENDFILE»
 «ENDDEFINE»

@@ -134,13 +134,17 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>WEB-INF/«serviceDef.codServizio.toLowerCase()»SpringMain.xml</param-value>«REM»TODO: MODIFICARE FILE DI SPRING«ENDREM»
+        <param-value>WEB-INF/«serviceDef.codServizio.toLowerCase()»SpringMain.xml</param-value>
     </context-param>
 
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
-
+    «IF serviceDef.authLevel!=AuthLevelEnum::A0-»
+	<listener>
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+	</listener>
+	«ENDIF-»
 
     <servlet>
     	<display-name>CXF Servlet</display-name>
@@ -154,6 +158,35 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
 
+	«IF serviceDef.authLevel!=AuthLevelEnum::A0 && hasASAuthentication()-»
+	<!-- impostazioni di security -->
+	<security-constraint>
+		<!-- A collection of protected resources along with the access mechanism -->
+		<web-resource-collection>
+			<web-resource-name>Restricted to Secure role</web-resource-name>
+			<description>protezione «codBinding»</description>
+			<url-pattern>/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+		</web-resource-collection>
+		<!-- The list of roles that can access the resource. -->
+		<auth-constraint>
+			«FOREACH serviceDef.roles AS role-»
+			<role-name>«role.name»</role-name>
+			«ENDFOREACH-»
+		</auth-constraint>
+	</security-constraint>
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>applications</realm-name>
+	</login-config>
+	«FOREACH serviceDef.roles AS role-»
+		<security-role>
+		<role-name>«role.name»</role-name>
+	</security-role>
+	«ENDFOREACH-»
+	«ENDIF-»
+
 </web-app>
 «ENDFILE»
 «ENDDEFINE»
@@ -163,7 +196,11 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 «DEFINE jbossWebxmlFile(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
 «FILE getSpecificWarConfigRootDir("ws", removeSeparator(serviceDef.codServizio), model)+"/WEB-INF/jboss-web.xml"»<?xml version="1.0" encoding="UTF-8"?>
 <jboss-web>
+	«IF serviceDef.authLevel!=AuthLevelEnum::A0 && hasASAuthentication()-»
+	<security-domain>java:/jaas/services</security-domain>
+	«ELSE-»
 	<!-- NO SPECIFIC CONFIGURATION NEEDED -->
+	«ENDIF-»
 </jboss-web>
 «ENDFILE»
 «ENDDEFINE»
@@ -186,6 +223,16 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 	<session-descriptor>
 		<persistent-store-type>replicated_if_clustered</persistent-store-type>
 	</session-descriptor>
+
+	«IF serviceDef.authLevel!=AuthLevelEnum::A0 && hasASAuthentication()-»
+	<!-- impostazioni di sicurezza: i ruoli devono corrispondere ai principal (groups) -->
+	«FOREACH serviceDef.roles AS currRole-»
+	<security-role-assignment>
+		<role-name>«currRole.name»</role-name>
+		<principal-name>«currRole.name»</principal-name>
+	</security-role-assignment>
+	«ENDFOREACH-»
+	«ENDIF-»
 
 </weblogic-web-app>
 «ENDFILE»

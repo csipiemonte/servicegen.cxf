@@ -19,7 +19,6 @@ e le limitazioni secondo i termini della Licenza.
 «IMPORT servicedef»
 «IMPORT typedef»
 «IMPORT appresources»
-«IMPORT template::cxf::j2eeconfigfiles»
 
 «EXTENSION template::ServicegenExtensions»
 «EXTENSION template::cxf::ServicegenCxfExtensions»
@@ -133,6 +132,10 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 		«ENDPROTECT»
 	</bean>
 
+	«IF impl.provides.authLevel!=AuthLevelEnum::A0-»
+	<!-- Authentication Helper -->
+	<bean id="«authenticationHelperBeanID(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«authenticationHelperClassName(impl.provides)»" />
+	«ENDIF-»
 </beans>
 «ENDFILE»
 «ENDDEFINE»

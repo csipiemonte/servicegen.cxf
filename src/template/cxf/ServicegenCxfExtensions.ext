@@ -154,6 +154,26 @@ String getWSURLPlaceHolder(ServiceDef sd) :
 	"@"+getWSURLVar(sd)+"@";
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+///// AUTHENTICATION
+
+boolean hasASAuthentication() :
+	getAuthenticationMethod() == "ASonly" || getAuthenticationMethod() == "both";
+
+boolean hasWSAuthentication() :
+	getAuthenticationMethod() == "WSonly" || getAuthenticationMethod() == "both";
+
+String getAuthenticationMethod() :
+	getProperty("servicegen.cxf.authenticationMethod") == null || getProperty("servicegen.cxf.authenticationMethod").trim().length == 0 ?
+	"both" :
+	getProperty("servicegen.cxf.authenticationMethod").trim();
+
+String authenticationHelperClassName(ServiceDef sd) :
+	"AuthenticationHelper";
+	
+String authenticationHelperBeanID(ServiceDef sd) :
+	"authenticationHelper";
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: vedere se servono
@@ -163,6 +183,4 @@ String getAppServerLib(SOABEModel model) :
 		"jboss"
 	else if ( model.targetPlatform.code == TargetPlatformCodes::WLS92 ) then
 		"weblogic";
-		
-		
 		
