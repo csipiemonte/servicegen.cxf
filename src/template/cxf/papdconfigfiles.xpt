@@ -90,6 +90,44 @@ RESOURCE CONNECTOR FILES PER CXF
 		<property name="address" value="«getWSURLPlaceHolder(sd)»" />
 	</bean>
 
+	«LET sd.bindings.typeSelect(WSBinding).first() AS ws-»
+	«IF needConduitConnfiguration(sd, ws)-»
+	<!-- HTTP CONDUIT CONFIGURATION -->
+	<http:conduit name="«getConduitName(sd, model)»">
+		«IF ws.channelSecurityLevel!=ChannelSecurityLevelEnum::C0-»
+		<http:tlsClientParameters disableCNCheck="true">
+			<sec:trustManagers>
+				<sec:keyStore type="JKS" password="«getWSTruststorePasswordPlaceHolder(sd)»" file="«getWSTruststorePathPlaceHolder(sd)»"/>
+			</sec:trustManagers>
+			«IF ws.channelSecurityLevel==ChannelSecurityLevelEnum::C2-»
+			<sec:keyManagers keyPassword="«getWSKeystorePasswordPlaceHolder(sd)»">
+				<sec:keyStore type="JKS" password="«getWSKeystorePasswordPlaceHolder(sd)»" file="«getWSKeyststorePathPlaceHolder(sd)»"/>
+			</sec:keyManagers>
+			«ENDIF-»
+			<sec:cipherSuitesFilter>
+				<!-- these filters ensure that a ciphersuite with
+				export-suitable or null encryption is used,
+				but exclude anonymous Diffie-Hellman key change as
+				this is vulnerable to man-in-the-middle attacks -->
+				<sec:include>.*_EXPORT_.*</sec:include>
+				<sec:include>.*_EXPORT1024_.*</sec:include>
+				<sec:include>.*_WITH_DES_.*</sec:include>
+				<sec:include>.*_WITH_NULL_.*</sec:include>
+				<sec:exclude>.*_DH_anon_.*</sec:exclude>
+			</sec:cipherSuitesFilter>
+		</http:tlsClientParameters>
+		«ENDIF-»
+		«IF sd.authLevel!=AuthLevelEnum::A0-»
+		<http:authorization>
+			<sec:UserName>«getWSUsernamePlaceHolder(sd)»</sec:UserName>
+			<sec:Password>«getWSPasswordPlaceHolder(sd)»</sec:Password>
+		</http:authorization>
+		<http:client AutoRedirect="true" Connection="Keep-Alive"/>
+		«ENDIF-»
+	</http:conduit>
+	«ENDIF-»
+	«ENDLET-»
+
 
 	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+sd.codServizio+"cxf.client")»
 	<!-- Other CXF configurations (bus, conduit, security, ecc) -->	

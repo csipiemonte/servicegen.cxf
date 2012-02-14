@@ -576,6 +576,18 @@ creazione del build.xml per ANT
 
 «DEFINE varSubstForRC FOR RPCWebServiceConnector»
 <replace dir="${temp}/conf/ws" token="«getWSURLPlaceHolder(serviceDef)»"  value="${«getWSURLVar(serviceDef)»}"/>
+«IF serviceDef.authLevel!=AuthLevelEnum::A0-»
+<replace dir="${temp}/conf/ws" token="«getWSUsernamePlaceHolder(serviceDef)»"  value="${«getWSUsernameVar(serviceDef)»}"/>
+<replace dir="${temp}/conf/ws" token="«getWSPasswordPlaceHolder(serviceDef)»"  value="${«getWSPasswordVar(serviceDef)»}"/>
+«ENDIF-»
+«IF binding.channelSecurityLevel!=ChannelSecurityLevelEnum::C0-»
+<replace dir="${temp}/conf/ws" token="«getWSTruststorePathPlaceHolder(serviceDef)»"  value="${«getWSTruststorePathVar(serviceDef)»}"/>
+<replace dir="${temp}/conf/ws" token="«getWSTruststorePasswordPlaceHolder(serviceDef)»"  value="${«getWSTruststorePasswordVar(serviceDef)»}"/>
+«IF binding.channelSecurityLevel==ChannelSecurityLevelEnum::C2-»
+<replace dir="${temp}/conf/ws" token="«getWSKeyststorePathPlaceHolder(serviceDef)»"  value="${«getWSKeyststorePathVar(serviceDef)»}"/>
+<replace dir="${temp}/conf/ws" token="«getWSKeystorePasswordPlaceHolder(serviceDef)»"  value="${«getWSKeystorePasswordVar(serviceDef)»}"/>
+«ENDIF-»
+«ENDIF-»
 «ENDDEFINE»
 
 
@@ -750,6 +762,22 @@ war-exclude-custom-libs-filter =
 
 # url di connessione al servizio
 «getWSURLVar(serviceDef)» = <inserire l'url di esposizione del web service>
+«IF serviceDef.authLevel!=AuthLevelEnum::A0-»
+
+# credenziali di autenticazione
+«getWSUsernameVar(serviceDef)»=<username>
+«getWSPasswordVar(serviceDef)»=<passwd>
+«ENDIF-»
+«IF binding.channelSecurityLevel!=ChannelSecurityLevelEnum::C0-»
+
+# securizzazione del canale SSL
+«getWSTruststorePathVar(serviceDef)»=<TruststorePath>
+«getWSTruststorePasswordVar(serviceDef)»=<TruststorePassword>
+«IF binding.channelSecurityLevel==ChannelSecurityLevelEnum::C2-»
+«getWSKeyststorePathVar(serviceDef)»=<KeyststorePath>
+«getWSKeystorePasswordVar(serviceDef)»=<KeystorePassword>
+«ENDIF-»
+«ENDIF-»
 «ENDDEFINE»
 
 
