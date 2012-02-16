@@ -126,6 +126,10 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 	    «ENDFOREACH-»
 		«ENDIF-»
 		«ENDLET-»
+		«IF impl.implCartridge.metaType==FlowModelImplCartridge && impl.provides.authLevel!=AuthLevelEnum::A0-»
+		<!-- Authentication Helper (per il recupero del principal) -->
+		<property name="«authenticationHelperBeanID(impl.provides)»" ref="«authenticationHelperBeanID(impl.provides)»" />
+		«ENDIF-»
 
 		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+serviceImplBeanId(impl.provides))»
 		<!-- Insert here «impl.provides.codServizio» bean properties (Dao, customBeans, etc...) -->

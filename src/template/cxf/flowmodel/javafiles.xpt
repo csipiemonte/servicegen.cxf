@@ -196,6 +196,8 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceNa
 	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto,model.codComponente)»";
 
 	«EXPAND wsCallClientClassInjection(model) FOR this-»
+	
+	«EXPAND authenticationHelperClassInjection(model) FOR this-»
 
 	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implLocalVars"+codServizio)»
 	// inserire qui la definizione di varibili locali o costanti dell'implementazione.
@@ -232,7 +234,7 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceNa
 «ENDDEFINE»
 
 
-«REM»comment«ENDREM»
+«REM»Dependency injection del client CXF in caso di nod WSCall«ENDREM»
 «DEFINE wsCallClientClassInjection(SOABEModel model) FOR ServiceDef»
 	«LET getAllResourceConnectors(model) AS allResConn-»
 	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
@@ -255,6 +257,25 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceNa
 	«ENDIF-»
 	«ENDLET-»
 «ENDDEFINE»
+
+«REM»Dependency injection del client CXF in caso di nod WSCall«ENDREM»
+«DEFINE authenticationHelperClassInjection(SOABEModel model) FOR ServiceDef»
+	«IF this.authLevel!=AuthLevelEnum::A0-»
+	/**
+	 * Authentication Helper Class
+	 */
+	private «authenticationHelperClassName(this)» «authenticationHelperBeanID(this)»;
+
+	public «authenticationHelperClassName(this)» get«authenticationHelperBeanID(this).toFirstUpper()»() {
+		return «authenticationHelperBeanID(this)»;
+	}
+
+	public void set«authenticationHelperBeanID(this).toFirstUpper()»(«authenticationHelperClassName(this)» «authenticationHelperBeanID(this)») {
+		this.«authenticationHelperBeanID(this)» = «authenticationHelperBeanID(this)»;
+	}
+	«ENDIF-»
+«ENDDEFINE»
+
 
 
 
@@ -332,7 +353,7 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	it.csi.util.performance.StopWatch watcher = new it.csi.util.performance.StopWatch("«model.codComponente»");
 	watcher.start();
 
-	String remoteUser = "<???>";
+	String remoteUser = «getOrchestrationRemoteUser(def)»;
 	String workflowDescriptor = "«removeSeparator(def.codServizio)+name.toFirstUpper()»";
 	HashMap persistentParams = new HashMap();
 
@@ -343,6 +364,8 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	 	«ENDFOREACH-»
 
 		«EXPAND wsCallClientParameters(model) FOR this-»
+
+		«EXPAND principalNameParameter(model, def) FOR this-»
 
 		// inizializzazione e richiamo del flusso
 		try {
@@ -392,7 +415,7 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 «ENDDEFINE»
 
 
-«REM»comment«ENDREM»
+«REM»Inserimento nel context dei client CXF per nodi WSCall«ENDREM»
 «DEFINE wsCallClientParameters(SOABEModel model) FOR Operation»
 	«LET getAllResourceConnectors(model) AS allResConn-»
 	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
@@ -406,3 +429,10 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	«ENDLET-»
 «ENDDEFINE»
 
+«REM»Inserimento nel context dei client CXF per nodi WSCall«ENDREM»
+«DEFINE principalNameParameter(SOABEModel model, ServiceDef def) FOR Operation»
+«IF def.authLevel!=AuthLevelEnum::A0»
+// inserimento nel context del principal name
+persistentParams.put("caller.principal.name.slot", remoteUser);
+«ENDIF»
+«ENDDEFINE»

@@ -219,6 +219,14 @@ boolean needConduitConnfiguration(ServiceDef sd, WSBinding ws) :
 	
 String getConduitName(ServiceDef sd, SOABEModel model) :
 	"{" + getWsTargetNamespace(sd, model) + "}" + toCamel(sd.codServizio) + "Port.http-conduit";
+	
+String getOrchestrationRemoteUser(ServiceDef sd) :
+	if getAuthenticationMethod() == "WSonly" then
+		"get"+authenticationHelperBeanID(sd).toFirstUpper()+"().getWebServerPrincipalName()"
+	else if (getAuthenticationMethod() == "ASonly" || getAuthenticationMethod() == "both") then
+		"get"+authenticationHelperBeanID(sd).toFirstUpper()+"().getApplicationServerPrincipal() != null ? get"+authenticationHelperBeanID(sd).toFirstUpper()+"().getApplicationServerPrincipal().getName() : \"<???>\""
+	else
+		"\"<???>\"";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
