@@ -76,6 +76,27 @@ String serviceBusinessInterfaceName(ServiceDef sd) :
 
 String serviceBusinessClassName(ServiceDef sd) :
 	toCamel(sd.codServizio)+"BusinessImpl";
+	
+// [DM] STDMDD-1088: Eccezioni comuni
+String userExceptionClassName() :
+	"UserException";
+
+String systemExceptionClassName() :
+	"SystemException";
+
+String unrecoverableExceptionClassName() :
+	"UnrecoverableException";
+
+String getExceptionExtendsClass(Exception ex) :
+	if ex.exceptionType == CSIExceptionTypes::USER then
+		userExceptionClassName()
+	else if ex.exceptionType == CSIExceptionTypes::SYSTEM then
+		systemExceptionClassName()	
+	else if ex.exceptionType == CSIExceptionTypes::UNRECOVERABLE then
+		unrecoverableExceptionClassName();
+
+String getExceptionExtendsFQNClass(Exception ex, SOABEModel model, String codServ) :
+	fullQualifiedServiceExceptionPkg(codServ, model) + "." + getExceptionExtendsClass(ex);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

@@ -204,7 +204,11 @@ DATA TYPES GENERATION
 «ENDREM»
 
 «DEFINE typedefs(SOABEModel model,String codServ) FOR Types»
+	«REM»Entities modellate«ENDREM»
 	«EXPAND javaWsEntityClass(model, codServ) FOREACH (List[Entity])this.types.select(e|e.metaType==Entity && !e.isTypedefAnnotated())»
+	«REM»STDMDD-1088: Exceptions di base (UserException, SystemException, UnrecoverableException)«ENDREM»
+	«EXPAND javaWsBaseExceptionClasses(model, codServ) FOR this»
+	«REM»Exceptions modellate«ENDREM»
 	«EXPAND javaWsExceptionClass(model, codServ) FOREACH (List[Exception])this.types.select(e|e.metaType==Exception && !e.isTypedefAnnotated())»
 «ENDDEFINE»
 
@@ -298,13 +302,123 @@ public void set«name.toFirstUpper()»(«map2javaWsType(this.type, codServ, mode
 EXCEPTIONS
 ***************************************************************
 «ENDREM»
+
+«DEFINE javaWsBaseExceptionClasses(SOABEModel model, String codServ) FOR Types»
+	«EXPAND javaWsUserExceptionClass(model, codServ) FOR this»
+	«EXPAND javaWsSystemExceptionClass(model, codServ) FOR this»
+	«EXPAND javaWsUnrecoverableExceptionClass(model, codServ) FOR this»
+«ENDDEFINE»
+
+«DEFINE javaWsUserExceptionClass(SOABEModel model, String codServ) FOR Types»
+«FILE fullServiceExceptionsDir(codServ, model)+"/"+userExceptionClassName()+".java"»package «fullQualifiedServiceExceptionPkg(codServ, model)»;
+
+/**
+ * Classe base per tutte le eccezioni di tipo USER
+ * @generated
+ */
+public class «userExceptionClassName()» extends Exception {
+
+	/**
+	 * @generated
+	 */
+	public «userExceptionClassName()»() {
+		super();
+	}
+
+	/**
+	 * @generated
+	 */
+	public «userExceptionClassName()»(String message) {
+		super(message);
+	}
+
+	/**
+	 * @generated
+	 */
+	public «userExceptionClassName()»(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+}
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE javaWsSystemExceptionClass(SOABEModel model, String codServ) FOR Types»
+«FILE fullServiceExceptionsDir(codServ, model)+"/"+systemExceptionClassName()+".java"»package «fullQualifiedServiceExceptionPkg(codServ, model)»;
+
+/**
+ * Classe base per tutte le eccezioni di tipo SYSTEM
+ * @generated
+ */
+public class «systemExceptionClassName()» extends Exception {
+
+	/**
+	 * @generated
+	 */
+	public «systemExceptionClassName()»() {
+		super();
+	}
+
+	/**
+	 * @generated
+	 */
+	public «systemExceptionClassName()»(String message) {
+		super(message);
+	}
+
+	/**
+	 * @generated
+	 */
+	public «systemExceptionClassName()»(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+}
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE javaWsUnrecoverableExceptionClass(SOABEModel model, String codServ) FOR Types»
+«FILE fullServiceExceptionsDir(codServ, model)+"/"+unrecoverableExceptionClassName()+".java"»package «fullQualifiedServiceExceptionPkg(codServ, model)»;
+
+/**
+ * Classe base per tutte le eccezioni di tipo UNRECOVERABLE
+ * @generated
+ */
+public class «unrecoverableExceptionClassName()» extends Exception {
+
+	/**
+	 * @generated
+	 */
+	public «unrecoverableExceptionClassName()»() {
+		super();
+	}
+
+	/**
+	 * @generated
+	 */
+	public «unrecoverableExceptionClassName()»(String message) {
+		super(message);
+	}
+
+	/**
+	 * @generated
+	 */
+	public «unrecoverableExceptionClassName()»(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+}
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»Crea una eccezione modellata«ENDREM»
 «DEFINE javaWsExceptionClass(SOABEModel model, String codServ) FOR Exception»
 «FILE fullServiceExceptionsDir(codServ, model)+"/"+name+".java"»package «fullQualifiedServiceExceptionPkg(codServ, model)»;
 
 import javax.xml.ws.WebFault;
 
 @WebFault
-public class «name» extends Exception {
+public class «name» extends «getExceptionExtendsFQNClass(this, model, codServ)» {
 
 	/**
 	 * @generated
