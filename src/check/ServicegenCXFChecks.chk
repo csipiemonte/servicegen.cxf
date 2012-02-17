@@ -6,6 +6,7 @@ import servicegen;
 
 extension template::ServicegenExtensions;
 extension template::flowmodel::FlowModelExtensions;
+extension template::cxf::ServicegenCxfExtensions;
 extension org::eclipse::xtend::util::stdlib::naming;
 
 
@@ -25,6 +26,11 @@ context WSFADBinding ERROR "Il WSFADBinding non è ammesso per la cartuccia basat
 
 context CSIDatatype ERROR "Il tipo 'CSIDatatype' non è ammesso per la cartuccia basata su framework CXF" :
 	false;
+
+context Exception ERROR "Una eccezione non può avere i seguenti nomi : " + userExceptionClassName() + " o " + systemExceptionClassName() + " o " + unrecoverableExceptionClassName() :
+	this.name.toLowerCase() != userExceptionClassName().toLowerCase() && 
+	this.name.toLowerCase() != systemExceptionClassName().toLowerCase() && 
+	this.name.toLowerCase() != unrecoverableExceptionClassName().toLowerCase();
 
 // Sono ammesse solamente operazioni sincrone (NO asynch e notify)
 context Operation ERROR "Sono ammesse solamente operazioni SINCRONE" :
