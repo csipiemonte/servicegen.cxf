@@ -197,6 +197,12 @@ String getWSKeyststorePathPlaceHolder(ServiceDef sd) :
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///// AUTHENTICATION
 
+boolean hasAuthentication(ServiceDef sd) :
+	sd.authLevel!=null && sd.authLevel!=AuthLevelEnum::A0;
+
+boolean hasChannelSecurity(WSBinding ws) :
+	ws.channelSecurityLevel!=null && ws.channelSecurityLevel!=ChannelSecurityLevelEnum::C0;
+
 boolean hasASAuthentication() :
 	getAuthenticationMethod() == "ASonly" || getAuthenticationMethod() == "both";
 
@@ -215,15 +221,15 @@ String authenticationHelperBeanID(ServiceDef sd) :
 	"authenticationHelper";
 
 boolean needConduitConnfiguration(ServiceDef sd, WSBinding ws) :
-	sd.authLevel!=AuthLevelEnum::A0 || ws.channelSecurityLevel!=ChannelSecurityLevelEnum::C0;
+	hasAuthentication(sd) || hasChannelSecurity(ws);
 	
 String getConduitName(ServiceDef sd, SOABEModel model) :
 	"{" + getWsTargetNamespace(sd, model) + "}" + toCamel(sd.codServizio) + "Port.http-conduit";
 	
-String getOrchestrationRemoteUser(ServiceDef sd) :
-	if getAuthenticationMethod() == "WSonly" then
+String getCXFOrchestrationRemoteUser(ServiceDef sd) :
+	if (hasAuthentication(sd) && getAuthenticationMethod() == "WSonly") then
 		"get"+authenticationHelperBeanID(sd).toFirstUpper()+"().getWebServerPrincipalName()"
-	else if (getAuthenticationMethod() == "ASonly" || getAuthenticationMethod() == "both") then
+	else if (hasAuthentication(sd) && (getAuthenticationMethod() == "ASonly" || getAuthenticationMethod() == "both")) then
 		"get"+authenticationHelperBeanID(sd).toFirstUpper()+"().getApplicationServerPrincipal() != null ? get"+authenticationHelperBeanID(sd).toFirstUpper()+"().getApplicationServerPrincipal().getName() : \"<???>\""
 	else
 		"\"<???>\"";

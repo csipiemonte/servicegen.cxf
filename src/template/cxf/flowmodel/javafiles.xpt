@@ -260,7 +260,7 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceNa
 
 «REM»Dependency injection del client CXF in caso di nod WSCall«ENDREM»
 «DEFINE authenticationHelperClassInjection(SOABEModel model) FOR ServiceDef»
-	«IF this.authLevel!=AuthLevelEnum::A0-»
+	«IF hasAuthentication(this)-»
 	/**
 	 * Authentication Helper Class
 	 */
@@ -353,7 +353,7 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	it.csi.util.performance.StopWatch watcher = new it.csi.util.performance.StopWatch("«model.codComponente»");
 	watcher.start();
 
-	String remoteUser = «getOrchestrationRemoteUser(def)»;
+	String remoteUser = «getCXFOrchestrationRemoteUser(def)»;
 	String workflowDescriptor = "«removeSeparator(def.codServizio)+name.toFirstUpper()»";
 	HashMap persistentParams = new HashMap();
 
@@ -429,9 +429,9 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	«ENDLET-»
 «ENDDEFINE»
 
-«REM»Inserimento nel context dei client CXF per nodi WSCall«ENDREM»
+«REM»Inserimento nel context del principal in caso di autenticazione«ENDREM»
 «DEFINE principalNameParameter(SOABEModel model, ServiceDef def) FOR Operation»
-«IF def.authLevel!=AuthLevelEnum::A0»
+«IF hasAuthentication(def)»
 // inserimento nel context del principal name
 persistentParams.put("caller.principal.name.slot", remoteUser);
 «ENDIF»

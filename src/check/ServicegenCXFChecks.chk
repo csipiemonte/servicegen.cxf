@@ -52,6 +52,7 @@ context Types ERROR "TD6: i tipi definiti nel contesto di un servizio possono so
 	this.types.select(e|e.metaType==PrimitiveType).size==0 &&
 	this.types.select(e|e.metaType==TypedArray && ((TypedArray)e).componentType.metaType==PrimitiveType).size==0;
 
+// [DM] STDMDD-1093: servizi di orchestrazione securizzati A1+: propagazione principal name nel contesto di orchestrazione
 context Orchestration if principalNameSlot != null ERROR "Il principalNameSlot deve essere di tipo xsd:string o di tipo xsd:nillableString" :
 	this.principalNameSlot.type.metaType == PrimitiveType && 
 	(
