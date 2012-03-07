@@ -1,4 +1,4 @@
-«REM»
+Â«REMÂ»
 C) Copyright 2011 CSI-PIEMONTE;
 
 Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;
@@ -13,91 +13,87 @@ distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,
 esplicite o implicite.
 Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni
 e le limitazioni secondo i termini della Licenza.
-«ENDREM»
+Â«ENDREMÂ»
 
-«IMPORT servicegen»
-«IMPORT servicedef»
-«IMPORT typedef»
-«IMPORT appresources»
+Â«IMPORT servicegenÂ»
+Â«IMPORT servicedefÂ»
+Â«IMPORT typedefÂ»
+Â«IMPORT appresourcesÂ»
 
-«REM»«IMPORT template::configfiles»«ENDREM»
-«REM»«IMPORT template::papdconfigfiles»«ENDREM»
-«REM»«IMPORT papdconfigfiles»«ENDREM»
-
-«EXTENSION template::ServicegenExtensions»
-«EXTENSION template::cxf::ServicegenCxfExtensions»
+Â«EXTENSION template::ServicegenExtensionsÂ»
+Â«EXTENSION template::cxf::ServicegenCxfExtensionsÂ»
 
 
-«REM»Main Method (chiamato dal workflow OAW)«ENDREM»
-«DEFINE main(boolean useExternalDaoBeans) FOR SOABEModel»
-«EXPAND main2(useExternalDaoBeans) FOR this»
-«ENDDEFINE»
+Â«REMÂ»Main Method (chiamato dal workflow OAW)Â«ENDREMÂ»
+Â«DEFINE main(boolean useExternalDaoBeans) FOR SOABEModelÂ»
+Â«EXPAND main2(useExternalDaoBeans) FOR thisÂ»
+Â«ENDDEFINEÂ»
 
-«DEFINE main2(boolean useExternalDaoBeans) FOR SOABEModel»
-«EXPAND main_prodotto(useExternalDaoBeans) FOR this»
-«ENDDEFINE»
+Â«DEFINE main2(boolean useExternalDaoBeans) FOR SOABEModelÂ»
+Â«EXPAND main_prodotto(useExternalDaoBeans) FOR thisÂ»
+Â«ENDDEFINEÂ»
 
-«DEFINE main_prodotto(boolean useExternalDaoBeans) FOR SOABEModel»
-«EXPAND svn_project(useExternalDaoBeans) FOR this»
-«ENDDEFINE»
+Â«DEFINE main_prodotto(boolean useExternalDaoBeans) FOR SOABEModelÂ»
+Â«EXPAND svn_project(useExternalDaoBeans) FOR thisÂ»
+Â«ENDDEFINEÂ»
 
 
 
-«REM»
+Â«REMÂ»
 REAL MAIN INTERNAL METHOD
 Metodo centralizzato per la genarazione del progetto
-«ENDREM»
-«DEFINE svn_project(boolean useExternalDaoBeans) FOR SOABEModel»
-	«LET codComponente AS svn_project_dir»
-		«REM»
-		per ogni componente è necessario creare la struttura del progetto SVN:
+Â«ENDREMÂ»
+Â«DEFINE svn_project(boolean useExternalDaoBeans) FOR SOABEModelÂ»
+	Â«LET codComponente AS svn_project_dirÂ»
+		Â«REMÂ»
+		per ogni componente Â» necessario creare la struttura del progetto SVN:
 		- build.xml
 		- build.properties
 		- ivy
 		- ivyconf
 		- ...
-		«ENDREM»
-		«EXPAND buildfiles::buildfile FOR this»
-		«EXPAND buildfiles::buildproperties  FOR this»
-		«REM»TODO?«EXPAND buildfiles::buildEnvProperties FOR this»«ENDREM»
-		«EXPAND buildfiles::ivyfiles FOR this»
-		«REM»TODO?«EXPAND buildfiles::aboutfiles FOR this»«ENDREM»
+		Â«ENDREMÂ»
+		Â«EXPAND buildfiles::buildfile FOR thisÂ»
+		Â«EXPAND buildfiles::buildproperties  FOR thisÂ»
+		Â«REMÂ»TODO?Â«EXPAND buildfiles::buildEnvProperties FOR thisÂ»Â«ENDREMÂ»
+		Â«EXPAND buildfiles::ivyfiles FOR thisÂ»
+		Â«REMÂ»TODO?Â«EXPAND buildfiles::aboutfiles FOR thisÂ»Â«ENDREMÂ»
 
-		«REM»File di configurazione dell'applicazione«ENDREM»
- 		«EXPAND j2eeconfigfiles::applicationfiles FOR this»
+		Â«REMÂ»File di configurazione dell'applicazioneÂ«ENDREMÂ»
+ 		Â«EXPAND j2eeconfigfiles::applicationfiles FOR thisÂ»
 
-		«REM»TODO: Ciclo su ciascun servizio e genero la struttura«ENDREM»
-		«LET getProvidedServices(this) AS services»
-			«EXPAND configfiles::serviceFiles(this) FOREACH services»
-			«EXPAND javafiles::serviceFiles(this) FOREACH services»
-			«FOREACH services AS currsrv»
-				«EXPAND javafiles::typedefs(this, currsrv.codServizio) FOR currsrv.types»
-			«ENDFOREACH»
-		«ENDLET»
+		Â«REMÂ»TODO: Ciclo su ciascun servizio e genero la strutturaÂ«ENDREMÂ»
+		Â«LET getProvidedServices(this) AS servicesÂ»
+			Â«EXPAND configfiles::serviceFiles(this) FOREACH servicesÂ»
+			Â«EXPAND javafiles::serviceFiles(this) FOREACH servicesÂ»
+			Â«FOREACH services AS currsrvÂ»
+				Â«EXPAND javafiles::typedefs(this, currsrv.codServizio) FOR currsrv.typesÂ»
+			Â«ENDFOREACHÂ»
+		Â«ENDLETÂ»
 
-		 «REM»TODO: il file log4j è unico per tutto il componente«ENDREM»
-		 «REM»«EXPAND configfiles::log4jfiles FOR this»«ENDREM»
+		 Â«REMÂ»TODO: il file log4j Â» unico per tutto il componenteÂ«ENDREMÂ»
+		 Â«REMÂ»Â«EXPAND configfiles::log4jfiles FOR thisÂ»Â«ENDREMÂ»
 
-		«REM»Se c'e' almeno un servizio cooptrace enabled creao le config di log apposite«ENDREM»
-		«REM»«IF serviceimplementations.select(srvimpl|srvimpl.provides.traceEnabled==true).size>0»
-			«EXPAND papdconfigfiles::cooptracefiles FOR this»
-		«ENDIF»«ENDREM»
+		Â«REMÂ»Se c'e' almeno un servizio cooptrace enabled creao le config di log appositeÂ«ENDREMÂ»
+		Â«REMÂ»Â»IF serviceimplementations.select(srvimpl|srvimpl.provides.traceEnabled==true).size>0Â»
+			Â«EXPAND papdconfigfiles::cooptracefiles FOR thisÂ»
+		Â«ENDIFÂ»Â«ENDREMÂ»
 
-		«REM»Se c'è almeno una cartridge FlowModelImpl creo le classi base degli handler«ENDREM»
-		«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0»
-			«EXPAND template::flowmodel::handlerfiles::baseHandlers("cxf") FOR this»
-		«ENDIF»
+		Â«REMÂ»Se c'e' almeno una cartridge FlowModelImpl creo le classi base degli handlerÂ«ENDREMÂ»
+		Â«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0Â»
+			Â«EXPAND template::flowmodel::handlerfiles::baseHandlers("cxf") FOR thisÂ»
+		Â«ENDIFÂ»
 
-		«REM»Risorse della ServiceImplementation«ENDREM»
-		«FOREACH this.serviceimplementations AS currSrvImpl»
-			«REM»Files associati ai resource set«ENDREM»
-			«LET getAllResourceConnectors(currSrvImpl) AS allRC»
-				«EXPAND template::cxf::resourceconnectorfiles::resourceConnectorFiles(currSrvImpl.provides, this) FOREACH allRC»
-			«ENDLET»
-			«REM»I files di Spring vengono SEMPRE generati«ENDREM»
-			«EXPAND template::cxf::configfiles::springFiles(this, useExternalDaoBeans) FOR currSrvImpl.implCartridge»
-		«ENDFOREACH»
+		Â«REMÂ»Risorse della ServiceImplementationÂ«ENDREMÂ»
+		Â«FOREACH this.serviceimplementations AS currSrvImplÂ»
+			Â«REMÂ»Files associati ai resource setÂ«ENDREMÂ»
+			Â«LET getAllResourceConnectors(currSrvImpl) AS allRCÂ»
+				Â«EXPAND template::cxf::resourceconnectorfiles::resourceConnectorFiles(currSrvImpl.provides, this) FOREACH allRCÂ»
+			Â«ENDLETÂ»
+			Â«REMÂ»I files di Spring vengono SEMPRE generatiÂ«ENDREMÂ»
+			Â«EXPAND template::cxf::configfiles::springFiles(this, useExternalDaoBeans) FOR currSrvImpl.implCartridgeÂ»
+		Â«ENDFOREACHÂ»
 
-	«ENDLET»
-«ENDDEFINE»
+	Â«ENDLETÂ»
+Â«ENDDEFINEÂ»
 

@@ -1,4 +1,4 @@
-«REM»
+Â«REMÂ»
 C) Copyright 2011 CSI-PIEMONTE;
 
 Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;
@@ -13,29 +13,29 @@ distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,
 esplicite o implicite.
 Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni
 e le limitazioni secondo i termini della Licenza.
-«ENDREM»
+Â«ENDREMÂ»
 
-«IMPORT servicegen»
-«IMPORT servicedef»
-«IMPORT typedef»
-«IMPORT appresources»
+Â«IMPORT servicegenÂ»
+Â«IMPORT servicedefÂ»
+Â«IMPORT typedefÂ»
+Â«IMPORT appresourcesÂ»
 
-«EXTENSION template::ServicegenExtensions»
-«EXTENSION template::cxf::ServicegenCxfExtensions»
+Â«EXTENSION template::ServicegenExtensionsÂ»
+Â«EXTENSION template::cxf::ServicegenCxfExtensionsÂ»
 
-«REM»
+Â«REMÂ»
 ********************************
 creazione del build.xml per ANT
 ********************************
-«ENDREM»
-«DEFINE buildfile FOR SOABEModel»
-	«EXPAND buildXmlFile FOR this»
-	«REM»«EXPAND buildJavadocXmlFile FOR this»«ENDREM»
-«ENDDEFINE»
+Â«ENDREMÂ»
+Â«DEFINE buildfile FOR SOABEModelÂ»
+	Â«EXPAND buildXmlFile FOR thisÂ»
+	Â«REMÂ»Â«EXPAND buildJavadocXmlFile FOR thisÂ»Â«ENDREMÂ»
+Â«ENDDEFINEÂ»
 
 
-«DEFINE buildXmlFile FOR SOABEModel»
-«FILE "build.xml"»<?xml version="1.0" encoding="UTF-8"?>
+Â«DEFINE buildXmlFile FOR SOABEModelÂ»
+Â«FILE "build.xml"Â»<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ##################################################### -->
 <!-- # build.xml file per compilazione e generazione     # -->
@@ -48,10 +48,10 @@ creazione del build.xml per ANT
 
 <project basedir="."
          default="default"
-         name="«codComponente.toLowerCase()»"
+         name="Â«codComponente.toLowerCase()Â»"
          xmlns:ivy="antlib:fr.jayasoft.ivy.ant" >
 
-	<description>Build file per il progetto: [«codComponente.toLowerCase()»]</description>
+	<description>Build file per il progetto: [Â«codComponente.toLowerCase()Â»]</description>
 
 	<!-- -->
 	<echo message="Loading build properties..." />
@@ -122,10 +122,10 @@ creazione del build.xml per ANT
 	<!-- -->
 	<target name="all-targets"
 	        description="Esegue il build per le varie distribuzioni in sequenza.">
-		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("build.all-targets")»
+		Â«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("build.all-targets")Â»
 		<!-- Inserire le varie distribuzioni di cui si intende eseguire il build. -->
 		<antcall target="distribution" />
-		«ENDPROTECT»
+		Â«ENDPROTECTÂ»
 	</target>
 
 	<!-- -->
@@ -137,18 +137,18 @@ creazione del build.xml per ANT
 	        description="Costruisce il tar per la distribuzione." >
 		<echo message="====== Creating distribution for ${target} ..."/>
 		<echo message="====== Basedir: ${build}/archives/${target} ..."/>
-		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(codComponente+"package-all-extraantcall")»
+		Â«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(codComponente+"package-all-extraantcall")Â»
 		<!-- inserire qui eventuali statement antcall aggiuntivi da invocare
 		     nel processo di distribuzione del tar -->
-		«ENDPROTECT»
+		Â«ENDPROTECTÂ»
 		<tar tarfile="${dist}/${target}/${dist-file-name}.tar"
 		     basedir="${build}/archives/${target}"
 		     includes="*.ear,*.xml">
 			<tarfileset dir="buildfiles">
 				<include name="readme.txt"/>
-				«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(codComponente+"package-all-extraincludes")»
+				Â«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(codComponente+"package-all-extraincludes")Â»
 				<!-- inserire qui eventuali statement per includere oggetti extra nel tar -->
-				«ENDPROTECT»
+				Â«ENDPROTECTÂ»
 			</tarfileset>
 		</tar>
 	</target>
@@ -221,20 +221,20 @@ creazione del build.xml per ANT
 	<target name="environment-config"
 	        description="Predispone le configurazioni dipendenti dall&apos;ambiente." >
 		<!-- Gestione replace delle variabile d'ambiente create dal generatore -->
-		«IF targetPlatform.code == TargetPlatformCodes::JBoss43»
+		Â«IF targetPlatform.code == TargetPlatformCodes::JBoss43Â»
 		<!-- JBoss replacements -->
 		<replace dir="${temp}/conf/ear/">
 			<include name="jboss-app.xml" />
 			<replacefilter token="@context-root@" value="${war-file-name}" />
 			<replacefilter token="@ear-file-name@" value="${ear-file-name}" />
 		</replace>
-		«ENDIF»
+		Â«ENDIFÂ»
 
-		«EXPAND varSubstForRC FOREACH getAllResourceConnectors()-»
+		Â«EXPAND varSubstForRC FOREACH getAllResourceConnectors()-Â»
 
-		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("build.environment-config")»
+		Â«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("build.environment-config")Â»
 		<!-- gestire qui i  replace delle proprie variabili d'ambiente -->
-		«ENDPROTECT»
+		Â«ENDPROTECTÂ»
 	</target>
 
 	<!-- -->
@@ -259,7 +259,7 @@ creazione del build.xml per ANT
 
 		<!-- librerie infrastrutturali o client di servizi fruiti -->
 		<copy todir="${temp}/${target}/${earLib}">
-			<fileset dir="${lib}" includes="${ear-libs-filter} ${ear-custom-libs-filter}«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0-» ${svcflow-libs}«ENDIF-»" />
+			<fileset dir="${lib}" includes="${ear-libs-filter} ${ear-custom-libs-filter}Â«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0-Â» ${svcflow-libs}Â«ENDIF-Â»" />
 			<fileset dir="${build}/archives/${target}" includes="*common.jar" />
 		</copy>
 
@@ -269,11 +269,11 @@ creazione del build.xml per ANT
 			<fileset dir="${temp}/${target}">
 				<include name="**/*" />
 			</fileset>
-			«IF targetPlatform.code == TargetPlatformCodes::WLS92-»
+			Â«IF targetPlatform.code == TargetPlatformCodes::WLS92-Â»
 			<metainf dir="${temp}/conf/ear/" includes="weblogic-application.xml" />
-			«ELSEIF targetPlatform.code == TargetPlatformCodes::JBoss43-»
+			Â«ELSEIF targetPlatform.code == TargetPlatformCodes::JBoss43-Â»
 			<metainf dir="${temp}/conf/ear/" includes="jboss-app.xml" />
-			«ENDIF-»
+			Â«ENDIF-Â»
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Built-Date" value="${DSTAMP}" />
@@ -290,20 +290,20 @@ creazione del build.xml per ANT
 	<!-- -->
 	<target name="package-all-ws-wars"
 	        description="Costruisce i war di tutti i web services">
-		«FOREACH serviceimplementations AS currSrvImpl-»
-			«LET currSrvImpl.provides.bindings.typeSelect(WSBinding).first() AS ws-»
-				«IF ws != null-»
-		<!-- richiamo costruzione war ws servizio «currSrvImpl.provides.codServizio» -->
+		Â«FOREACH serviceimplementations AS currSrvImpl-Â»
+			Â«LET currSrvImpl.provides.bindings.typeSelect(WSBinding).first() AS ws-Â»
+				Â«IF ws != null-Â»
+		<!-- richiamo costruzione war ws servizio Â«currSrvImpl.provides.codServizioÂ» -->
 		<antcall target="_package-ws-war">
-			<param name="component.name" value="«codComponente.toLowerCase()»"/>
-			<param name="service.name" value="«removeSeparator(currSrvImpl.provides.codServizio)»"/>
-			<param name="binding.code" value="«ws.codBinding.toLowerCase()»"/>
-			<param name="service.type" value="«currSrvImpl.provides.serviceType.toString().toLowerCase()»"/>
-			<param name="service.ver" value="«currSrvImpl.provides.versione»" />
+			<param name="component.name" value="Â«codComponente.toLowerCase()Â»"/>
+			<param name="service.name" value="Â«removeSeparator(currSrvImpl.provides.codServizio)Â»"/>
+			<param name="binding.code" value="Â«ws.codBinding.toLowerCase()Â»"/>
+			<param name="service.type" value="Â«currSrvImpl.provides.serviceType.toString().toLowerCase()Â»"/>
+			<param name="service.ver" value="Â«currSrvImpl.provides.versioneÂ»" />
 		</antcall>
-				«ENDIF-»
-			«ENDLET-»
-		«ENDFOREACH-»
+				Â«ENDIF-Â»
+			Â«ENDLET-Â»
+		Â«ENDFOREACH-Â»
 	</target>
 
 	<!-- -->
@@ -329,12 +329,12 @@ creazione del build.xml per ANT
 					<webinf dir="${conf}/web/${binding.code}/${service.name}/WEB-INF/"
 					        includes="*.xml" />
 					<classes dir="${build}/classes">
-						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/business/${service.name}/**"/>
-						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
+						<include name="Â«getOrganizationNamePathPrefix()Â»/*/Â«codComponente.toLowerCase()Â»/business/${service.name}/**"/>
+						<include name="Â«getOrganizationNamePathPrefix()Â»/*/Â«codComponente.toLowerCase()Â»/integration/${service.name}/**"/>
 						<include name="*.xml"/>
 					</classes>
-					<lib dir="${lib}" includes="*" excludes="${war-exclude-libs-filter}, ${war-exclude-custom-libs-filter}«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0-», ${svcflow-libs}«ENDIF-»" />
-					<lib dir="${build}/archives/${target}/" includes="«codComponente.toLowerCase()»-${service.name}-client-${service.ver}.0.jar" />
+					<lib dir="${lib}" includes="*" excludes="${war-exclude-libs-filter}, ${war-exclude-custom-libs-filter}Â«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0-Â», ${svcflow-libs}Â«ENDIF-Â»" />
+					<lib dir="${build}/archives/${target}/" includes="Â«codComponente.toLowerCase()Â»-${service.name}-client-${service.ver}.0.jar" />
 				</war>
 				<delete>
 					<fileset dir="${build}/classes">
@@ -349,11 +349,11 @@ creazione del build.xml per ANT
 					<webinf dir="${conf}/web/${binding.code}/${service.name}/WEB-INF/"
 					        includes="*.xml" />
 					<classes dir="${build}/classes">
-						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/business/${service.name}/**"/>
-						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
+						<include name="Â«getOrganizationNamePathPrefix()Â»/*/Â«codComponente.toLowerCase()Â»/business/${service.name}/**"/>
+						<include name="Â«getOrganizationNamePathPrefix()Â»/*/Â«codComponente.toLowerCase()Â»/integration/${service.name}/**"/>
 					</classes>
 					<lib dir="${lib}" includes="*" excludes="${war-exclude-libs-filter}, ${war-exclude-custom-libs-filter}" />
-					<lib dir="${build}/archives/${target}/" includes="«codComponente.toLowerCase()»-${service.name}-client-${service.ver}.0.jar" />
+					<lib dir="${build}/archives/${target}/" includes="Â«codComponente.toLowerCase()Â»-${service.name}-client-${service.ver}.0.jar" />
 				</war>
 			</else>
 		</if>
@@ -367,13 +367,13 @@ creazione del build.xml per ANT
 	<!-- -->
 	<target name="package-all-wsclientlibs-jars"
 	        description="Costruisce tutti i jar delle librerie client CXF per ogni servizio">
-		«FOREACH getProvidedServices() AS sd-»
-		<!-- costruzione delle librerie client per il servizio «sd.codServizio» -->
+		Â«FOREACH getProvidedServices() AS sd-Â»
+		<!-- costruzione delle librerie client per il servizio Â«sd.codServizioÂ» -->
 		<antcall target="_package-wsclientlibs-jar">
-			<param name="service.name" value="«removeSeparator(sd.codServizio)»" />
-			<param name="service.ver" value="«sd.versione»" />
+			<param name="service.name" value="Â«removeSeparator(sd.codServizio)Â»" />
+			<param name="service.ver" value="Â«sd.versioneÂ»" />
 		</antcall>
-		«ENDFOREACH-»
+		Â«ENDFOREACH-Â»
 	</target>
 
 	<!-- -->
@@ -384,11 +384,11 @@ creazione del build.xml per ANT
 	<target name="_package-wsclientlibs-jar"
 	        description="Costruisce il jar delle librerie client CXF per un singolo servizio">
 		<!-- prende come parametro il codice servizio service.name e la versione service.ver (deve essere a 2 cifre!!!) -->
-		<jar destfile="${build}/archives/${target}/«codComponente.toLowerCase()»-${service.name}-client-${service.ver}.0.jar"
+		<jar destfile="${build}/archives/${target}/Â«codComponente.toLowerCase()Â»-${service.name}-client-${service.ver}.0.jar"
 		     basedir="${build}/classes"
-		     includes="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/dto/${service.name}/**,
-		               «getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/exception/${service.name}/**,
-		               «getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/interfacews/${service.name}/**">
+		     includes="Â«getOrganizationNamePathPrefix()Â»/Â«codProdotto.toLowerCase()Â»/Â«codComponente.toLowerCase()Â»/dto/${service.name}/**,
+		               Â«getOrganizationNamePathPrefix()Â»/Â«codProdotto.toLowerCase()Â»/Â«codComponente.toLowerCase()Â»/exception/${service.name}/**,
+		               Â«getOrganizationNamePathPrefix()Â»/Â«codProdotto.toLowerCase()Â»/Â«codComponente.toLowerCase()Â»/interfacews/${service.name}/**">
 		</jar>
 	</target>
 
@@ -398,15 +398,15 @@ creazione del build.xml per ANT
 	<!-- ############################################################# -->
 	<!-- -->
 	<target name="package-commons-jar" description="Genera il jar per le classi comuni.">
-		<jar destfile="${build}/archives/${target}/«this.codComponente»-common.jar"
+		<jar destfile="${build}/archives/${target}/Â«this.codComponenteÂ»-common.jar"
 		     basedir="${build}/classes"
-		     includes="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/business/**,
-		               «getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/integration/**,
-		               «getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/util/**">
-			«FOREACH getProvidedServices() AS sd-»
-			<exclude name="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/business/«removeSeparator(sd.codServizio)»/**" />
-			<exclude name="«getOrganizationNamePathPrefix()»/«codProdotto.toLowerCase()»/«codComponente.toLowerCase()»/integration/«removeSeparator(sd.codServizio)»/**" />
-			«ENDFOREACH-»
+		     includes="Â«getOrganizationNamePathPrefix()Â»/Â«codProdotto.toLowerCase()Â»/Â«codComponente.toLowerCase()Â»/business/**,
+		               Â«getOrganizationNamePathPrefix()Â»/Â«codProdotto.toLowerCase()Â»/Â«codComponente.toLowerCase()Â»/integration/**,
+		               Â«getOrganizationNamePathPrefix()Â»/Â«codProdotto.toLowerCase()Â»/Â«codComponente.toLowerCase()Â»/util/**">
+			Â«FOREACH getProvidedServices() AS sd-Â»
+			<exclude name="Â«getOrganizationNamePathPrefix()Â»/Â«codProdotto.toLowerCase()Â»/Â«codComponente.toLowerCase()Â»/business/Â«removeSeparator(sd.codServizio)Â»/**" />
+			<exclude name="Â«getOrganizationNamePathPrefix()Â»/Â«codProdotto.toLowerCase()Â»/Â«codComponente.toLowerCase()Â»/integration/Â«removeSeparator(sd.codServizio)Â»/**" />
+			Â«ENDFOREACH-Â»
 		</jar>
 	</target>
 
@@ -554,74 +554,74 @@ creazione del build.xml per ANT
 
 	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
 
-	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(codComponente+"build.extratargets")»
+	Â«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(codComponente+"build.extratargets")Â»
 	<!-- inserire qui eventuali target extra -->
-	«ENDPROTECT»
+	Â«ENDPROTECTÂ»
 
 </project>
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
-«REM»Sostituzione delle variabili: ResourceConnector non definito«ENDREM»
-«DEFINE varSubstForRC FOR ResourceConnector»
-«ENDDEFINE»
+Â«REMÂ»Sostituzione delle variabili: ResourceConnector non definitoÂ«ENDREMÂ»
+Â«DEFINE varSubstForRC FOR ResourceConnectorÂ»
+Â«ENDDEFINEÂ»
 
-«REM»Sostituzione delle variabili: PDPAServiceConnector«ENDREM»
-«DEFINE varSubstForRC FOR PDPAServiceConnector»
-<replace dir="${temp}/conf/pd" token="«getPAURLPlaceHolder(serviceDef)»"  value="${«getPAURLVar(serviceDef)»}"/>
-«IF serviceDef.authLevel!=AuthLevelEnum::A0-»
-<replace dir="${temp}/conf/pd" token="«getCsiAuthCredentialsPlaceHolder(serviceDef)»"  value="${«getCsiAuthCredentialsVar(serviceDef)»}"/>
-«ENDIF-»
-«ENDDEFINE»
+Â«REMÂ»Sostituzione delle variabili: PDPAServiceConnectorÂ«ENDREMÂ»
+Â«DEFINE varSubstForRC FOR PDPAServiceConnectorÂ»
+<replace dir="${temp}/conf/pd" token="Â«getPAURLPlaceHolder(serviceDef)Â»"  value="${Â«getPAURLVar(serviceDef)Â»}"/>
+Â«IF serviceDef.authLevel!=AuthLevelEnum::A0-Â»
+<replace dir="${temp}/conf/pd" token="Â«getCsiAuthCredentialsPlaceHolder(serviceDef)Â»"  value="${Â«getCsiAuthCredentialsVar(serviceDef)Â»}"/>
+Â«ENDIF-Â»
+Â«ENDDEFINEÂ»
 
-«DEFINE varSubstForRC FOR RPCWebServiceConnector»
-<replace dir="${temp}/conf/ws" token="«getWSURLPlaceHolder(serviceDef)»"  value="${«getWSURLVar(serviceDef)»}"/>
-«IF serviceDef.authLevel!=AuthLevelEnum::A0-»
-<replace dir="${temp}/conf/ws" token="«getWSUsernamePlaceHolder(serviceDef)»"  value="${«getWSUsernameVar(serviceDef)»}"/>
-<replace dir="${temp}/conf/ws" token="«getWSPasswordPlaceHolder(serviceDef)»"  value="${«getWSPasswordVar(serviceDef)»}"/>
-«ENDIF-»
-«IF binding.channelSecurityLevel!=ChannelSecurityLevelEnum::C0-»
-<replace dir="${temp}/conf/ws" token="«getWSTruststorePathPlaceHolder(serviceDef)»"  value="${«getWSTruststorePathVar(serviceDef)»}"/>
-<replace dir="${temp}/conf/ws" token="«getWSTruststorePasswordPlaceHolder(serviceDef)»"  value="${«getWSTruststorePasswordVar(serviceDef)»}"/>
-«IF binding.channelSecurityLevel==ChannelSecurityLevelEnum::C2-»
-<replace dir="${temp}/conf/ws" token="«getWSKeyststorePathPlaceHolder(serviceDef)»"  value="${«getWSKeyststorePathVar(serviceDef)»}"/>
-<replace dir="${temp}/conf/ws" token="«getWSKeystorePasswordPlaceHolder(serviceDef)»"  value="${«getWSKeystorePasswordVar(serviceDef)»}"/>
-«ENDIF-»
-«ENDIF-»
-«ENDDEFINE»
-
-
-«REM»
-«DEFINE buildJavadocXmlFile FOR SOABEModel»
-«FILE "buildfiles/build.javadoc.xml"»
-«ENDFILE»
-«ENDDEFINE»
-«ENDREM»
+Â«DEFINE varSubstForRC FOR RPCWebServiceConnectorÂ»
+<replace dir="${temp}/conf/ws" token="Â«getWSURLPlaceHolder(serviceDef)Â»"  value="${Â«getWSURLVar(serviceDef)Â»}"/>
+Â«IF serviceDef.authLevel!=AuthLevelEnum::A0-Â»
+<replace dir="${temp}/conf/ws" token="Â«getWSUsernamePlaceHolder(serviceDef)Â»"  value="${Â«getWSUsernameVar(serviceDef)Â»}"/>
+<replace dir="${temp}/conf/ws" token="Â«getWSPasswordPlaceHolder(serviceDef)Â»"  value="${Â«getWSPasswordVar(serviceDef)Â»}"/>
+Â«ENDIF-Â»
+Â«IF binding.channelSecurityLevel!=ChannelSecurityLevelEnum::C0-Â»
+<replace dir="${temp}/conf/ws" token="Â«getWSTruststorePathPlaceHolder(serviceDef)Â»"  value="${Â«getWSTruststorePathVar(serviceDef)Â»}"/>
+<replace dir="${temp}/conf/ws" token="Â«getWSTruststorePasswordPlaceHolder(serviceDef)Â»"  value="${Â«getWSTruststorePasswordVar(serviceDef)Â»}"/>
+Â«IF binding.channelSecurityLevel==ChannelSecurityLevelEnum::C2-Â»
+<replace dir="${temp}/conf/ws" token="Â«getWSKeyststorePathPlaceHolder(serviceDef)Â»"  value="${Â«getWSKeyststorePathVar(serviceDef)Â»}"/>
+<replace dir="${temp}/conf/ws" token="Â«getWSKeystorePasswordPlaceHolder(serviceDef)Â»"  value="${Â«getWSKeystorePasswordVar(serviceDef)Â»}"/>
+Â«ENDIF-Â»
+Â«ENDIF-Â»
+Â«ENDDEFINEÂ»
 
 
-«REM»
+Â«REMÂ»
+Â«DEFINE buildJavadocXmlFile FOR SOABEModelÂ»
+Â«FILE "buildfiles/build.javadoc.xml"Â»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
+Â«ENDREMÂ»
+
+
+Â«REMÂ»
 *******************************************************
 creazione del build.properties richiamato dal build ANT
 *******************************************************
-«ENDREM»
-«DEFINE buildproperties  FOR SOABEModel»
-	«EXPAND buildPropertiesFile FOR this»
-	«EXPAND buildPropertiesTemplateFile FOR this»
-«ENDDEFINE»
+Â«ENDREMÂ»
+Â«DEFINE buildproperties  FOR SOABEModelÂ»
+	Â«EXPAND buildPropertiesFile FOR thisÂ»
+	Â«EXPAND buildPropertiesTemplateFile FOR thisÂ»
+Â«ENDDEFINEÂ»
 
-«REM»«ENDREM»
-«DEFINE buildPropertiesFile FOR SOABEModel»
-«FILE "buildfiles/build.properties"»##############################################################################
+Â«REMÂ»Â«ENDREMÂ»
+Â«DEFINE buildPropertiesFile FOR SOABEModelÂ»
+Â«FILE "buildfiles/build.properties"Â»##############################################################################
 # Build.properties
 ##############################################################################
-# - Generato da SERVICEGEN.CXF, versione «getPluginVersion()»
+# - Generato da SERVICEGEN.CXF, versione Â«getPluginVersion()Â»
 
 # - [Definizione del Prodotto] -----------------------------------------------
-  prodotto    = «codProdotto»
-  contesto    = «codComponente»
-  componente  = «codComponente»
+  prodotto    = Â«codProdottoÂ»
+  contesto    = Â«codComponenteÂ»
+  componente  = Â«codComponenteÂ»
   webapp      = ${contesto}
-  version     = «versioneComponente»
+  version     = Â«versioneComponenteÂ»
 
 # - [Definizione dei files di output] ----------------------------------------
   ear-file-name  = ${componente}srv
@@ -655,7 +655,7 @@ creazione del build.properties richiamato dal build ANT
                     aopalliance-1.0.jar,                   \
                     commons-logging-1.1.1.jar
 
-«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0-»
+Â«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0-Â»
 # - [svcflow-libs] --------------------------------------------------------
 # Questo filtro viene utilizzato per definire la lista dei JAR(s) che devono
 # essere inclusi nel caso di servizi orchestrati
@@ -664,132 +664,132 @@ creazione del build.properties richiamato dal build ANT
                  oscore-2.2.5.jar,                        \
                  osworkflow-2.8.0.jar,                    \
                  propertyset-1.4.jar
-«ENDIF-»
+Â«ENDIF-Â»
 
 # - [ear-custom-libs-filter] -------------------------------------------------
 # Questo filter viene utilizzato per definire JAR aggiuntivi che devono
 # essere inclusi all'interno dell'EAR prodotto.
-«PROTECT CSTART '##' CEND '##' ID getRegionUID("ear-custom-libs-filter")»
+Â«PROTECT CSTART '##' CEND '##' ID getRegionUID("ear-custom-libs-filter")Â»
 ear-custom-libs-filter =
 
-«ENDPROTECT»
+Â«ENDPROTECTÂ»
 
 # - [war-exclude-libs-filter] ------------------------------------------------
 # Questo filtro viene utilizzato per definire la lista dei JAR(s) *NON* devono
 # venire inclusi all'interno del WAR.
 # ----------------------------------------------------------------------------
-«REM»DIFFERENZIARE WEBLOGIC-JBOSS«ENDREM»
+Â«REMÂ»DIFFERENZIARE WEBLOGIC-JBOSSÂ«ENDREMÂ»
   war-exclude-libs-filter = servlet*.jar,                  \
                             csi-tools*.jar,                \
                             log4j*.jar,                    \
                             ejb*.jar,                      \
                             spring*.jar,                   \
                             aopalliance*.jar,              \
-                            «getAppServerLib(this)»*.jar«IF targetPlatform.code == TargetPlatformCodes::JBoss43-», \
+                            Â«getAppServerLib(this)Â»*.jarÂ«IF targetPlatform.code == TargetPlatformCodes::JBoss43-Â», \
                             weblogic-7*.jar,               \
                             weblogic-9*.jar                \
-                            «ENDIF-»
+                            Â«ENDIF-Â»
 
 # - [war-exclude-custom-libs-filter] ------------------------------------------------
 # Questo filtro viene utilizzato per definire la lista dei JAR(s) *NON* devono
 # venire inclusi all'interno del WAR.
 # ----------------------------------------------------------------------------
-«PROTECT CSTART '##' CEND '##' ID getRegionUID("war-exclude-custom-libs-filter")»
+Â«PROTECT CSTART '##' CEND '##' ID getRegionUID("war-exclude-custom-libs-filter")Â»
 war-exclude-custom-libs-filter =
 
-«ENDPROTECT»
+Â«ENDPROTECTÂ»
 
 
 # ----------------------------------------------------------------------------
-  package.prefix = «getOrganizationNamePkgPrefix()».${prodotto}.${componente}
+  package.prefix = Â«getOrganizationNamePkgPrefix()Â».${prodotto}.${componente}
 
- «REM»DIFFERENZIZIONE WEBLOGIC-JBOSS«ENDREM»
- «EXPAND appServerConfigurationBuildProperties FOR this»
-«ENDFILE»
-«ENDDEFINE»
+ Â«REMÂ»DIFFERENZIZIONE WEBLOGIC-JBOSSÂ«ENDREMÂ»
+Â«EXPAND appServerConfigurationBuildProperties FOR thisÂ»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
 
-«REM»Build properties: configurazione del server«ENDREM»
-«DEFINE appServerConfigurationBuildProperties FOR SOABEModel»
-«IF this.targetPlatform.code == TargetPlatformCodes::JBoss43 -»
+Â«REMÂ»Build properties: configurazione del serverÂ«ENDREMÂ»
+Â«DEFINE appServerConfigurationBuildProperties FOR SOABEModelÂ»
+Â«IF this.targetPlatform.code == TargetPlatformCodes::JBoss43 -Â»
 # - [Configurazione del Server (JBoss)] --------------------------------------
   server = jboss
   earLib = lib
-«ELSEIF this.targetPlatform.code == TargetPlatformCodes::WLS92 -»
+Â«ELSEIF this.targetPlatform.code == TargetPlatformCodes::WLS92 -Â»
 # - [Configurazione del Server (WebLogic)] -----------------------------------
   server = weblogic
   earLib = APP-INF/lib
-«ENDIF-»
-«ENDDEFINE»
+Â«ENDIF-Â»
+Â«ENDDEFINEÂ»
 
 
-«REM»comment«ENDREM»
-«DEFINE buildPropertiesTemplateFile FOR SOABEModel»
-«FILE "buildfiles/env_template.properties"»####################################################
-# «codProdotto» - «codComponente»                  #
+Â«REMÂ»commentÂ«ENDREMÂ»
+Â«DEFINE buildPropertiesTemplateFile FOR SOABEModelÂ»
+Â«FILE "buildfiles/env_template.properties"Â»####################################################
+# Â«codProdottoÂ» - Â«codComponenteÂ»                  #
 # ==========                                       #
 # Configurazione di ambiente: <ambiente>           #
 ####################################################
 
 
-«LET getAllResourceConnectors() AS allRC-»
-	«EXPAND envVarDefs FOREACH allRC-»
-«ENDLET-»
+Â«LET getAllResourceConnectors() AS allRC-Â»
+	Â«EXPAND envVarDefs FOREACH allRC-Â»
+Â«ENDLET-Â»
 
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
 
-«REM»Variabili per un generico ResourceConnector«ENDREM»
-«DEFINE envVarDefs FOR ResourceConnector»
-«ENDDEFINE»
+Â«REMÂ»Variabili per un generico ResourceConnectorÂ«ENDREMÂ»
+Â«DEFINE envVarDefs FOR ResourceConnectorÂ»
+Â«ENDDEFINEÂ»
 
-«REM»Variabili per un PDPAServiceConnector (delego al template di Servicegen CSI)«ENDREM»
-«DEFINE envVarDefs FOR PDPAServiceConnector»
-	«EXPAND template::buildfiles::envVarDefs FOR this»
-«ENDDEFINE»
+Â«REMÂ»Variabili per un PDPAServiceConnector (delego al template di Servicegen CSI)Â«ENDREMÂ»
+Â«DEFINE envVarDefs FOR PDPAServiceConnectorÂ»
+	Â«EXPAND template::buildfiles::envVarDefs FOR thisÂ»
+Â«ENDDEFINEÂ»
 
-«REM»Variabili per un RPCWebServiceConnector (wscall)«ENDREM»
-«DEFINE envVarDefs FOR RPCWebServiceConnector»
+Â«REMÂ»Variabili per un RPCWebServiceConnector (wscall)Â«ENDREMÂ»
+Â«DEFINE envVarDefs FOR RPCWebServiceConnectorÂ»
 ################################################################################
 # variabili d'ambiente necessarie per la configurazione del RPCWebServiceConnector
-# codice: «code»
-# prodotto: «this.serviceDef.codProdotto»
-# componente: «this.serviceDef.codComponente»
-# codice servizio: «this.serviceDef.codServizio» V. «serviceDef.versione»
-# binding: «binding.codBinding»
+# codice: Â«codeÂ»
+# prodotto: Â«this.serviceDef.codProdottoÂ»
+# componente: Â«this.serviceDef.codComponenteÂ»
+# codice servizio: Â«this.serviceDef.codServizioÂ» V. Â«serviceDef.versioneÂ»
+# binding: Â«binding.codBindingÂ»
 ################################################################################
 
 # url di connessione al servizio
-«getWSURLVar(serviceDef)» = <inserire l'url di esposizione del web service>
-«IF serviceDef.authLevel!=AuthLevelEnum::A0-»
+Â«getWSURLVar(serviceDef)Â» = <inserire l'url di esposizione del web service>
+Â«IF serviceDef.authLevel!=AuthLevelEnum::A0-Â»
 
 # credenziali di autenticazione
-«getWSUsernameVar(serviceDef)»=<username>
-«getWSPasswordVar(serviceDef)»=<passwd>
-«ENDIF-»
-«IF binding.channelSecurityLevel!=ChannelSecurityLevelEnum::C0-»
+Â«getWSUsernameVar(serviceDef)Â»=<username>
+Â«getWSPasswordVar(serviceDef)Â»=<passwd>
+Â«ENDIF-Â»
+Â«IF binding.channelSecurityLevel!=ChannelSecurityLevelEnum::C0-Â»
 
 # securizzazione del canale SSL
-«getWSTruststorePathVar(serviceDef)»=<TruststorePath>
-«getWSTruststorePasswordVar(serviceDef)»=<TruststorePassword>
-«IF binding.channelSecurityLevel==ChannelSecurityLevelEnum::C2-»
-«getWSKeyststorePathVar(serviceDef)»=<KeyststorePath>
-«getWSKeystorePasswordVar(serviceDef)»=<KeystorePassword>
-«ENDIF-»
-«ENDIF-»
-«ENDDEFINE»
+Â«getWSTruststorePathVar(serviceDef)Â»=<TruststorePath>
+Â«getWSTruststorePasswordVar(serviceDef)Â»=<TruststorePassword>
+Â«IF binding.channelSecurityLevel==ChannelSecurityLevelEnum::C2-Â»
+Â«getWSKeyststorePathVar(serviceDef)Â»=<KeyststorePath>
+Â«getWSKeystorePasswordVar(serviceDef)Â»=<KeystorePassword>
+Â«ENDIF-Â»
+Â«ENDIF-Â»
+Â«ENDDEFINEÂ»
 
 
-«REM»
+Â«REMÂ»
 ****************************************
 creazione del file di configurazione IVY
 ****************************************
-«ENDREM»
+Â«ENDREMÂ»
 
-«DEFINE ivyfiles FOR SOABEModel»
-«FILE "buildfiles/ivy.xml"»<ivy-module version="1.0">
-	<info organisation="csipiemonte" module="«codComponente.toLowerCase()»" />
+Â«DEFINE ivyfiles FOR SOABEModelÂ»
+Â«FILE "buildfiles/ivy.xml"Â»<ivy-module version="1.0">
+	<info organisation="csipiemonte" module="Â«codComponente.toLowerCase()Â»" />
 	<dependencies>
 
 		<!-- librerie per il logging applicativo e la misurazione
@@ -852,17 +852,17 @@ creazione del file di configurazione IVY
             <artifact name="asm-2.2.3" type="jar" />
         </dependency>
 
-		«IF this.targetPlatform.code == TargetPlatformCodes::WLS92»
+		Â«IF this.targetPlatform.code == TargetPlatformCodes::WLS92Â»
         <!-- Dipendenze richieste da CXF 2.2.12 su BEA WL 9.2.2 -->
         <dependency org="apache" name="geronimo-stax" rev="1.0" />
         <dependency org="others" name="wstx-asl" rev="3.2.9" />
-        «ENDIF»
+        Â«ENDIFÂ»
 
 		<!-- Customizzazione librerie CXF [vedere http://jiradsp.csi.it:8081/browse/STDSA-307 -->
         <dependency org="csipiemonte" name="cxf" rev="2.2.12" transitive="false" />
 
 
-		«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0»
+		Â«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0Â»
 		<!--
 		SERVIZIO ORCHESTRATO: DIPENDENZE NECESSARIE
 		-->
@@ -888,12 +888,12 @@ creazione del file di configurazione IVY
 	    	<artifact name="wsadp-2.0.2" type="jar" />
 	    </dependency>
 
-		«IF this.targetPlatform.code==TargetPlatformCodes::JBoss43-»
+		Â«IF this.targetPlatform.code==TargetPlatformCodes::JBoss43-Â»
 		<!-- librerie necessarie per la connessione a servizi su WLS92 -->
 		<dependency org="csipiemonte" name="weblogic-client" rev="3.0.0">
 			<artifact name="weblogic-client-3.0.0" type="jar" />
 		</dependency>
-		«ENDIF-»
+		Â«ENDIF-Â»
 
 		<!-- librerie per l'implementazione di monitoraggio e diagnostica -->
 		<dependency org="csipiemonte" name="coop-diag" rev="1.2.1" transitive="false">
@@ -905,27 +905,27 @@ creazione del file di configurazione IVY
 	    	<artifact name="coop-trace-1.2.0" type="jar" />
 	    </dependency>
 
-		«LET getAllResourceConnectors(this) AS allResConn-»
+		Â«LET getAllResourceConnectors(this) AS allResConn-Â»
 
-		«IF allResConn.select(rc|rc.metaType==PDPAServiceConnector).size>0-»
-		«FOREACH allResConn.select(rc|rc.metaType==PDPAServiceConnector) AS currPDPARC-»
-		«EXPAND template::buildfiles::pdpaIvyDependency FOR (PDPAServiceConnector)currPDPARC-»
-		«ENDFOREACH-»
-		«ENDIF-»
+		Â«IF allResConn.select(rc|rc.metaType==PDPAServiceConnector).size>0-Â»
+		Â«FOREACH allResConn.select(rc|rc.metaType==PDPAServiceConnector) AS currPDPARC-Â»
+		Â«EXPAND template::buildfiles::pdpaIvyDependency FOR (PDPAServiceConnector)currPDPARC-Â»
+		Â«ENDFOREACH-Â»
+		Â«ENDIF-Â»
 
-		«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
-		«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
-	    «EXPAND wsIvyDependency FOR (RPCWebServiceConnector)currRPCWSC-»
-	    «ENDFOREACH-»
-		«ENDIF-»
+		Â«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-Â»
+		Â«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-Â»
+	    Â«EXPAND wsIvyDependency FOR (RPCWebServiceConnector)currRPCWSC-Â»
+	    Â«ENDFOREACH-Â»
+		Â«ENDIF-Â»
 
-		«ENDLET-»
-		«ENDIF-»
+		Â«ENDLET-Â»
+		Â«ENDIF-Â»
 
 
-		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("ivyExtraDependencies")»
+		Â«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("ivyExtraDependencies")Â»
 		<!-- Inserire qui le dipendenze aggiuntive -->
-		«ENDPROTECT»
+		Â«ENDPROTECTÂ»
 
 
 		<!--
@@ -937,86 +937,86 @@ creazione del file di configurazione IVY
 	</dependencies>
 
 </ivy-module>
-«ENDFILE»
+Â«ENDFILEÂ»
 
-«FILE "buildfiles/ivyconf.xml"»<ivysettings>
+Â«FILE "buildfiles/ivyconf.xml"Â»<ivysettings>
 	<settings defaultCache="${basedir}/build/cache" defaultResolver="myUrlResolver"/>
 	<resolvers>
 		<url name="myUrlResolver">
-			<artifact pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/[revision]/lib/[artifact].[type]" />
-			<artifact pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/[revision]/conf/[artifact].[type]" />
+			<artifact pattern="http://Â«getIvyRepositoryHost()Â»/java/[organisation]/[module]/[revision]/lib/[artifact].[type]" />
+			<artifact pattern="http://Â«getIvyRepositoryHost()Â»/java/[organisation]/[module]/[revision]/conf/[artifact].[type]" />
 
-			<artifact pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/lib/[artifact].[type]" />
+			<artifact pattern="http://Â«getIvyRepositoryHost()Â»/java/[organisation]/[module]/lib/[artifact].[type]" />
 
-			<ivy pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/[revision]/ivy-[module].xml" />
-			<ivy pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/ivy-[module].xml" />
+			<ivy pattern="http://Â«getIvyRepositoryHost()Â»/java/[organisation]/[module]/[revision]/ivy-[module].xml" />
+			<ivy pattern="http://Â«getIvyRepositoryHost()Â»/java/[organisation]/[module]/ivy-[module].xml" />
 		</url>
 	</resolvers>
 </ivysettings>
-«ENDFILE»
+Â«ENDFILEÂ»
 
-«ENDDEFINE»
+Â«ENDDEFINEÂ»
 
 
-«REM»comment«ENDREM»
-«DEFINE wsIvyDependency FOR RPCWebServiceConnector»
-		<!-- dipendenze necessarie per il RPCWebServiceConnector [«code»] -->
-		«LET this.annotations.select(a|a.source=="appresources") AS allAppresAnnotations-»
-		«FOREACH allAppresAnnotations AS currAppresAnnotation-»
-		«LET currAppresAnnotation.details.select(ad|ad.key=="repart-position").first() AS repPosAD-»
-		«IF repPosAD!=null-»
-		<dependency org="«getRepartOrganization(repPosAD.value)»" name="«getRepartName(repPosAD.value)»" rev="«getRepartVer(repPosAD.value)»">
-		«FOREACH currAppresAnnotation.details.select(ad|ad.key=="repart-artifact") AS repArtAD-»
-		«IF repArtAD!=null-»
-			<artifact name="«repArtAD.value»" type="jar" />
-		«ENDIF-»
-		«ENDFOREACH-»
+Â«REMÂ»commentÂ«ENDREMÂ»
+Â«DEFINE wsIvyDependency FOR RPCWebServiceConnectorÂ»
+		<!-- dipendenze necessarie per il RPCWebServiceConnector [Â«codeÂ»] -->
+		Â«LET this.annotations.select(a|a.source=="appresources") AS allAppresAnnotations-Â»
+		Â«FOREACH allAppresAnnotations AS currAppresAnnotation-Â»
+		Â«LET currAppresAnnotation.details.select(ad|ad.key=="repart-position").first() AS repPosAD-Â»
+		Â«IF repPosAD!=null-Â»
+		<dependency org="Â«getRepartOrganization(repPosAD.value)Â»" name="Â«getRepartName(repPosAD.value)Â»" rev="Â«getRepartVer(repPosAD.value)Â»">
+		Â«FOREACH currAppresAnnotation.details.select(ad|ad.key=="repart-artifact") AS repArtAD-Â»
+		Â«IF repArtAD!=null-Â»
+			<artifact name="Â«repArtAD.valueÂ»" type="jar" />
+		Â«ENDIF-Â»
+		Â«ENDFOREACH-Â»
 		</dependency>
-		«ENDIF-»
-		«ENDLET-»
-		«ENDFOREACH-»
-		«ENDLET-»
-«ENDDEFINE»
+		Â«ENDIF-Â»
+		Â«ENDLET-Â»
+		Â«ENDFOREACH-Â»
+		Â«ENDLET-Â»
+Â«ENDDEFINEÂ»
 
 
 
-«REM»
+Â«REMÂ»
 **************************************************
 creazione dei file 'about' previsto dagli standard
 **************************************************
-«ENDREM»
-«DEFINE aboutfiles FOR SOABEModel»
-	«EXPAND aboutFile FOR this»
-	«EXPAND aboutCustomFile FOR this»
-«ENDDEFINE»
+Â«ENDREMÂ»
+Â«DEFINE aboutfiles FOR SOABEModelÂ»
+	Â«EXPAND aboutFile FOR thisÂ»
+	Â«EXPAND aboutCustomFile FOR thisÂ»
+Â«ENDDEFINEÂ»
 
-«REM»File about.txt«ENDREM»
-«DEFINE aboutFile FOR SOABEModel»
-«FILE "buildfiles/about.txt"»
+Â«REMÂ»FILE about.txtÂ«ENDREMÂ»
+Â«DEFINE aboutFile FOR SOABEModelÂ»
+Â«FILE "buildfiles/about.txt"Â»
 
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
-«REM»File aboutCustom.txt«ENDREM»
-«DEFINE aboutCustomFile FOR SOABEModel»
-«FILE "buildfiles/aboutCustom.txt"»
+Â«REMÂ»FILE aboutCustom.txtÂ«ENDREMÂ»
+Â«DEFINE aboutCustomFile FOR SOABEModelÂ»
+Â«FILE "buildfiles/aboutCustom.txt"Â»
 
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
 
 
-«REM»
+Â«REMÂ»
 ****************************************
 creazione del file env.properties
 ****************************************
-«ENDREM»
+Â«ENDREMÂ»
 
-«DEFINE buildEnvProperties FOR SOABEModel»
-«FILE "buildfiles/env.properties"»
+Â«DEFINE buildEnvProperties FOR SOABEModelÂ»
+Â«FILE "buildfiles/env.properties"Â»
 JAVA_HOME=jdk_1_5_0_11
 JAVA_HOME_SERVER=jdk_1_5_0_11
 JAVA_HOME_CLIENT=jdk_1_4_2_05
 ANT_HOME=ant_1_6_2
 IVY_VERSION=ivy_2_0_0
-«ENDFILE»
-«ENDDEFINE»
+Â«ENDFILEÂ»
+Â«ENDDEFINEÂ»
