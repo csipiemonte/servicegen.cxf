@@ -2,6 +2,12 @@ package it.csi.mddtools.servicegen.cxf.genutils;
 
 import it.csi.mddtools.servicedef.Operation;
 import it.csi.mddtools.servicedef.Param;
+import it.csi.mddtools.servicedef.WSEncrypt;
+import it.csi.mddtools.servicedef.WSEndpointChannel;
+import it.csi.mddtools.servicedef.WSSecuritySpec;
+import it.csi.mddtools.servicedef.WSSignature;
+import it.csi.mddtools.servicedef.WSTimestamp;
+import it.csi.mddtools.servicedef.WSUsernameTokenAuth;
 import it.csi.mddtools.typedef.Entity;
 import it.csi.mddtools.typedef.Feature;
 import it.csi.mddtools.typedef.PrimitiveType;
@@ -9,6 +15,8 @@ import it.csi.mddtools.typedef.Type;
 import it.csi.mddtools.typedef.TypedArray;
 
 import java.util.List;
+
+import org.apache.tools.ant.util.StringUtils;
 
 /**
  * Questa classe contiene i metodi di utilit&agrave; per il generatore <b>ServiceGen CXF</b>.
@@ -63,4 +71,35 @@ public class CodeGenetationUtils {
 		return false;
 	}
 	
+	public static String ACTION_ENCRYPT = "Encrypt";
+	public static String ACTION_SIGNATURE = "Signature";
+	public static String ACTION_TIMESTAMP = "Timestamp";
+	public static String ACTION_USERNAMETOKEN = "UsernameToken";
+	public static String getActionEndPoint(WSEndpointChannel actionList){
+		String actionArray = "";
+		for (WSSecuritySpec action : actionList.getWsSecurity()) {
+			if(action instanceof WSEncrypt)
+				actionArray = String.format(actionArray+" %s ", ACTION_ENCRYPT);
+			else if(action instanceof WSSignature)
+				actionArray = String.format(actionArray+" %s ", ACTION_SIGNATURE);
+			else if(action instanceof WSTimestamp)
+				actionArray = String.format(actionArray+" %s ", ACTION_TIMESTAMP);
+			else if(action instanceof WSUsernameTokenAuth)
+				actionArray = String.format(actionArray+" %s ", ACTION_USERNAMETOKEN);
+		}
+		return actionArray;
+	}
+	
+	public static String getTypeOfAction(WSSecuritySpec action){
+		String type = "";
+		if(action instanceof WSEncrypt)
+			type = ACTION_ENCRYPT;
+		else if(action instanceof WSSignature)
+			type = ACTION_SIGNATURE;
+		else if(action instanceof WSTimestamp)
+			type = ACTION_TIMESTAMP;
+		else if(action instanceof WSUsernameTokenAuth)
+			type = ACTION_USERNAMETOKEN;
+		return type;
+	}
 }

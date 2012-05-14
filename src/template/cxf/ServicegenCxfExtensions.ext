@@ -256,6 +256,12 @@ String getCXFOrchestrationRemoteUser(ServiceDef sd) :
 		"\"<???>\"";
 
 
+String getActionEndPoint(WSEndpointChannel actionList): JAVA
+	it.csi.mddtools.servicegen.cxf.genutils.CodeGenetationUtils.getActionEndPoint(it.csi.mddtools.servicedef.WSEndpointChannel);
+	
+String getTypeOfAction(WSSecuritySpec action): JAVA
+it.csi.mddtools.servicegen.cxf.genutils.CodeGenetationUtils.getTypeOfAction(it.csi.mddtools.servicedef.WSSecuritySpec);
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: vedere se servono
 
