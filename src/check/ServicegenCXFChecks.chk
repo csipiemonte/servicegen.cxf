@@ -15,19 +15,19 @@ extension org::eclipse::xtend::util::stdlib::naming;
 ///  Check per disabilitare gli elementi WSBinding e PrimitiveType
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-context EJBPABinding ERROR "Il EJBPABinding non è ammesso per la cartuccia basata su framework CXF" :
+context EJBPABinding ERROR "Il EJBPABinding non ï¿½ ammesso per la cartuccia basata su framework CXF" :
 	false;
 
-context SOAPPABRBinding ERROR "Il SOAPPABRBinding non è ammesso per la cartuccia basata su framework CXF" :
+context SOAPPABRBinding ERROR "Il SOAPPABRBinding non ï¿½ ammesso per la cartuccia basata su framework CXF" :
 	false;
 
-context WSFADBinding ERROR "Il WSFADBinding non è ammesso per la cartuccia basata su framework CXF" :
+context WSFADBinding ERROR "Il WSFADBinding non ï¿½ ammesso per la cartuccia basata su framework CXF" :
 	false;
 
-context CSIDatatype ERROR "Il tipo 'CSIDatatype' non è ammesso per la cartuccia basata su framework CXF" :
+context CSIDatatype ERROR "Il tipo 'CSIDatatype' non ï¿½ ammesso per la cartuccia basata su framework CXF" :
 	false;
 
-context Exception ERROR "Una eccezione non può avere i seguenti nomi : " + userExceptionClassName() + " o " + systemExceptionClassName() + " o " + unrecoverableExceptionClassName() :
+context Exception ERROR "Una eccezione non puï¿½ avere i seguenti nomi : " + userExceptionClassName() + " o " + systemExceptionClassName() + " o " + unrecoverableExceptionClassName() :
 	this.name.toLowerCase() != userExceptionClassName().toLowerCase() && 
 	this.name.toLowerCase() != systemExceptionClassName().toLowerCase() && 
 	this.name.toLowerCase() != unrecoverableExceptionClassName().toLowerCase();
@@ -40,8 +40,8 @@ context Operation ERROR "Sono ammesse solamente operazioni SINCRONE" :
 context ServiceDef ERROR "Sono ammessi unicamente servizi con livello di securizzazione A0 (pubblici) o A1 (authentication)" :
 	this.authLevel==AuthLevelEnum::A0 || this.authLevel==AuthLevelEnum::A1;
 
-// SD5: un servizio pubblico non può avere ruoli associati
-context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non può avere Ruoli definiti" :
+// SD5: un servizio pubblico non puï¿½ avere ruoli associati
+context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non puï¿½ avere Ruoli definiti" :
 	(this.authLevel==AuthLevelEnum::A0 && this.roles.size==0) || authLevel != AuthLevelEnum::A0; 
 
 // SD7: in un servizio non pubblico ci deve essere almeno un ruolo definito
@@ -110,8 +110,8 @@ context BaseTypes ERROR "TD5: i tipi definiti a livello globale possono essere s
 	(this.baseTypes.select(e|e.metaType==TypedArray&&((TypedArray)e).componentType.metaType==Entity)).size==0&&
 	(this.baseTypes.select(e|e.metaType==Exception).size==0);
 	
-// TD7(ERROR): un typed array non può contenere classi eccezione nè tipi array
-context TypedArray ERROR "TD7: un array tipato non può contenere eccezioni o tipi array annidati" :
+// TD7(ERROR): un typed array non puï¿½ contenere classi eccezione nï¿½ tipi array
+context TypedArray ERROR "TD7: un array tipato non puï¿½ contenere eccezioni o tipi array annidati" :
     this.componentType.metaType!=Exception &&
     this.componentType.metaType!=TypedArray;
 
@@ -129,11 +129,11 @@ context ServiceDef ERROR "Deve essere definito almeno un binding " :
     this.bindings != null && bindings.size>0;
 
 // SD3: codifica corretta del codice servizio: minuscola con underscore
-context ServiceDef ERROR "Il codice servizio deve essere alfanumerico minuscolo e l'unico separatore ammesso è l'underscore" : 
+context ServiceDef ERROR "Il codice servizio deve essere alfanumerico minuscolo e l'unico separatore ammesso ï¿½ l'underscore" : 
      validateCodServ(this.codServizio);
      
-// SD5: un servizio pubblico non può avere ruoli associati
-context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non può avere Ruoli definiti" :
+// SD5: un servizio pubblico non puï¿½ avere ruoli associati
+context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non puï¿½ avere Ruoli definiti" :
 	(this.authLevel==AuthLevelEnum::A0 && this.roles.size==0) || authLevel != AuthLevelEnum::A0; 
 
 context ServiceDef ERROR "E'necessario specificare il codice prodotto (max 10 caratteri)"+loc() :
@@ -148,14 +148,14 @@ context ServiceDef ERROR "E'necessario specificare il codice componente (max 20 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 context ServiceImpl WARNING 
-	"Non è stata specificata la cartuccia di implementazione e/o il tipo di service "+
+	"Non ï¿½ stata specificata la cartuccia di implementazione e/o il tipo di service "+
 	"component: viene assunta la cartuccia ManualImplCartridge, mentre il tipo di service component"+
-	" non è utilizzato "+loc()+", "+this.provides :
+	" non ï¿½ utilizzato "+loc()+", "+this.provides :
 	this.implCartridge!=null && this.serviceComponent!=null;
 
 context ServiceImpl 
 	if serviceComponent.metaType==OrchestrationFlowCompositeSC && implCartridge==ManualImplCartridge 
-	ERROR "Non è possibile specificare il modello delle orchestrazioni in presenza di cartuccia 'manuale'"+loc() :
+	ERROR "Non ï¿½ possibile specificare il modello delle orchestrazioni in presenza di cartuccia 'manuale'"+loc() :
 	((OrchestrationFlowCompositeSC)serviceComponent).orchestrations.size==0;	
 
 context ServiceImpl 
@@ -187,7 +187,7 @@ context Operation WARNING "Tipo di ritorno non specificato per operazione "+name
 /// APPRESOURCES checks
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-context PDPAServiceConnector if useRegistry ERROR "Per utilizzar e il registry è necessario specificare un ServiceSelector:"+loc() :
+context PDPAServiceConnector if useRegistry ERROR "Per utilizzar e il registry ï¿½ necessario specificare un ServiceSelector:"+loc() :
 	selector!=null;
 
 context ServiceSelector ERROR "E' necessario specificare l'ambiente del servizio acceduto:"+loc() :
@@ -217,7 +217,7 @@ context ServiceSelector ERROR "E' necessario specificare l'istanza infrastruttur
 context svcorch::Node ERROR "E'necessario specificare il nome per ogni nodo" :
 	this.name != null && this.name.length>0;
 
-context svcorch::Node ERROR "Il nome del nodo ["+name+"] non è ben formato."+loc() :
+context svcorch::Node ERROR "Il nome del nodo ["+name+"] non ï¿½ ben formato."+loc() :
 	isWellFormedName(name);
 	
 context svcorch::Node WARNING "E'consigliato specificare una breve descrizione testuale per ogni nodo" :
@@ -252,23 +252,23 @@ context svcorch::ParamBinding ERROR
 	this.slot != null;
 		
 context svcorch::ParamBinding if eContainer.metaType==InputParamBindings ERROR
-	"il binding del parametro di input " + param +" è collegato ad uno slot già utilizzato per un'altro parametro "+loc() :
+	"il binding del parametro di input " + param +" ï¿½ collegato ad uno slot giï¿½ utilizzato per un'altro parametro "+loc() :
 	let bindings = ((InputParamBindings)eContainer):
 	bindings.inputParams.select(ip|ip.slot==this.slot).size==1;
 	
 context svcorch::ParamBinding if eContainer.metaType==InputParamBindings ERROR
-	"esiste più di un binding per il parametro di input "+ param :
+	"esiste piï¿½ di un binding per il parametro di input "+ param :
 	let bindings = ((InputParamBindings)eContainer):
 	bindings.inputParams.select(ip|ip.param==param).size==1;
 	
 context svcorch::ParamBinding if eContainer.metaType==SrvCall ERROR
-	"il binding del parametro del servizio invocato " + param +" è collegato ad uno slot già utilizzato per un'altro parametro "+loc() :
+	"il binding del parametro del servizio invocato " + param +" ï¿½ collegato ad uno slot giï¿½ utilizzato per un'altro parametro "+loc() :
 	let bindings = ((SrvCall)eContainer):
 	bindings.paramBindings.select(ip|ip.slot==this.slot).size==1;
 	
 
 /// OpNode
-context OpNode if next!=null ERROR "un nodo non può essere successor edi se stesso:"+loc() :
+context OpNode if next!=null ERROR "un nodo non puï¿½ essere successor edi se stesso:"+loc() :
 	next!=this;
 	
 /// SrvCall
@@ -290,23 +290,23 @@ context svcorch::SrvCall ERROR
 	this.paramBindings.size==this.operation.params.size;
 
 context svcorch::ParamBinding if eContainer.metaType==SrvCall ERROR
-	"esiste più di un binding per il parametro di chiamata di servizio "+ param :
+	"esiste piï¿½ di un binding per il parametro di chiamata di servizio "+ param :
 	let bindings = ((SrvCall)eContainer):
 	bindings.paramBindings.select(ip|ip.param==param).size==1;
 
 context svcorch::ParamBinding if eContainer.metaType==SrvCall ERROR
-	"il binding del parametro del servizio invocato non è un parametro dell'operazione "+
+	"il binding del parametro del servizio invocato non ï¿½ un parametro dell'operazione "+
 	"specificata nell'oggetto SrvCall" :
 	let srvCall = ((SrvCall)eContainer) :
 	srvCall.operation.params.contains(this.param);
 	
 context svcorch::SrvCall ERROR 
-	"è necessario specificare il data-slot del risultato dell'invocazione del servizio: "+loc() :
+	"ï¿½ necessario specificare il data-slot del risultato dell'invocazione del servizio: "+loc() :
 	this.operation.returnType==null ||
 	this.outputSlot != null;
 
 context svcorch::SrvCall if operation!=null ERROR 
-	"è necessario specificare un Exception Handler per ogni eccezione resituita dall'operazione oggetto "+
+	"ï¿½ necessario specificare un Exception Handler per ogni eccezione resituita dall'operazione oggetto "+
 	"di invocazione "+loc():
 	this.onException.handledException.size==operation.throws.size;
 
@@ -340,24 +340,24 @@ context ForEach ERROR "E' necessario specificare lo slot che contiene la collect
 context ForEach if collection !=null && collection.type!=null ERROR "Lo slot della collection su cui iterare deve essere un TypedArray:"+loc() :
 	collection.type.metaType==TypedArray;
 	
-context ForEach ERROR "E' necessario specificare lo slot che conterrà l'elemento corrente per ogni iterazione:"+loc() :
+context ForEach ERROR "E' necessario specificare lo slot che conterrï¿½ l'elemento corrente per ogni iterazione:"+loc() :
 	item!=null;	 
 
 context ForEach if item!=null && item.type!=null && collection!=null && collection.type!=null 
-	ERROR "Lo slot che conterrà l'elemento corrente deve essere di un tipo corrispondente "+
+	ERROR "Lo slot che conterrï¿½ l'elemento corrente deve essere di un tipo corrispondente "+
 		  "al tipo degli elementi dello slot 'collection':"+loc() :
 	item.type==((TypedArray)(collection.type)).componentType;
 		
 context ForEach ERROR "E'necessario specificare il nodo di inizio loop:"+loc() :
 	firstLoopNode != null;
 
-context ForEach if firstLoopNode!=null ERROR "il primo nodo del loop non può essere il nodo for each stesso:"+loc() :
+context ForEach if firstLoopNode!=null ERROR "il primo nodo del loop non puï¿½ essere il nodo for each stesso:"+loc() :
 	firstLoopNode!=this;
 	
 context ForEach ERROR "E'necessario specificare il nodo a cui saltare dopo la fine dell'ultima iterazione del loop:"+loc() :
 	afterLoopNode != null;
 
-context ForEach if afterLoopNode!=null ERROR "il nodo da eseguire al termine del loop non può essere il nodo for each stesso:"+loc() :
+context ForEach if afterLoopNode!=null ERROR "il nodo da eseguire al termine del loop non puï¿½ essere il nodo for each stesso:"+loc() :
 	afterLoopNode!=this;
 
 /// EndLoop
@@ -371,13 +371,13 @@ context EndLoop if loopHeadNode!=null ERROR "Il nodo specificato in 'loopHeadNod
 context CheckCondition ERROR "E'necessario specificare il nodo corrispondente al ramo 'then':"+loc() :
 	thenNode!=null;
 
-context CheckCondition if thenNode!=null ERROR "il nodo 'then' non può essere il nodo CheckCondition stesso:"+loc() :
+context CheckCondition if thenNode!=null ERROR "il nodo 'then' non puï¿½ essere il nodo CheckCondition stesso:"+loc() :
 	thenNode!=this;
 
 context CheckCondition ERROR "E'necessario specificare il nodo corrispondente al ramo 'else':"+loc() :
 	elseNode!=null;
 
-context CheckCondition if elseNode!=null ERROR "il nodo 'else' non può essere il nodo CheckCondition stesso:"+loc() :
+context CheckCondition if elseNode!=null ERROR "il nodo 'else' non puï¿½ essere il nodo CheckCondition stesso:"+loc() :
 	elseNode!=this;
 	
 
@@ -396,3 +396,5 @@ context SOAPPABRBinding ERROR "Il parametro CodBinding deve valere pabr nel caso
 	
 context ServiceBinding ERROR "Il parametro codBinding deve essere valorizzato : "+loc()	:
 	this.codBinding != null && this.codBinding.length>0;
+	
+context WSEndpointChannel ERROR "Un WSEndpointChannel non puo' vontere piu' di un WSSecuritySpec di tipo UsernameToken"+loc() : this.wsSecurity.select(e|e.getTypeOfAction() == "UsernameToken").size <=1;
