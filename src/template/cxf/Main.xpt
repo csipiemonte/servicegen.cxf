@@ -66,6 +66,7 @@ Metodo centralizzato per la genarazione del progetto
 		«LET getProvidedServices(this) AS services»
 			«EXPAND configfiles::serviceFiles(this) FOREACH services»
 			«EXPAND javafiles::serviceFiles(this) FOREACH services»
+			«EXPAND javafiles::usernameTokenCallBack(this) FOREACH services»			
 			«FOREACH services AS currsrv»
 				«EXPAND javafiles::typedefs(this, currsrv.codServizio) FOR currsrv.types»
 			«ENDFOREACH»
