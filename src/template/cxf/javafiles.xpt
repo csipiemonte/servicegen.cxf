@@ -600,3 +600,40 @@ public class «authenticationHelperClassName(this)» {
 }
 «ENDFILE»
 «ENDDEFINE»
+
+«DEFINE usernameTokenCallBack(SOABEModel model) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/UsernameTokenCallback"+endpoint.code+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+import java.io.IOException;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
+import org.apache.ws.security.WSPasswordCallback;
+
+public class UsernameTokenCallback«endpoint.code» implements CallbackHandler{
+
+    public void handle(Callback[] callbacks) throws IOException, 
+        UnsupportedCallbackException {
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("usernameTokenCallback"+endpoint.code)»
+		// implementazioen callback
+		
+	 	/*WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
+        if (pc.getIdentifier().equals("mauro") && pc.getPassword().equals("mypass")) {
+        } else {
+        	throw new IOException("User non riconosciuto");
+        }*/
+        
+		«ENDPROTECT»
+    }
+}
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»»
+«ENDIF»
+«ENDDEFINE»
