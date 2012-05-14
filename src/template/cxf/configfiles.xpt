@@ -81,10 +81,12 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-
+	
+	«IF !useExternalDaoBeans»
 	<!-- DB CONFIGURATION AND DAO -->
 	<import resource="«impl.provides.codServizio.toLowerCase()»Dao-beans.xml" />
-
+	«ENDIF»
+	
 	«LET getAllResourceConnectors(model) AS allResConn-»
 	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
 	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
@@ -163,8 +165,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 	<bean id="«serviceImplBeanId(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceImplClassName(impl.provides)»">
 		<property name="«serviceBusinessInterfaceName(impl.provides).toFirstLower()»" ref="«impl.provides.codServizio»BL" />
 	</bean>
-
-
+	«IF impl.provides.bindings.isEmpty-»
 	<!-- web service end point definition -->
 	<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»WS"
 					implementor="#«serviceImplBeanId(impl.provides)»"
@@ -175,8 +176,15 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 		</jaxws:properties>
 		«ENDIF-»
 	</jaxws:endpoint>
-
-
+	«ENDIF-»
+	
+	
+	«IF !impl.provides.bindings.isEmpty-»
+		«LET impl.provides.bindings.get(0) AS serviceBinding-»
+		«EXPAND defineEndPoint((WSBinding)serviceBinding, impl) FOR this-»
+		«EXPAND defineBeanCallBack((WSBinding)serviceBinding, impl) FOR this-»
+		«ENDLET»
+	«ENDIF»
 	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"cxf")»
 	<!-- Other CXF configurations (bus, conduit, security, ecc) -->	
 	«ENDPROTECT»
@@ -185,6 +193,98 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 «ENDFILE»
 «ENDDEFINE»
 
+«DEFINE defineBeanCallBack(WSBinding wsBinding, ServiceImpl impl) FOR LogicImplCartridge»
+«IF !(wsBinding).endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+		«LET endpoint.inChannel AS inInterceptor-»
+		«IF inInterceptor != null-»
+		«FOREACH inInterceptor.wsSecurity AS wsSecurity-»
+		«IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
+		<bean id="usernameTokenCallback«endpoint.code.toFirstUpper()»Id"
+     	class="it.csi.staris.starissrv.business.serviziorissrv.callback.UsernameTokenCallback«endpoint.code.toFirstUpper()»"/>
+		«ENDIF-»
+		«ENDFOREACH»
+		«ENDIF»
+		«ENDLET-»
+«ENDFOREACH»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE defineEndPoint(WSBinding wsBinding, ServiceImpl impl) FOR LogicImplCartridge»
+«IF !(wsBinding).endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+	<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»«endpoint.code.toFirstUpper()»WS"
+					implementor="#«serviceImplBeanId(impl.provides)»"
+					address="/«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»«endpoint.code.toFirstUpper()»">
+		«IF hasAttachment(impl.provides.operations)-»
+		<jaxws:properties>
+			<entry key="mtom-enabled" value="true"/>
+		</jaxws:properties>
+		«ENDIF-»
+		«LET endpoint.inChannel AS inInterceptor-»
+		«IF inInterceptor != null-»
+		<jaxws:inInterceptors>
+			<bean class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+				<constructor-arg>
+				    <map>
+					    <entry key="action" value="«getActionEndPoint(inInterceptor)»"/>
+					    «FOREACH inInterceptor.wsSecurity AS wsSecurity-»
+					    «IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
+					    <entry key="passwordType" value="PasswordText"/>
+					    <entry key="passwordCallbackRef">
+							<ref bean="usernameTokenCallback«endpoint.code.toFirstUpper()»Id"/>
+						</entry>
+						«ENDIF-»
+						«IF getTypeOfAction(wsSecurity) =="Signature" -»
+						<!-- SIGNATURE PROPERTIES -->
+						<entry key="signaturePropFile" value="it/csi/staris/starissrv/business/serviziorissrv/callback/server_sign.properties" />
+						<entry key="passwordCallbackClass" value="it.csi.staris.starissrv.business.serviziorissrv.callback.ServerPasswordCallback" />
+						«ENDIF-»
+						«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
+						<!-- ENCRYPT PROPERTIES -->
+						<entry key="decryptionPropFile" value="it/csi/staris/starissrv/business/serviziorissrv/callback/server_decrypt.properties" />
+						«ENDIF-»
+					    «ENDFOREACH-»
+					</map>
+				</constructor-arg>
+				</bean>
+		</jaxws:inInterceptors>
+		«ENDIF-»
+		«ENDLET-»
+		«LET endpoint.outChannel AS outInterceptor-»
+		«IF outInterceptor != null-»
+		<jaxws:outInterceptors>
+			<bean class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+					<constructor-arg>
+						<map>
+							<entry key="action" value="«getActionEndPoint(outInterceptor)»" />
+							«FOREACH outInterceptor.wsSecurity AS wsSecurity-»
+							«IF getTypeOfAction(wsSecurity) =="Signature" -»
+							<!-- SIGNATURE PROPERTIES -->
+							<entry key="user" value="myservicekey" />
+							<entry key="signaturePropFile" value="it/csi/staris/starissrv/business/serviziorissrv/callback/server_sign.properties" />
+							<entry key="passwordCallbackClass" value="it.csi.staris.starissrv.business.serviziorissrv.callback.ServerPasswordCallback" />
+							<entry key="signatureParts" value="{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Timestamp;{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Created;{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Expires;{Content}{http://schemas.xmlsoap.org/soap/envelope/}Body;" />
+							«ENDIF-»
+							«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
+							<!-- ENCRYPT PROPERTIES -->
+							<entry key="encryptionUser" value="myclientkey"/>
+							<entry key="encryptionPropFile" value="it/csi/staris/starissrv/business/serviziorissrv/callback/server_encrypt.properties" />
+							<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
+							<entry key="encryptionKeyTransportAlgorithm" value="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
+							<entry key="encryptionParts" value="{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Timestamp;" />
+							«ENDIF-»
+							«ENDFOREACH-»
+						</map>
+					</constructor-arg>
+				</bean>
+		</jaxws:outInterceptors>
+		«ENDIF-»
+		«ENDLET-»
+	</jaxws:endpoint>
+	«ENDFOREACH-»
+	«ENDIF-»
+«ENDDEFINE»
 
 «DEFINE daoBeansFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
 «FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"Dao-beans.xml"»<?xml version="1.0" encoding="UTF-8"?>
