@@ -220,6 +220,22 @@ creazione del build.xml per ANT
 	<!-- -->
 	<target name="environment-config"
 	        description="Predispone le configurazioni dipendenti dall&apos;ambiente." >
+	       		<!-- gestone variabili WS-Security -->
+		
+		«FOREACH this.serviceimplementations AS impl»
+	    «IF !impl.provides.bindings.isEmpty-»
+	    «LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
+		«IF !wsBinding.endpoints.isEmpty-»
+		«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/server_sign«endpoint.code».properties" token="@keystore.password.«endpoint.code»@" value="${keystore.password.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/server_sign«endpoint.code».properties" token="@keystore.alias.«endpoint.code»@" value="${keystore.alias.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/server_sign«endpoint.code».properties" token="@keystore.file.«endpoint.code»@" value="${keystore.file.«endpoint.code»}"/>
+		«ENDFOREACH»
+	    «ENDIF»
+	    «ENDLET»
+	    «ENDIF»
+	    «ENDFOREACH»
+	  
 		<!-- Gestione replace delle variabile d'ambiente create dal generatore -->
 		«IF targetPlatform.code == TargetPlatformCodes::JBoss43»
 		<!-- JBoss replacements -->
@@ -346,8 +362,10 @@ creazione del build.xml per ANT
 				<war destfile="${build}/archives/${target}/${service.type}-${service.name}-${binding.code}.war"
 				     webxml="${conf}/web/${binding.code}/${service.name}/WEB-INF/web.xml"
 				     roundup="false">
-					<webinf dir="${conf}/web/${binding.code}/${service.name}/WEB-INF/"
-					        includes="*.xml" />
+					<webinf dir="${conf}/web/${binding.code}/${service.name}/WEB-INF/">
+						<include name="*.xml" />
+						<include name="*.properties" />
+					</webinf>
 					<classes dir="${build}/classes">
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/business/${service.name}/**"/>
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
@@ -735,7 +753,24 @@ war-exclude-custom-libs-filter =
 «LET getAllResourceConnectors() AS allRC-»
 	«EXPAND envVarDefs FOREACH allRC-»
 «ENDLET-»
-
+# Configurazione WS-Security
+ «FOREACH this.serviceimplementations AS impl-»
+«IF !impl.provides.bindings.isEmpty-»
+«LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+#Configurazione Signature EndPoint «endpoint.code»
+# password per l'accesso al keystore
+keystore.password.«endpoint.code» = 
+# alias da utilizzare per il recupero della chiave privata del mittente (server)
+keystore.alias.«endpoint.code» =
+# keystore da utilizzare
+keystore.file.«endpoint.code» =
+«ENDFOREACH»
+«ENDIF»    
+«ENDLET»
+«ENDIF»
+«ENDFOREACH»
 «ENDFILE»
 «ENDDEFINE»
 
@@ -1024,4 +1059,34 @@ JAVA_HOME_CLIENT=jdk_1_4_2_05
 ANT_HOME=ant_1_6_2
 IVY_VERSION=ivy_2_0_0
 «ENDFILE»
+«ENDDEFINE»
+
+«DEFINE signPropertiesFile(SOABEModel model) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/server_sign"+endpoint.code+".properties"»
+##########################################################################################
+# SIGNATURE PROPERTIES
+# Proprieta' che il mittente (server) utilizzera' per accedere al keystore e
+# recuperare la propria chiave privata, con cui firmera' i messaggi in uscita
+# (risposte verso il client).
+##########################################################################################
+
+# Crypto provider di WSS4J (valori possibili: Merlin o BouncyCastle)
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+# tipo di keystore utilizzato
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+# password per l'accesso al keystore
+org.apache.ws.security.crypto.merlin.keystore.password=@keystore.password.«endpoint.code»@
+# alias da utilizzare per il recupero della chiave privata del mittente (server)
+org.apache.ws.security.crypto.merlin.keystore.alias=@keystore.alias.«endpoint.code»@
+# keystore da utilizzare
+org.apache.ws.security.crypto.merlin.file=@keystore.file.«endpoint.code»@
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDIF»
 «ENDDEFINE»
