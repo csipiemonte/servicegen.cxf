@@ -203,6 +203,10 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 		<bean id="usernameTokenCallback«endpoint.code.toFirstUpper()»Id"
      	class="it.csi.staris.starissrv.business.serviziorissrv.callback.UsernameTokenCallback«endpoint.code.toFirstUpper()»"/>
 		«ENDIF-»
+		«IF getTypeOfAction(wsSecurity) =="Signature"-»
+		<bean id="signatureCallback«endpoint.code.toFirstUpper()»Id"
+     	class="it.csi.staris.starissrv.business.serviziorissrv.callback.SignatureCallback«endpoint.code»"/>
+		«ENDIF-»
 		«ENDFOREACH»
 		«ENDIF»
 		«ENDLET-»
@@ -230,6 +234,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 					    <entry key="action" value="«getActionEndPoint(inInterceptor)»"/>
 					    «FOREACH inInterceptor.wsSecurity AS wsSecurity-»
 					    «IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
+					    <!-- USERNAME TOKEN PROPERTIES -->
 					    <entry key="passwordType" value="PasswordText"/>
 					    <entry key="passwordCallbackRef">
 							<ref bean="usernameTokenCallback«endpoint.code.toFirstUpper()»Id"/>
@@ -237,8 +242,10 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Signature" -»
 						<!-- SIGNATURE PROPERTIES -->
-						<entry key="signaturePropFile" value="it/csi/staris/starissrv/business/serviziorissrv/callback/server_sign.properties" />
-						<entry key="passwordCallbackClass" value="it.csi.staris.starissrv.business.serviziorissrv.callback.ServerPasswordCallback" />
+						<entry key="signaturePropFile" value="/WEB-INF/server_sign«endpoint.code».properties" />
+						<entry key="passwordCallbackRef">
+							<ref bean="signatureCallback«endpoint.code.toFirstUpper()»Id"/>
+						</entry>
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 						<!-- ENCRYPT PROPERTIES -->
@@ -247,7 +254,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 					    «ENDFOREACH-»
 					</map>
 				</constructor-arg>
-				</bean>
+			</bean>
 		</jaxws:inInterceptors>
 		«ENDIF-»
 		«ENDLET-»
@@ -262,9 +269,10 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 							«IF getTypeOfAction(wsSecurity) =="Signature" -»
 							<!-- SIGNATURE PROPERTIES -->
 							<entry key="user" value="myservicekey" />
-							<entry key="signaturePropFile" value="it/csi/staris/starissrv/business/serviziorissrv/callback/server_sign.properties" />
-							<entry key="passwordCallbackClass" value="it.csi.staris.starissrv.business.serviziorissrv.callback.ServerPasswordCallback" />
-							<entry key="signatureParts" value="{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Timestamp;{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Created;{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Expires;{Content}{http://schemas.xmlsoap.org/soap/envelope/}Body;" />
+							<entry key="signaturePropFile" value="/WEB-INF/server_sign«endpoint.code».properties" />
+							<entry key="passwordCallbackRef">
+								<ref bean="signatureCallback«endpoint.code.toFirstUpper()»Id"/>
+							</entry>
 							«ENDIF-»
 							«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 							<!-- ENCRYPT PROPERTIES -->
