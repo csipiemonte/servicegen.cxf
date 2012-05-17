@@ -242,10 +242,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Signature" -»
 						<!-- SIGNATURE PROPERTIES -->
-						<entry key="signaturePropFile" value="/WEB-INF/server_sign«endpoint.code».properties" />
-						<entry key="passwordCallbackRef">
-							<ref bean="signatureCallback«endpoint.code.toFirstUpper()»Id"/>
-						</entry>
+						<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.properties" />
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 						<!-- ENCRYPT PROPERTIES -->
@@ -269,7 +266,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 							«IF getTypeOfAction(wsSecurity) =="Signature" -»
 							<!-- SIGNATURE PROPERTIES -->
 							<entry key="user" value="myservicekey" />
-							<entry key="signaturePropFile" value="/WEB-INF/server_sign«endpoint.code».properties" />
+							<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.properties" />
 							<entry key="passwordCallbackRef">
 								<ref bean="signatureCallback«endpoint.code.toFirstUpper()»Id"/>
 							</entry>

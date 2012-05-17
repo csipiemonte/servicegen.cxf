@@ -68,7 +68,8 @@ Metodo centralizzato per la genarazione del progetto
 			«EXPAND javafiles::serviceFiles(this) FOREACH services»
 			«EXPAND javafiles::usernameTokenCallBack(this) FOREACH services»		
 			«EXPAND javafiles::signatureCallBack(this) FOREACH services»
-			«EXPAND buildfiles::signPropertiesFile(this) FOREACH  services»
+			«EXPAND buildfiles::ksPropertiesFile(this) FOREACH  services»
+			«EXPAND buildfiles::tsPropertiesFile(this) FOREACH  services»
 			«FOREACH services AS currsrv»
 				«EXPAND javafiles::typedefs(this, currsrv.codServizio) FOR currsrv.types»
 			«ENDFOREACH»

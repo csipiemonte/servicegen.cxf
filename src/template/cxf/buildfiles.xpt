@@ -227,9 +227,13 @@ creazione del build.xml per ANT
 	    «LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
 		«IF !wsBinding.endpoints.isEmpty-»
 		«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/server_sign«endpoint.code».properties" token="@keystore.password.«endpoint.code»@" value="${keystore.password.«endpoint.code»}"/>
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/server_sign«endpoint.code».properties" token="@keystore.alias.«endpoint.code»@" value="${keystore.alias.«endpoint.code»}"/>
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/server_sign«endpoint.code».properties" token="@keystore.file.«endpoint.code»@" value="${keystore.file.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.properties" token="@keystore.password.«endpoint.code»@" value="${keystore.password.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.properties" token="@keystore.alias.«endpoint.code»@" value="${keystore.alias.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.properties" token="@keystore.file.«endpoint.code»@" value="${keystore.file.«endpoint.code»}"/>
+			
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.properties" token="@truststore.password.«endpoint.code»@" value="${truststore.password.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.properties" token="@truststore.alias.«endpoint.code»@" value="${truststore.alias.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.properties" token="@truststore.file.«endpoint.code»@" value="${truststore.file.«endpoint.code»}"/>
 		«ENDFOREACH»
 	    «ENDIF»
 	    «ENDLET»
@@ -766,6 +770,13 @@ keystore.password.«endpoint.code» =
 keystore.alias.«endpoint.code» =
 # keystore da utilizzare
 keystore.file.«endpoint.code» =
+
+# password per l'accesso al keystore
+truststore.password.«endpoint.code» = 
+# alias da utilizzare per il recupero della chiave privata del mittente (server)
+truststore.alias.«endpoint.code» =
+# keystore da utilizzare
+truststore.file.«endpoint.code» =
 «ENDFOREACH»
 «ENDIF»    
 «ENDLET»
@@ -1061,29 +1072,33 @@ IVY_VERSION=ivy_2_0_0
 «ENDFILE»
 «ENDDEFINE»
 
-«DEFINE signPropertiesFile(SOABEModel model) FOR ServiceDef»
+«DEFINE ksPropertiesFile(SOABEModel model) FOR ServiceDef»
 «IF !this.bindings.isEmpty»
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «IF !wsBinding.endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/server_sign"+endpoint.code+".properties"»
-##########################################################################################
-# SIGNATURE PROPERTIES
-# Proprieta' che il mittente (server) utilizzera' per accedere al keystore e
-# recuperare la propria chiave privata, con cui firmera' i messaggi in uscita
-# (risposte verso il client).
-##########################################################################################
-
-# Crypto provider di WSS4J (valori possibili: Merlin o BouncyCastle)
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+endpoint.code.toFirstUpper()+".ks.properties"»
 org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
-# tipo di keystore utilizzato
 org.apache.ws.security.crypto.merlin.keystore.type=jks
-# password per l'accesso al keystore
 org.apache.ws.security.crypto.merlin.keystore.password=@keystore.password.«endpoint.code»@
-# alias da utilizzare per il recupero della chiave privata del mittente (server)
-org.apache.ws.security.crypto.merlin.keystore.alias=@keystore.alias.«endpoint.code»@
-# keystore da utilizzare
 org.apache.ws.security.crypto.merlin.file=@keystore.file.«endpoint.code»@
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE tsPropertiesFile(SOABEModel model) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+endpoint.code.toFirstUpper()+".ts.properties"»
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.password=@truststore.password.«endpoint.code»@
+org.apache.ws.security.crypto.merlin.file=@truststore.file.«endpoint.code»@
 «ENDFILE»
 «ENDFOREACH»
 «ENDIF»
