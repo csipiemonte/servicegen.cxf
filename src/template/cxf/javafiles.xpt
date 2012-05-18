@@ -622,12 +622,6 @@ public class UsernameTokenCallback«endpoint.code» implements CallbackHandler{
 		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("usernameTokenCallback"+endpoint.code)»
 		// implementazioen callback
 		
-	 	/*WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
-        if (pc.getIdentifier().equals("mauro") && pc.getPassword().equals("mypass")) {
-        } else {
-        	throw new IOException("User non riconosciuto");
-        }*/
-        
 		«ENDPROTECT»
     }
 }
@@ -659,21 +653,37 @@ public class SignatureCallback«endpoint.code» implements CallbackHandler{
 		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("signatureCallback"+endpoint.code)»
 		// implementazioen callback
 		
-	 	/*	WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
-		System.out.println("-----> [SERVER][ServerPasswordCallback::handle] : Client Password for User [" + pc.getIdentifier() + "]");
+		«ENDPROTECT»
+    }
+}
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»»
+«ENDIF»
+«ENDDEFINE»
 
-		//ottengo l'id utente che ha richiesto l'azione
-		String userID = pc.getIdentifier();
 
-		//recupero la password per l'IdUtente passato
-		String userPWD = PasswordHandler.getPassword4User(userID);
-		System.out.println("-----> [SERVER][ServerPasswordCallback::handle] Password for user [" + pc.getIdentifier() + "] is [" + userPWD + "]");
+«DEFINE encryptionCallBack(SOABEModel model) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/EncryptionCallback"+endpoint.code+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+import java.io.IOException;
 
-		if( !(userPWD.equalsIgnoreCase("")) && (userPWD.length()>0) ) {
-			// questo � necessario per settare il valore di password da utilizzare insieme a timestamp e nonce
-			// per la produzione del digest inviato nella richiesta
-			pc.setPassword(userPWD);
-		}*/
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
+import org.apache.ws.security.WSPasswordCallback;
+
+public class EncryptionCallback«endpoint.code» implements CallbackHandler{
+
+    public void handle(Callback[] callbacks) throws IOException, 
+        UnsupportedCallbackException {
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("signatureCallback"+endpoint.code)»
+		// implementazioen callback
         
 		«ENDPROTECT»
     }

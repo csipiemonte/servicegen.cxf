@@ -68,6 +68,7 @@ Metodo centralizzato per la genarazione del progetto
 			«EXPAND javafiles::serviceFiles(this) FOREACH services»
 			«EXPAND javafiles::usernameTokenCallBack(this) FOREACH services»		
 			«EXPAND javafiles::signatureCallBack(this) FOREACH services»
+			«EXPAND javafiles::encryptionCallBack(this) FOREACH services»
 			«EXPAND buildfiles::ksPropertiesFile(this) FOREACH  services»
 			«EXPAND buildfiles::tsPropertiesFile(this) FOREACH  services»
 			«EXPAND buildfiles::encryptPropertiesFile(this) FOREACH  services»

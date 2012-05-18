@@ -182,7 +182,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 	«IF !impl.provides.bindings.isEmpty-»
 		«LET impl.provides.bindings.get(0) AS serviceBinding-»
 		«EXPAND defineEndPoint((WSBinding)serviceBinding, impl) FOR this-»
-		«EXPAND defineBeanCallBack((WSBinding)serviceBinding, impl) FOR this-»
+		«EXPAND defineBeanCallBack(model,impl) FOR this-»
 		«ENDLET»
 	«ENDIF»
 	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"cxf")»
@@ -193,28 +193,33 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 «ENDFILE»
 «ENDDEFINE»
 
-«DEFINE defineBeanCallBack(WSBinding wsBinding, ServiceImpl impl) FOR LogicImplCartridge»
-«IF !(wsBinding).endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«DEFINE defineBeanCallBack(SOABEModel model,ServiceImpl impl) FOR LogicImplCartridge»
+
+«IF !impl.provides.bindings.isEmpty-»
+		«LET impl.provides.bindings.get(0) AS serviceBinding-»
+«IF !((WSBinding)serviceBinding).endpoints.isEmpty-»
+	«FOREACH ((WSBinding)serviceBinding).endpoints AS endpoint-»
 		«LET endpoint.inChannel AS inInterceptor-»
 		«IF inInterceptor != null-»
 		«FOREACH inInterceptor.wsSecurity AS wsSecurity-»
 		«IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
 		<bean id="usernameTokenCallback«endpoint.code.toFirstUpper()»Id"
-     	class="it.csi.staris.starissrv.business.serviziorissrv.callback.UsernameTokenCallback«endpoint.code.toFirstUpper()»"/>
+     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.UsernameTokenCallback«endpoint.code.toFirstUpper()»"/>
 		«ENDIF-»
 		«IF getTypeOfAction(wsSecurity) =="Signature"-»
 		<bean id="signatureCallback«endpoint.code.toFirstUpper()»Id"
-     	class="it.csi.staris.starissrv.business.serviziorissrv.callback.SignatureCallback«endpoint.code»"/>
+     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.SignatureCallback«endpoint.code»"/>
 		«ENDIF-»
 		«IF getTypeOfAction(wsSecurity) =="Encrypt"-»
-		<bean id="signatureCallback«endpoint.code.toFirstUpper()»Id"
-     	class="it.csi.staris.starissrv.business.serviziorissrv.callback.SignatureCallback«endpoint.code»"/>
+		<bean id="encryptionCallback«endpoint.code.toFirstUpper()»Id"
+     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.EncryptionCallback«endpoint.code»"/>
 		«ENDIF-»
 		«ENDFOREACH»
 		«ENDIF»
 		«ENDLET-»
 «ENDFOREACH»
+«ENDIF»
+«ENDLET»
 «ENDIF»
 «ENDDEFINE»
 
@@ -251,7 +256,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 						«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 						<!-- ENCRYPT PROPERTIES -->
 						<entry key="passwordCallbackRef">
-								<ref bean="signatureCallback«endpoint.code.toFirstUpper()»Id"/>
+								<ref bean="encryptionCallback«endpoint.code.toFirstUpper()»Id"/>
 						</entry>
 						<entry key="decryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.properties" />
 						«ENDIF-»
