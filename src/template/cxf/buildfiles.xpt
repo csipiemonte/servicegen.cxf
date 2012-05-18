@@ -1141,7 +1141,6 @@ org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«endpoint.code.t
 «FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+endpoint.code.toFirstUpper()+".encrypt.properties"»
 org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
 org.apache.ws.security.crypto.merlin.keystore.type=jks
-serviziorissrvCodeSign.ks.alias.codeSign
 org.apache.ws.security.crypto.merlin.keystore.password=@«this.codServizio»«endpoint.code.toFirstUpper()».encrypt.password.«endpoint.code»@
 org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«endpoint.code.toFirstUpper()».encrypt.file.«endpoint.code»@
 «ENDFILE»
@@ -1159,7 +1158,6 @@ org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«endpoint.code.t
 «FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+endpoint.code.toFirstUpper()+".decrypt.properties"»
 org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
 org.apache.ws.security.crypto.merlin.keystore.type=jks
-serviziorissrvCodeSign.ks.alias.codeSign
 org.apache.ws.security.crypto.merlin.keystore.password=@«this.codServizio»«endpoint.code.toFirstUpper()».decrypt.password.«endpoint.code»@
 org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«endpoint.code.toFirstUpper()».decrypt.file.«endpoint.code»@
 «ENDFILE»
