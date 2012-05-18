@@ -207,6 +207,10 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 		<bean id="signatureCallback«endpoint.code.toFirstUpper()»Id"
      	class="it.csi.staris.starissrv.business.serviziorissrv.callback.SignatureCallback«endpoint.code»"/>
 		«ENDIF-»
+		«IF getTypeOfAction(wsSecurity) =="Encrypt"-»
+		<bean id="signatureCallback«endpoint.code.toFirstUpper()»Id"
+     	class="it.csi.staris.starissrv.business.serviziorissrv.callback.SignatureCallback«endpoint.code»"/>
+		«ENDIF-»
 		«ENDFOREACH»
 		«ENDIF»
 		«ENDLET-»
@@ -246,7 +250,10 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 						<!-- ENCRYPT PROPERTIES -->
-						<entry key="decryptionPropFile" value="it/csi/staris/starissrv/business/serviziorissrv/callback/server_decrypt.properties" />
+						<entry key="passwordCallbackRef">
+								<ref bean="signatureCallback«endpoint.code.toFirstUpper()»Id"/>
+						</entry>
+						<entry key="decryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.properties" />
 						«ENDIF-»
 					    «ENDFOREACH-»
 					</map>
@@ -265,19 +272,18 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 							«FOREACH outInterceptor.wsSecurity AS wsSecurity-»
 							«IF getTypeOfAction(wsSecurity) =="Signature" -»
 							<!-- SIGNATURE PROPERTIES -->
-							<entry key="user" value="myservicekey" />
-							<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.properties" />
+							<entry key="user" value="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.alias.«endpoint.code»@" />
+							<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.properties" />
 							<entry key="passwordCallbackRef">
 								<ref bean="signatureCallback«endpoint.code.toFirstUpper()»Id"/>
 							</entry>
 							«ENDIF-»
 							«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 							<!-- ENCRYPT PROPERTIES -->
-							<entry key="encryptionUser" value="myclientkey"/>
-							<entry key="encryptionPropFile" value="it/csi/staris/starissrv/business/serviziorissrv/callback/server_encrypt.properties" />
+							<entry key="encryptionUser" value="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.alias.«endpoint.code»@"/>
+							<entry key="encryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.properties"  />
 							<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
 							<entry key="encryptionKeyTransportAlgorithm" value="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
-							<entry key="encryptionParts" value="{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Timestamp;" />
 							«ENDIF-»
 							«ENDFOREACH-»
 						</map>
