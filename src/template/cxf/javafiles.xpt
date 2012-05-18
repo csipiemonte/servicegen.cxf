@@ -682,7 +682,7 @@ public class EncryptionCallback«endpoint.code» implements CallbackHandler{
 
     public void handle(Callback[] callbacks) throws IOException, 
         UnsupportedCallbackException {
-		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("signatureCallback"+endpoint.code)»
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("encryptionCallback"+endpoint.code)»
 		// implementazioen callback
         
 		«ENDPROTECT»
