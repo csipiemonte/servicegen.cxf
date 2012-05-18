@@ -228,12 +228,20 @@ creazione del build.xml per ANT
 		«IF !wsBinding.endpoints.isEmpty-»
 		«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
 			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.password.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.password.«endpoint.code»}"/>
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.alias.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.alias.«endpoint.code»}"/>
 			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.file.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.file.«endpoint.code»}"/>
 			
 			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.password.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.password.«endpoint.code»}"/>
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.alias.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.alias.«endpoint.code»}"/>
 			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.file.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.file.«endpoint.code»}"/>
+			
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.password.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.password.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.file.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.file.«endpoint.code»}"/>
+			
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.password.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.password.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.properties" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.file.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.file.«endpoint.code»}"/>
+
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio.toLowerCase()»Cxf.xml" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.alias.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.alias.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio.toLowerCase()»Cxf.xml" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.alias.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.alias.«endpoint.code»}"/>
+			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio.toLowerCase()»Cxf.xml" token="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.alias.«endpoint.code»@" value="${«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.alias.«endpoint.code»}"/>
 		«ENDFOREACH»
 	    «ENDIF»
 	    «ENDLET»
@@ -771,12 +779,31 @@ war-exclude-custom-libs-filter =
 # keystore da utilizzare
 «impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.file.«endpoint.code» =
 
-# password per l'accesso al keystore
+# password per l'accesso al truststore
 «impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.password.«endpoint.code» = 
 # alias da utilizzare per il recupero della chiave privata del mittente (server)
 «impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.alias.«endpoint.code» =
-# keystore da utilizzare
+# trustore da utilizzare
 «impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.file.«endpoint.code» =
+
+
+
+
+#Configurazione Encryption EndPoint «endpoint.code»
+# password per l'accesso al keystore
+«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.password.«endpoint.code» = 
+# keystore da utilizzare
+«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.file.«endpoint.code» =
+# alias da utilizzare per il recupero della chiave privata del mittente (server)
+«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.alias.«endpoint.code» =
+
+# password per l'accesso al truststore
+«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.password.«endpoint.code» = 
+# truststore da utilizzare
+«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.file.«endpoint.code» =
+# alias da utilizzare per il recupero della chiave privata del mittente (server)
+«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.alias.«endpoint.code» =
+
 «ENDFOREACH»
 «ENDIF»    
 «ENDLET»
@@ -1105,3 +1132,41 @@ org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«endpoint.code.t
 «ENDLET»
 «ENDIF»
 «ENDDEFINE»
+
+«DEFINE encryptPropertiesFile(SOABEModel model) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+endpoint.code.toFirstUpper()+".encrypt.properties"»
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+serviziorissrvCodeSign.ks.alias.codeSign
+org.apache.ws.security.crypto.merlin.keystore.password=@«this.codServizio»«endpoint.code.toFirstUpper()».encrypt.password.«endpoint.code»@
+org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«endpoint.code.toFirstUpper()».encrypt.file.«endpoint.code»@
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE decryptPropertiesFile(SOABEModel model) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+endpoint.code.toFirstUpper()+".decrypt.properties"»
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+serviziorissrvCodeSign.ks.alias.codeSign
+org.apache.ws.security.crypto.merlin.keystore.password=@«this.codServizio»«endpoint.code.toFirstUpper()».decrypt.password.«endpoint.code»@
+org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«endpoint.code.toFirstUpper()».decrypt.file.«endpoint.code»@
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+
