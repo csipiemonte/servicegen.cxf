@@ -621,15 +621,10 @@ public class InInterceptorCallback«endpoint.code» implements CallbackHandler{
         UnsupportedCallbackException {
 		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("usernameTokenCallback"+endpoint.code)»
 		/*
-		// implementazioen callback
 		WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
 		int pcUsage = pc.getUsage();
-		if(WSPasswordCallback.SIGNATURE == pcUsage||WSPasswordCallback.DECRYPT == pcUsage||WSPasswordCallback.USERNAME_TOKEN == pcUsage){
-			if (pc.getIdentifier().equals("myuser")
-					&& pc.getPassword().equals("mypass")) {
-			} else {
-				throw new IOException("User non riconosciuto");
-			}	
+		if(WSPasswordCallback.DECRYPT == pcUsage){
+			pc.setPassword("mypass");
 		}
 
 		*/
@@ -663,14 +658,9 @@ public class OutInterceptorCallback«endpoint.code» implements CallbackHandler{
         UnsupportedCallbackException {
 		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("signatureCallback"+endpoint.code)»
 		/*
-		// implementazioen callback
 		WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
-		
 		int pcUsage = pc.getUsage();
-		if(WSPasswordCallback.SIGNATURE == pcUsage||WSPasswordCallback.DECRYPT == pcUsage||WSPasswordCallback.USERNAME_TOKEN == pcUsage){
-			//ottengo l'id utente che ha richiesto l'azione
-			String userID = pc.getIdentifier();
-			// settare il valore di password inviato nella richiesta
+		if(WSPasswordCallback.SIGNATURE == pcUsage){
 			pc.setPassword("mypass");
 		}
 		*/
