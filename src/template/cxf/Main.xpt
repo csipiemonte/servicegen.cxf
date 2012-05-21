@@ -66,9 +66,8 @@ Metodo centralizzato per la genarazione del progetto
 		«LET getProvidedServices(this) AS services»
 			«EXPAND configfiles::serviceFiles(this) FOREACH services»
 			«EXPAND javafiles::serviceFiles(this) FOREACH services»
-			«EXPAND javafiles::usernameTokenCallBack(this) FOREACH services»		
-			«EXPAND javafiles::signatureCallBack(this) FOREACH services»
-			«EXPAND javafiles::encryptionCallBack(this) FOREACH services»
+			«EXPAND javafiles::inInterceptorCallBack(this) FOREACH services»		
+			«EXPAND javafiles::outInterceptorCallBack(this) FOREACH services»
 			«EXPAND buildfiles::ksPropertiesFile(this) FOREACH  services»
 			«EXPAND buildfiles::tsPropertiesFile(this) FOREACH  services»
 			«EXPAND buildfiles::encryptPropertiesFile(this) FOREACH  services»

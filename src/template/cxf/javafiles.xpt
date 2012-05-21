@@ -601,12 +601,12 @@ public class «authenticationHelperClassName(this)» {
 «ENDFILE»
 «ENDDEFINE»
 
-«DEFINE usernameTokenCallBack(SOABEModel model) FOR ServiceDef»
+«DEFINE inInterceptorCallBack(SOABEModel model) FOR ServiceDef»
 «IF !this.bindings.isEmpty»
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «IF !wsBinding.endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/UsernameTokenCallback"+endpoint.code+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/InInterceptorCallback"+endpoint.code+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
 import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
@@ -615,13 +615,24 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.ws.security.WSPasswordCallback;
 
-public class UsernameTokenCallback«endpoint.code» implements CallbackHandler{
+public class InInterceptorCallback«endpoint.code» implements CallbackHandler{
 
     public void handle(Callback[] callbacks) throws IOException, 
         UnsupportedCallbackException {
 		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("usernameTokenCallback"+endpoint.code)»
+		/*
 		// implementazioen callback
-		
+		WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
+		int pcUsage = pc.getUsage();
+		if(WSPasswordCallback.SIGNATURE == pcUsage||WSPasswordCallback.DECRYPT == pcUsage||WSPasswordCallback.USERNAME_TOKEN == pcUsage){
+			if (pc.getIdentifier().equals("myuser")
+					&& pc.getPassword().equals("mypass")) {
+			} else {
+				throw new IOException("User non riconosciuto");
+			}	
+		}
+
+		*/
 		«ENDPROTECT»
     }
 }
@@ -632,12 +643,12 @@ public class UsernameTokenCallback«endpoint.code» implements CallbackHandler{
 «ENDIF»
 «ENDDEFINE»
 
-«DEFINE signatureCallBack(SOABEModel model) FOR ServiceDef»
+«DEFINE outInterceptorCallBack(SOABEModel model) FOR ServiceDef»
 «IF !this.bindings.isEmpty»
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «IF !wsBinding.endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/SignatureCallback"+endpoint.code+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/OutInterceptorCallback"+endpoint.code+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
 import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
@@ -646,13 +657,23 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.ws.security.WSPasswordCallback;
 
-public class SignatureCallback«endpoint.code» implements CallbackHandler{
+public class OutInterceptorCallback«endpoint.code» implements CallbackHandler{
 
     public void handle(Callback[] callbacks) throws IOException, 
         UnsupportedCallbackException {
 		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("signatureCallback"+endpoint.code)»
+		/*
 		// implementazioen callback
+		WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
 		
+		int pcUsage = pc.getUsage();
+		if(WSPasswordCallback.SIGNATURE == pcUsage||WSPasswordCallback.DECRYPT == pcUsage||WSPasswordCallback.USERNAME_TOKEN == pcUsage){
+			//ottengo l'id utente che ha richiesto l'azione
+			String userID = pc.getIdentifier();
+			// settare il valore di password inviato nella richiesta
+			pc.setPassword("mypass");
+		}
+		*/
 		«ENDPROTECT»
     }
 }
@@ -663,34 +684,3 @@ public class SignatureCallback«endpoint.code» implements CallbackHandler{
 «ENDIF»
 «ENDDEFINE»
 
-
-«DEFINE encryptionCallBack(SOABEModel model) FOR ServiceDef»
-«IF !this.bindings.isEmpty»
-«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/EncryptionCallback"+endpoint.code+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
-import java.io.IOException;
-
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-
-import org.apache.ws.security.WSPasswordCallback;
-
-public class EncryptionCallback«endpoint.code» implements CallbackHandler{
-
-    public void handle(Callback[] callbacks) throws IOException, 
-        UnsupportedCallbackException {
-		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("encryptionCallback"+endpoint.code)»
-		// implementazioen callback
-        
-		«ENDPROTECT»
-    }
-}
-«ENDFILE»
-«ENDFOREACH»
-«ENDIF»
-«ENDLET»»
-«ENDIF»
-«ENDDEFINE»
