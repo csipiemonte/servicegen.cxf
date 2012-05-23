@@ -617,19 +617,48 @@ import org.apache.ws.security.WSPasswordCallback;
 
 public class InInterceptorCallback«endpoint.code» implements CallbackHandler{
 
+	private WSPasswordCallback pc;
     public void handle(Callback[] callbacks) throws IOException, 
         UnsupportedCallbackException {
-		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("usernameTokenCallback"+endpoint.code)»
-		/*
-		WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
+		pc = (WSPasswordCallback) callbacks[0];
 		int pcUsage = pc.getUsage();
-		if(WSPasswordCallback.DECRYPT == pcUsage){
-			pc.setPassword("mypass");
+		
+		«IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Encrypt").size>0 -»
+		if(WSPasswordCallback.DECRYPT == pcUsage){		
+			setPassordDecrypt();
 		}
+		«ENDIF-»
+		
+		«IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0 -»
+		if(WSPasswordCallback.USERNAME_TOKEN == pcUsage){		
+			validatePassordUsernameToken();
+		}
+		«ENDIF-»
+	}
 
-		*/
+«IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Encrypt").size>0 »
+private void setPassordDecrypt(){
+
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordDecrypt"+endpoint.code)»
+			//pc.setPassword("mypass");
 		«ENDPROTECT»
-    }
+}
+«ENDIF»
+
+«IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0 »
+private void validatePassordUsernameToken(){
+
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("validatePassordUsernameToken"+endpoint.code)»
+			/*
+			if (pc.getIdentifier().equals("user")
+					&& pc.getPassword().equals("mypass")) {
+			} else {
+				throw new IOException("User non riconosciuto");
+			}
+			*/
+		«ENDPROTECT»
+}
+«ENDIF»
 }
 «ENDFILE»
 «ENDFOREACH»
@@ -653,19 +682,48 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import org.apache.ws.security.WSPasswordCallback;
 
 public class OutInterceptorCallback«endpoint.code» implements CallbackHandler{
-
+	
+	private WSPasswordCallback pc;
     public void handle(Callback[] callbacks) throws IOException, 
         UnsupportedCallbackException {
-		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("signatureCallback"+endpoint.code)»
-		/*
-		WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
+        
+        pc = (WSPasswordCallback) callbacks[0];
 		int pcUsage = pc.getUsage();
-		if(WSPasswordCallback.SIGNATURE == pcUsage){
-			pc.setPassword("mypass");
+		
+		«IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Signature").size>0 -»
+		if(WSPasswordCallback.SIGNATURE == pcUsage){		
+			setPassordSignature();
 		}
-		*/
-		«ENDPROTECT»
+		«ENDIF-»
+		
+		«IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0 -»
+		if(WSPasswordCallback.USERNAME_TOKEN == pcUsage){		
+			setPassordUsernameToken();
+		}
+		«ENDIF-»
+		
     }
+
+
+«IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Signature").size>0 »
+private void setPassordSignature(){
+
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordSignature"+endpoint.code)»
+			//pc.setPassword("mypass");
+		«ENDPROTECT»
+}
+«ENDIF»
+
+«IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0 »
+private void setPassordUsernameToken(){
+
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordUsernameToken"+endpoint.code)»
+			//pc.setPassword("mypass");
+		«ENDPROTECT»
+}
+
+
+«ENDIF»
 }
 «ENDFILE»
 «ENDFOREACH»
