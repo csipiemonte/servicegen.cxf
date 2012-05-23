@@ -714,6 +714,7 @@ ear-custom-libs-filter =
                             ejb*.jar,                      \
                             spring*.jar,                   \
                             aopalliance*.jar,              \
+                            geronimo*.jar,              \
                             «getAppServerLib(this)»*.jar«IF targetPlatform.code == TargetPlatformCodes::JBoss43-», \
                             weblogic-7*.jar,               \
                             weblogic-9*.jar                \
