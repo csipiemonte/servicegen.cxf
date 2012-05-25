@@ -43,6 +43,7 @@ Interfaccia del delegate
 «FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.List;
+import javax.xml.ws.WebServiceContext;
 
 import «fullQualifiedEntitiesPkg(codServizio, model)».*;
 import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
@@ -64,6 +65,7 @@ Classe di implementazione del delegate
 «FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.List;
+import javax.xml.ws.WebServiceContext;
 
 import «fullQualifiedEntitiesPkg(codServizio, model)».*;
 import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
@@ -232,7 +234,7 @@ COMMON METHODS
 «REM»Genera la definizione di ciascuna operation (metodo) del servizio«ENDREM»
 «DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR Operation»
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
-	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+	WebServiceContext wsContext, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
 )«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-»;
 «ENDDEFINE»
 
@@ -242,9 +244,10 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»
 /**
  * @generated
  */
+ 
 «IF this.txType==TXTypeEnum::newLocalTX-»@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)«ENDIF-»
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
-	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+	WebServiceContext wsContext, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
 )«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
 	Logger logger = getLogger(null);
 	logger.debug("[«implClassName»::«name»] - START");

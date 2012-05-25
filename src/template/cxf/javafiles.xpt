@@ -101,6 +101,8 @@ SERVICE IMPLEMENTATION CLASS (SI)
 import java.util.List;
 
 import javax.jws.WebService;
+import javax.xml.ws.WebServiceContext;
+import javax.annotation.Resource;
 
 import «fullQualifiedWebServiceInterfacePkg(model)».*;
 import «fullQualifiedEntitiesPkg(codServizio, model)».*;
@@ -122,6 +124,10 @@ public class «serviceImplementationClassName()» implements «serviceInterfaceN
 
 «REM»Genera la property per l'iniezione via Spring della classe di business«ENDREM»
 «DEFINE businessClassInjection(SOABEModel model) FOR ServiceDef»
+
+@Resource
+WebServiceContext wsContext;
+
 private «serviceBusinessInterfaceName()» «serviceBusinessInterfaceName().toFirstLower()»;
 
 public «serviceBusinessInterfaceName()» get«serviceBusinessInterfaceName()»() {
@@ -139,7 +145,7 @@ public void set«serviceBusinessInterfaceName()»(«serviceBusinessInterfaceName
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	«EXPAND paramDef(model, def, false) FOREACH params SEPARATOR ","»
 )«EXPAND throwsClause(model, def) FOR this-» {
-	«IF this.returnType != null»return «ENDIF»get«serviceBusinessInterfaceName(def)»().«this.name»(«FOREACH params AS p SEPARATOR ","»«p.name»«ENDFOREACH»);
+	«IF this.returnType != null»return «ENDIF»get«serviceBusinessInterfaceName(def)»().«this.name»(wsContext, «FOREACH params AS p SEPARATOR ","»«p.name»«ENDFOREACH»);
 }
 «ENDDEFINE»
 
