@@ -398,3 +398,6 @@ context ServiceBinding ERROR "Il parametro codBinding deve essere valorizzato : 
 	this.codBinding != null && this.codBinding.length>0;
 	
 context WSEndpointChannel ERROR "Un WSEndpointChannel non puo' vontere piu' di un WSSecuritySpec di tipo UsernameToken"+loc() : this.wsSecurity.select(e|e.getTypeOfAction() == "UsernameToken").size <=1;
+context WSEndpointChannel ERROR "Un WSEndpointChannel non puo' vontere piu' di un WSSecuritySpec di tipo Signature"+loc() : this.wsSecurity.select(e|e.getTypeOfAction() == "Signature").size <=1;
+context WSEndpointChannel ERROR "Un WSEndpointChannel non puo' vontere piu' di un WSSecuritySpec di tipo Encrypt"+loc() : this.wsSecurity.select(e|e.getTypeOfAction() == "Encrypt").size <=1;
+context WSEndpointChannel ERROR "Un WSEndpointChannel non puo' vontere piu' di un WSSecuritySpec di tipo Timestamp"+loc() : this.wsSecurity.select(e|e.getTypeOfAction() == "Timestamp").size <=1;
