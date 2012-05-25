@@ -612,7 +612,7 @@ public class «authenticationHelperClassName(this)» {
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «IF !wsBinding.endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/InInterceptorCallback"+endpoint.code+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/InInterceptorCallback"+getCodeEndpoint(endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
 import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
@@ -621,7 +621,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.ws.security.WSPasswordCallback;
 
-public class InInterceptorCallback«endpoint.code» implements CallbackHandler{
+public class InInterceptorCallback«getCodeEndpoint(endpoint)» implements CallbackHandler{
 
 	private WSPasswordCallback pc;
     public void handle(Callback[] callbacks) throws IOException, 
@@ -645,7 +645,7 @@ public class InInterceptorCallback«endpoint.code» implements CallbackHandler{
 «IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Encrypt").size>0 »
 private void setPassordDecrypt(){
 
-		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordDecrypt"+endpoint.code)»
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordDecrypt"+getCodeEndpoint(endpoint))»
 			//pc.setPassword("mypass");
 		«ENDPROTECT»
 }
@@ -654,7 +654,7 @@ private void setPassordDecrypt(){
 «IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0 »
 private void validatePassordUsernameToken(){
 
-		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("validatePassordUsernameToken"+endpoint.code)»
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("validatePassordUsernameToken"+getCodeEndpoint(endpoint))»
 			/*
 			if (pc.getIdentifier().equals("user")
 					&& pc.getPassword().equals("mypass")) {
@@ -678,7 +678,7 @@ private void validatePassordUsernameToken(){
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «IF !wsBinding.endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/OutInterceptorCallback"+endpoint.code+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/callback/OutInterceptorCallback"+getCodeEndpoint(endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
 import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
@@ -687,7 +687,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.ws.security.WSPasswordCallback;
 
-public class OutInterceptorCallback«endpoint.code» implements CallbackHandler{
+public class OutInterceptorCallback«getCodeEndpoint(endpoint)» implements CallbackHandler{
 	
 	private WSPasswordCallback pc;
     public void handle(Callback[] callbacks) throws IOException, 
@@ -714,7 +714,7 @@ public class OutInterceptorCallback«endpoint.code» implements CallbackHandler{
 «IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Signature").size>0 »
 private void setPassordSignature(){
 
-		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordSignature"+endpoint.code)»
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordSignature"+getCodeEndpoint(endpoint))»
 			//pc.setPassword("mypass");
 		«ENDPROTECT»
 }
@@ -723,7 +723,7 @@ private void setPassordSignature(){
 «IF endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0 »
 private void setPassordUsernameToken(){
 
-		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordUsernameToken"+endpoint.code)»
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordUsernameToken"+getCodeEndpoint(endpoint))»
 			//pc.setPassword("mypass");
 		«ENDPROTECT»
 }

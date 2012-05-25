@@ -199,11 +199,11 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 		«LET impl.provides.bindings.get(0) AS serviceBinding-»
 «IF !((WSBinding)serviceBinding).endpoints.isEmpty-»
 	«FOREACH ((WSBinding)serviceBinding).endpoints AS endpoint-»
-		<bean id="inInterceptorsCallback«endpoint.code.toFirstUpper()»Id"
-     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.InInterceptorCallback«endpoint.code.toFirstUpper()»"/>
+		<bean id="inInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
+     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.InInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()»"/>
      	
-     	<bean id="outInterceptorsCallback«endpoint.code.toFirstUpper()»Id"
-     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.OutInterceptorCallback«endpoint.code.toFirstUpper()»"/>
+     	<bean id="outInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
+     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.OutInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()»"/>
 «ENDFOREACH»
 «ENDIF»
 «ENDLET»
@@ -213,9 +213,9 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 «DEFINE defineEndPoint(WSBinding wsBinding, ServiceImpl impl) FOR LogicImplCartridge»
 «IF !(wsBinding).endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-	<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»«endpoint.code.toFirstUpper()»WS"
+	<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»«getCodeEndpoint(endpoint).toFirstUpper()»WS"
 					implementor="#«serviceImplBeanId(impl.provides)»"
-					address="/«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»«endpoint.code.toFirstUpper()»">
+					address="/«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»«getCodeEndpoint(endpoint).toFirstUpper()»">
 		«IF hasAttachment(impl.provides.operations)-»
 		<jaxws:properties>
 			<entry key="mtom-enabled" value="true"/>
@@ -229,9 +229,9 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 				    <map>
 					    <entry key="action" value="«getActionEndPoint(inInterceptor)»"/>
 					    
-					    <entry key="user" value="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».user.«endpoint.code»@" />
+					    <entry key="user" value="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».user.«getCodeEndpoint(endpoint)»@" />
 					    <entry key="passwordCallbackRef">
-							<ref bean="inInterceptorsCallback«endpoint.code.toFirstUpper()»Id"/>
+							<ref bean="inInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"/>
 						</entry>
 					    «FOREACH inInterceptor.wsSecurity AS wsSecurity-»
 					    «IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
@@ -240,11 +240,11 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Signature" -»
 						<!-- SIGNATURE PROPERTIES -->
-						<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ts.properties" />
+						<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.properties" />
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 						<!-- ENCRYPT PROPERTIES -->
-						<entry key="decryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».decrypt.properties" />
+						<entry key="decryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.properties" />
 						«ENDIF-»
 					    «ENDFOREACH-»
 					</map>
@@ -261,9 +261,9 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 						<map>
 							<entry key="action" value="«getActionEndPoint(outInterceptor)»" />
 							
-							<entry key="user" value="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».user.«endpoint.code»@" />
+							<entry key="user" value="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».user.«getCodeEndpoint(endpoint)»@" />
 						    <entry key="passwordCallbackRef">
-								<ref bean="outInterceptorsCallback«endpoint.code.toFirstUpper()»Id"/>
+								<ref bean="outInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"/>
 							</entry>
 							«FOREACH outInterceptor.wsSecurity AS wsSecurity-»
 							 «IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
@@ -272,12 +272,12 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 							«ENDIF-»
 							«IF getTypeOfAction(wsSecurity) =="Signature" -»
 							<!-- SIGNATURE PROPERTIES -->
-							<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».ks.properties" />
+							<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.properties" />
 							«ENDIF-»
 							«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 							<!-- ENCRYPT PROPERTIES -->
-							<entry key="encryptionUser" value="@«impl.provides.codServizio»«endpoint.code.toFirstUpper()».userEncrypt.«endpoint.code»@"/>
-							<entry key="encryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«endpoint.code.toFirstUpper()».encrypt.properties"  />
+							<entry key="encryptionUser" value="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».userEncrypt.«getCodeEndpoint(endpoint)»@"/>
+							<entry key="encryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.properties"  />
 							<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
 							<entry key="encryptionKeyTransportAlgorithm" value="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
 							«ENDIF-»

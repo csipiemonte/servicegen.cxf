@@ -262,6 +262,7 @@ String getActionEndPoint(WSEndpointChannel actionList): JAVA
 String getTypeOfAction(WSSecuritySpec action): JAVA
 it.csi.mddtools.servicegen.cxf.genutils.CodeGenetationUtils.getTypeOfAction(it.csi.mddtools.servicedef.WSSecuritySpec);
 
+String getCodeEndpoint(WSEndpoint endpoint): endpoint.code!=null ? endpoint.code : "";
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: vedere se servono
 
