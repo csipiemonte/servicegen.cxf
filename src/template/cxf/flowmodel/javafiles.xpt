@@ -194,7 +194,9 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfac
 	 * @generated
 	 */
 	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto,model.codComponente)»";
-
+	public static final Logger logger = Logger
+			.getLogger(LOGGER_PREFIX);
+	
 	«EXPAND wsCallClientClassInjection(model) FOR this-»
 	
 	«EXPAND authenticationHelperClassInjection(model) FOR this-»
@@ -203,6 +205,12 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfac
 	// inserire qui la definizione di varibili locali o costanti dell'implementazione.
 	// non verranno sovrascritte da successive rigenerazioni
 	«ENDPROTECT»
+	
+	
+	/*
+	 * Implementazione centralizzata eseguiWorkFlow 
+	 */
+	«EXPAND operationEseguiWorkFlow(model, this, serviceBusinessClassName()) FOR this-»
 
 	/*
 	 * Implementazione operazioni esposte dal servizio
@@ -346,7 +354,7 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	WebServiceContext wsContext, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
 )«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
-	Logger logger = getLogger(null);
+	//Logger logger = getLogger(null);
 	logger.debug("[«implClassName»::«name»] - START");
 
 	// inizio misurazione
@@ -368,32 +376,64 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»
 		«EXPAND principalNameParameter(model, def) FOR this-»
 
 		// inizializzazione e richiamo del flusso
-		try {
-			OswMainEngine.esecuzioneWorkflow(remoteUser, workflowDescriptor, new Integer(0), persistentParams);
-		}
-		catch(WorkflowException wfe) {
-			logger.error("[«implClassName»::«name»] - errore non gestito nell'esecuzione del flusso", wfe);
-			throw new javax.xml.ws.WebServiceException("Errore non gestito nell'esecuzione del flusso: "+wfe.getMessage(), wfe);
-		}
-	 
-	 	Object retVal = persistentParams.get("result");
+			eseguiWorkFlow(workflowDescriptor, persistentParams, "«name»", remoteUser);
+			
+			Object retVal = persistentParams.get("result");
      	// se il valore di ritorno e' un'eccezione occorre rilanciarla (anche se metodo void)
       	if (retVal != null && retVal instanceof Throwable) {
-     		«errorLog(implClassName, this.name, "Errore occorso nell'esecuzione del flusso\"+retVal+\"","(Throwable)retVal" )»
+     		logger.error("[«implClassName»::methodName] - Errore occorso nell'esecuzione del flusso\"+retVal+\"",(Throwable)retVal);
      		throw (Throwable)retVal;
      	}
-		«IF returnType!=null-»
      	else {
-     		return («map2javaWsType(returnType, def.codServizio, model)»)persistentParams.get("result");
-     	}
+     	«IF returnType!=null-»	
+		return («map2javaWsType(returnType, def.codServizio, model)»)persistentParams.get("result");
 		«ENDIF-»
+     	}
 	} catch(Throwable ex){
 		«EXPAND throwsCatch(model, def, implClassName) FOR this-»
 	} finally {
 		// fine misurazione
 		watcher.stop();
-		watcher.dumpElapsed("«implClassName»", "«name»()", "invocazione servizio [«removeSeparator(def.codServizio)»]::[«name»]", "(valore input omesso)");
-		logger.debug("[«implClassName»::«name»] - END");
+		watcher.dumpElapsed("«implClassName»", "methodName()", "invocazione servizio [«removeSeparator(def.codServizio)»]::[methodName]", "(valore input omesso)");
+		logger.debug("[«implClassName»::methodName] - END");
+	}
+}
+«ENDDEFINE»
+
+
+«REM»Genera metodo eseguiWorkFlow di accesso al workflow«ENDREM»
+«DEFINE operationEseguiWorkFlow(SOABEModel model, ServiceDef def, String implClassName) FOR ServiceDef»
+/**
+ * @generated
+ */
+public Object eseguiWorkFlow(
+			String workflowDescriptor,
+			java.util.HashMap persistentParams, String methodName,
+			String remoteUser
+) throws Exception {
+	//Logger logger = getLogger(null);
+	logger.debug("[«implClassName»::methodName] - START");
+
+	// inizio misurazione
+	it.csi.util.performance.StopWatch watcher = new it.csi.util.performance.StopWatch("«model.codComponente»");
+	watcher.start();
+
+			// inizializzazione e richiamo del flusso
+		try {
+			OswMainEngine.esecuzioneWorkflow(remoteUser, workflowDescriptor, Integer.valueOf(0), persistentParams);
+			Object retVal = persistentParams.get("result");
+     	    return retVal;
+		}
+		catch(WorkflowException wfe) {
+			logger.error("[«implClassName»::methodName] - errore non gestito nell'esecuzione del flusso", wfe);
+			throw new javax.xml.ws.WebServiceException("Errore non gestito nell'esecuzione del flusso: "+wfe.getMessage(), wfe);
+		}
+	
+	finally {
+		// fine misurazione
+		watcher.stop();
+		watcher.dumpElapsed("«implClassName»", "methodName()", "invocazione servizio [«removeSeparator(def.codServizio)»]::[methodName]", "(valore input omesso)");
+		logger.debug("[«implClassName»::methodName] - END");
 	}
 
 }
