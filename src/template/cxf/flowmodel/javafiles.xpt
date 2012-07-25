@@ -160,9 +160,114 @@ public interface «serviceBusinessInterfaceName()» {
 
 
 «REM»
+*************************************************************
+Implementazione del ServiceLocator del servizio di 
+orchestrazione in esame
+*************************************************************
+«ENDREM»
+«DEFINE serviceLocatorClassFile(SOABEModel model) FOR ServiceDef»
+	«FILE fullServiceLocatorClassDir(model)+"/ServiceLocator.java"»
+package «getFullServiceLocatorPkg(model)»;
+
+import it.csi.csi.wrapper.ConfigException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.log4j.Logger;
+
+/**
+ * @generated
+ */
+ 
+ public class ServiceLocator {
+ 	
+ 	/**
+ 	* @generated
+ 	*/
+ 	
+ 	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto,model.codComponente)»";
+	public static final Logger logger = Logger
+			.getLogger(LOGGER_PREFIX);
+			
+    private static ServiceLocator me;
+	private Map cacheMap;
+
+    static {
+      try {
+        me = new ServiceLocator();
+      } catch(Exception se) {
+        System.err.println(se);
+        logger.error("[«getFullServiceLocatorPkg(model)».ServiceLocator::methodName] - errore non gestito nell'esecuzione del flusso",se);
+        //se.printStackTrace(System.err);
+      }
+    }		
+    
+    private ServiceLocator() throws Exception  {
+	   
+	    logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::ServiceLocator()]-START  ");
+        
+        cacheMap = Collections.synchronizedMap(new HashMap());
+        
+        logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::ServiceLocator()]-END  ");
+      
+    }	
+    
+    static public ServiceLocator getInstance() {
+      return me;
+    }
+    
+    public Object getPD(String localPDRes)
+			throws ConfigException {
+		logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-START  ");
+		
+		Object tempPdObject = null;
+
+		logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-reperimento PD da risorsa locale:\"+localPDRes+\"");
+		
+		if (cacheMap.containsKey(localPDRes)) {
+
+			logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-PD gia' presente in cache");
+
+			logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-END");
+			tempPdObject = cacheMap.get(localPDRes);
+		} else {
+
+			logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-PD non presente in cache");
+
+			java.io.InputStream localPD = this.getClass().getResourceAsStream(
+					localPDRes);
+
+			it.csi.csi.porte.InfoPortaDelegata infoPD;
+			try {
+				infoPD = it.csi.csi.util.xml.PDConfigReader.read(localPD);
+				tempPdObject = it.csi.csi.porte.proxy.PDProxy.newInstance(infoPD);
+				cacheMap.put(localPDRes, tempPdObject);
+				
+			} catch (Exception e) {
+			logger.error("[«getFullServiceLocatorPkg( model)».ServiceLocator::getPD] - Errore nella lettura della configurazione da "+ localPDRes,e);
+				throw new ConfigException(
+						"Errore nella lettura della configurazione da "
+								+ localPDRes, e);
+			}
+
+			logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-END");
+			
+		}
+		
+		return tempPdObject;
+	}
+}
+
+
+	«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»
 Classe di implementazione del delegate
 «ENDREM»
 «DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«EXPAND serviceLocatorClassFile(model) FOR this»
 «FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
 
 import java.util.HashMap;
