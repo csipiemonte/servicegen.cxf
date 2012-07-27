@@ -676,7 +676,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.ws.security.WSPasswordCallback;
 
-public class InInterceptorCallback«getCodeEndpoint(endpoint)» implements CallbackHandler{
+public class InInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()» implements CallbackHandler{
 
 	private WSPasswordCallback pc;
     public void handle(Callback[] callbacks) throws IOException, 
@@ -732,7 +732,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.ws.security.WSPasswordCallback;
 
-public class OutInterceptorCallback«getCodeEndpoint(endpoint)» implements CallbackHandler{
+public class OutInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()» implements CallbackHandler{
 	
 	private WSPasswordCallback pc;
     public void handle(Callback[] callbacks) throws IOException, 
