@@ -91,7 +91,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
 	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
      <!-- CXF CLIENT CONFIGURATION for «((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio» WS -->
-	<import resource="classpath:«((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio.toLowerCase()»ClientCxf.xml" />   
+	<import resource="classpath:«wsCallClientAppContextName(((RPCWebServiceConnector)currRPCWSC).serviceDef, ((RPCWebServiceConnector)currRPCWSC).endpoint)»" />   
     «ENDFOREACH-»
 	«ENDIF-»
 	«ENDLET-»
@@ -124,7 +124,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 		«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
 		«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
 		<!-- CXF CLIENT for «((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio» WS -->
-		<property name="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef)»" ref="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef)»" />
+		<property name="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint )»" ref="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint)»" />
 	    «ENDFOREACH-»
 		«ENDIF-»
 		«ENDLET-»
@@ -177,8 +177,6 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 		«ENDIF-»
 	</jaxws:endpoint>
 	«ENDIF-»
-	
-	
 	«IF !impl.provides.bindings.isEmpty-»
 		«LET impl.provides.bindings.get(0) AS serviceBinding-»
 		«EXPAND defineEndPoint((WSBinding)serviceBinding, impl) FOR this-»
@@ -188,7 +186,6 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"cxf")»
 	<!-- Other CXF configurations (bus, conduit, security, ecc) -->	
 	«ENDPROTECT»
-
 </beans>
 «ENDFILE»
 «ENDDEFINE»
@@ -199,11 +196,14 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 		«LET impl.provides.bindings.get(0) AS serviceBinding-»
 «IF !((WSBinding)serviceBinding).endpoints.isEmpty-»
 	«FOREACH ((WSBinding)serviceBinding).endpoints AS endpoint-»
+		«IF endpoint.inChannel!=null-»
 		<bean id="inInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
      	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.InInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()»"/>
-     	
+    	«ENDIF-» 	
+    	«IF endpoint.outChannel!=null-»
      	<bean id="outInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
      	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.OutInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()»"/>
+     	«ENDIF-»
 «ENDFOREACH»
 «ENDIF»
 «ENDLET»
