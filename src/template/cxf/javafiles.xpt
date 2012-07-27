@@ -613,7 +613,7 @@ public class «authenticationHelperClassName(this)» {
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «IF !wsBinding.endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE fullServiceEJBClassesDir(codServizio, model, false)+"/callback/InInterceptorCallback"+getCodeEndpoint(endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+«FILE fullServiceEJBClassesDir(codServizio, model, false)+"/callback/"+namaPasswordCallbackClass(false, endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
 «EXPAND inInterceptorCallbackBody(endpoint,false) FOR this»
 «ENDFILE»
 «ENDFOREACH»
@@ -627,7 +627,7 @@ public class «authenticationHelperClassName(this)» {
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «IF !wsBinding.endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/InInterceptorCallback"+getCodeEndpoint(endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
+«FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/"+namaPasswordCallbackClass(false, endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
 «EXPAND inInterceptorCallbackBody(endpoint,true) FOR this»
 «ENDFILE»
 «ENDFOREACH»
@@ -643,7 +643,7 @@ public class «authenticationHelperClassName(this)» {
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «IF !wsBinding.endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/OutInterceptorCallback"+getCodeEndpoint(endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
+«FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/"+namaPasswordCallbackClass(true, endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
 «EXPAND outInterceptorCallbackBody(endpoint,true) FOR this»
 «ENDFILE»
 «ENDFOREACH»
@@ -657,7 +657,7 @@ public class «authenticationHelperClassName(this)» {
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «IF !wsBinding.endpoints.isEmpty-»
 «FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE fullServiceEJBClassesDir(codServizio, model,false)+"/callback/OutInterceptorCallback"+getCodeEndpoint(endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+«FILE fullServiceEJBClassesDir(codServizio, model,false)+"/callback/"+namaPasswordCallbackClass(true, endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
 «EXPAND outInterceptorCallbackBody(endpoint,false) FOR this»
 «ENDFILE»
 «ENDFOREACH»
@@ -676,7 +676,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.ws.security.WSPasswordCallback;
 
-public class InInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()» implements CallbackHandler{
+public class «namaPasswordCallbackClass(false, endpoint)» implements CallbackHandler{
 
 	private WSPasswordCallback pc;
     public void handle(Callback[] callbacks) throws IOException, 
@@ -732,7 +732,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.ws.security.WSPasswordCallback;
 
-public class OutInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()» implements CallbackHandler{
+public class «namaPasswordCallbackClass(true, endpoint)» implements CallbackHandler{
 	
 	private WSPasswordCallback pc;
     public void handle(Callback[] callbacks) throws IOException, 

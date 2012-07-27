@@ -299,10 +299,18 @@ else
 	false;	
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-// TODO: vedere se servono
 
 String getAppServerLib(SOABEModel model) :
 	if ( model.targetPlatform.code == TargetPlatformCodes::JBoss43 ) then
 		"jboss"
 	else if ( model.targetPlatform.code == TargetPlatformCodes::WLS92 ) then
 		"weblogic";
+
+/////////////////////////////////////WS-SECURITY CXF//////////////////////////////////////////
+
+String namaPasswordCallbackClass(boolean outChannel, WSEndpoint endpoint):
+	if(outChannel) then
+		 "OutInterceptorCallback"+getCodeEndpoint(endpoint).toFirstUpper()
+	else
+		 "InInterceptorCallback"+getCodeEndpoint(endpoint).toFirstUpper();
+		

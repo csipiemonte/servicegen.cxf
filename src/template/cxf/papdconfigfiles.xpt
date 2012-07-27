@@ -116,7 +116,7 @@ RESOURCE CONNECTOR FILES PER CXF
 				<entry key="user" value="@«this.code».user.«getCodeEndpoint(endpoint)»@" />
 					
 				<entry key="passwordCallbackClass"
-				value="«getFullServiceEJBPkg(context.codServizio, model,true)».«this.serviceDef.codServizio».callback.OutInterceptorCallback«getCodeEndpoint(endpoint)»"/>
+				value="«getFullServiceEJBPkg(context.codServizio, model,true)».«this.serviceDef.codServizio».callback.«namaPasswordCallbackClass(true, endpoint)»"/>
 					
 				«FOREACH this.endpoint.inChannel.wsSecurity AS wsSecurity-»
 				 «IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
@@ -147,7 +147,7 @@ RESOURCE CONNECTOR FILES PER CXF
 				<entry key="action" value="«getActionEndPoint(this.endpoint.outChannel)»"/>
 				<entry key="user" value="@«this.code».user.«getCodeEndpoint(endpoint)»@" />
 				<entry key="passwordCallbackClass"
-				value="«getFullServiceEJBPkg(context.codServizio, model,true)».«this.serviceDef.codServizio».callback.InInterceptorCallback«getCodeEndpoint(endpoint)»"/>
+				value="«getFullServiceEJBPkg(context.codServizio, model,true)».«this.serviceDef.codServizio».callback.«namaPasswordCallbackClass(false, endpoint)»"/>
 						
 				«FOREACH this.endpoint.outChannel.wsSecurity AS wsSecurity-»
 				«IF getTypeOfAction(wsSecurity) =="UsernameToken"-»

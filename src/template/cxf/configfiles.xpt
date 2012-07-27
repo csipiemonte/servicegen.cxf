@@ -197,10 +197,10 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 «IF !((WSBinding)serviceBinding).endpoints.isEmpty-»
 	«FOREACH ((WSBinding)serviceBinding).endpoints AS endpoint-»
 		<bean id="inInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
-     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.InInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()»"/>
+     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.«namaPasswordCallbackClass(false, endpoint)»"/>
      	<bean id="outInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
-     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.OutInterceptorCallback«getCodeEndpoint(endpoint).toFirstUpper()»"/>
-«ENDFOREACH»
+     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.«namaPasswordCallbackClass(true, endpoint)»"/>
+	«ENDFOREACH»
 «ENDIF»
 «ENDLET»
 «ENDIF»
