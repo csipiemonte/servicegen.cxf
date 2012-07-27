@@ -74,6 +74,9 @@ RESOURCE CONNECTOR FILES
 «REM»RPCWebServiceConnector«ENDREM»
 «DEFINE resourceConnectorFiles(ServiceDef context, SOABEModel model) FOR RPCWebServiceConnector»
 	«EXPAND template::cxf::papdconfigfiles::cxfClientConfigFile(context, model, this.serviceDef, false) FOR this»
+	«EXPAND javafiles::outInterceptorCallBackORCH(model, context) FOR this.serviceDef»
+	«EXPAND javafiles::inInterceptorCallBackORCH(model, context) FOR this.serviceDef»
+	«EXPAND buildfiles::wsSecurityClientPropertiesFile(model, context) FOR  this»
 «ENDDEFINE»
 
 
