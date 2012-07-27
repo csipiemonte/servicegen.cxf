@@ -223,29 +223,22 @@ creazione del build.xml per ANT
 	       		<!-- gestone variabili WS-Security -->
 		
 		«FOREACH this.serviceimplementations AS impl»
-	    «IF !impl.provides.bindings.isEmpty-»
-	    «LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
-		«IF !wsBinding.endpoints.isEmpty-»
-		«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.properties" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.password.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.password.«getCodeEndpoint(endpoint)»}"/>
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.properties" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.file.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.file.«getCodeEndpoint(endpoint)»}"/>
-			
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.properties" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.password.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.password.«getCodeEndpoint(endpoint)»}"/>
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.properties" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.file.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.file.«getCodeEndpoint(endpoint)»}"/>
-			
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.properties" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.password.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.password.«getCodeEndpoint(endpoint)»}"/>
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.properties" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.file.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.file.«getCodeEndpoint(endpoint)»}"/>
-			
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.properties" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.password.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.password.«getCodeEndpoint(endpoint)»}"/>
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.properties" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.file.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.file.«getCodeEndpoint(endpoint)»}"/>
-
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio.toLowerCase()»Cxf.xml" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».user.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».user.«getCodeEndpoint(endpoint)»}"/>
-			<replace file="${conf}/web/ws/«impl.provides.codServizio.toLowerCase()»/WEB-INF/«impl.provides.codServizio.toLowerCase()»Cxf.xml" token="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».userEncrypt.«getCodeEndpoint(endpoint)»@" value="${«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».userEncrypt.«getCodeEndpoint(endpoint)»}"/>
-		«ENDFOREACH»
-	    «ENDIF»
-	    «ENDLET»
-	    «ENDIF»
+		    «IF !impl.provides.bindings.isEmpty-»
+		    «LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
+				«IF !wsBinding.endpoints.isEmpty-»
+					«FOREACH  ((WSBinding)wsBinding).endpoints AS endpoint-»
+					«LET impl.provides.codServizio+getCodeEndpoint(endpoint).toFirstUpper() AS prefPrefix»
+						«EXPAND replacePropWsSecurity(prefPrefix, endpoint) FOR impl.provides-»
+					«ENDLET»
+					«ENDFOREACH-»
+			    «ENDIF»
+		    «ENDLET»
+		    «ENDIF»
 	    «ENDFOREACH»
+	    
+	    «LET getAllResourceConnectors() AS allRC-»
+			«EXPAND replacePropWsSecurityClient(this) FOREACH   allRC-»
+		«ENDLET-»
 	  
 		<!-- Gestione replace delle variabile d'ambiente create dal generatore -->
 		«IF targetPlatform.code == TargetPlatformCodes::JBoss43»
@@ -347,14 +340,22 @@ creazione del build.xml per ANT
 	 		<then>
 				<copy todir="${build}/classes" overwrite="true" flatten="true">
 					<fileset dir="${temp}/conf/orchestrator/descriptor/${service.name}" includes="**/*.xml"></fileset>
-					<fileset dir="${temp}/conf/pd/${service.name}" includes="**/*.xml"></fileset>
-					<fileset dir="${temp}/conf/ws/${service.name}" includes="**/*.xml"></fileset>
+				«LET getAllResourceConnectors() AS allResCon-»
+				«IF allResCon.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+				<fileset dir="${temp}/conf/ws/${service.name}" includes="**/*.xml"></fileset>
+				«ENDIF-»
+				«IF allResCon.select(rc|rc.metaType==PDPAServiceConnector).size>0-»
+				<fileset dir="${temp}/conf/pd/${service.name}" includes="**/*.xml"></fileset>
+				«ENDIF-»
+				«ENDLET-»
 				</copy>
 				<war destfile="${build}/archives/${target}/${service.type}-${service.name}-${binding.code}.war"
 				     webxml="${conf}/web/${binding.code}/${service.name}/WEB-INF/web.xml"
 				     roundup="false">
 					<webinf dir="${conf}/web/${binding.code}/${service.name}/WEB-INF/"
 					        includes="*.xml" />
+					<webinf dir="${temp}/conf/web/${binding.code}/${service.name}/WEB-INF/"
+							includes="*.properties" />
 					<classes dir="${build}/classes">
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/business/${service.name}/**"/>
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
@@ -591,6 +592,45 @@ creazione del build.xml per ANT
 «ENDFILE»
 «ENDDEFINE»
 
+«DEFINE replacePropWsSecurityClient(SOABEModel model) FOR ResourceConnector»
+	«ERROR "tipo di risorsa "+this.metaType+" non gestito"»
+«ENDDEFINE»
+«DEFINE replacePropWsSecurityClient(SOABEModel model) FOR RPCWebServiceConnector»
+«LET this.code AS prefPrefix-»
+	<replace dir="${temp}/conf/ws/" token="@«prefPrefix».user.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».user.«getCodeEndpoint(endpoint)»}"/>
+	
+	<replace dir="${temp}/conf/ws" token="@«prefPrefix».ks.password.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».ks.password.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/ws"  token="@«prefPrefix».ks.file.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».ks.file.«getCodeEndpoint(endpoint)»}"/>			
+	<replace dir="${temp}/conf/ws"  token="@«prefPrefix».ts.password.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».ts.password.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/ws"  token="@«prefPrefix».ts.file.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».ts.file.«getCodeEndpoint(endpoint)»}"/>		
+	
+	<replace dir="${temp}/conf/ws/" token="@«prefPrefix».userEncrypt.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».userEncrypt.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/ws"  token="@«prefPrefix».encrypt.password.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».encrypt.password.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/ws"  token="@«prefPrefix».encrypt.file.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».encrypt.file.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/ws"  token="@«prefPrefix».decrypt.password.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».decrypt.password.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/ws"  token="@«prefPrefix».decrypt.file.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».decrypt.file.«getCodeEndpoint(endpoint)»}"/>
+	«EXPAND replacePropWsSecurity(prefPrefix, this.endpoint) FOR this.serviceDef»
+«ENDLET»	
+«ENDDEFINE»
+
+«DEFINE replacePropWsSecurity(String prefPrefix, WSEndpoint endpoint) FOR ServiceDef»
+	<replace dir="${temp}/conf/web/ws" token="@«prefPrefix».user.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».user.«getCodeEndpoint(endpoint)»}"/>
+	
+	<replace dir="${temp}/conf/web/ws" token="@«prefPrefix».ks.password.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».ks.password.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/web/ws"  token="@«prefPrefix».ks.file.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».ks.file.«getCodeEndpoint(endpoint)»}"/>			
+	<replace dir="${temp}/conf/web/ws"  token="@«prefPrefix».ts.password.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».ts.password.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/web/ws"  token="@«prefPrefix».ts.file.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».ts.file.«getCodeEndpoint(endpoint)»}"/>		
+	
+	<replace dir="${temp}/conf/web/ws" token="@«prefPrefix».userEncrypt.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».userEncrypt.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/web/ws"  token="@«prefPrefix».encrypt.password.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».encrypt.password.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/web/ws"  token="@«prefPrefix».encrypt.file.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».encrypt.file.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/web/ws"  token="@«prefPrefix».decrypt.password.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».decrypt.password.«getCodeEndpoint(endpoint)»}"/>
+	<replace dir="${temp}/conf/web/ws"  token="@«prefPrefix».decrypt.file.«getCodeEndpoint(endpoint)»@" value="${«prefPrefix».decrypt.file.«getCodeEndpoint(endpoint)»}"/>
+	
+	
+«ENDDEFINE»
+
+
 «REM»Sostituzione delle variabili: ResourceConnector non definito«ENDREM»
 «DEFINE varSubstForRC FOR ResourceConnector»
 «ENDDEFINE»
@@ -604,7 +644,7 @@ creazione del build.xml per ANT
 «ENDDEFINE»
 
 «DEFINE varSubstForRC FOR RPCWebServiceConnector»
-<replace dir="${temp}/conf/ws" token="«getWSURLPlaceHolder(serviceDef)»"  value="${«getWSURLVar(serviceDef)»}"/>
+<replace dir="${temp}/conf/ws" token="«getWSURLPlaceHolder(serviceDef, endpoint)»"  value="${«getWSURLVar(serviceDef, endpoint)»}"/>
 «IF serviceDef.authLevel!=AuthLevelEnum::A0-»
 <replace dir="${temp}/conf/ws" token="«getWSUsernamePlaceHolder(serviceDef)»"  value="${«getWSUsernameVar(serviceDef)»}"/>
 <replace dir="${temp}/conf/ws" token="«getWSPasswordPlaceHolder(serviceDef)»"  value="${«getWSPasswordVar(serviceDef)»}"/>
@@ -761,51 +801,61 @@ war-exclude-custom-libs-filter =
 # Configurazione di ambiente: <ambiente>           #
 ####################################################
 
-
 «LET getAllResourceConnectors() AS allRC-»
 	«EXPAND envVarDefs FOREACH allRC-»
+	
 «ENDLET-»
-# Configurazione WS-Security
- «FOREACH this.serviceimplementations AS impl-»
-«IF !impl.provides.bindings.isEmpty-»
-«LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-#Configurazione Signature EndPoint «getCodeEndpoint(endpoint)»
-
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».user.«getCodeEndpoint(endpoint)» =
-
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».userEncrypt.«getCodeEndpoint(endpoint)» =
-
-# password per l'accesso al keystore
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.password.«getCodeEndpoint(endpoint)» = 
-# keystore da utilizzare
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.file.«getCodeEndpoint(endpoint)» =
-
-# password per l'accesso al truststore
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.password.«getCodeEndpoint(endpoint)» = 
-# trustore da utilizzare
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.file.«getCodeEndpoint(endpoint)» =
-
-#Configurazione Encryption EndPoint «getCodeEndpoint(endpoint)»
-# password per l'accesso al keystore
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.password.«getCodeEndpoint(endpoint)» = 
-# keystore da utilizzare
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.file.«getCodeEndpoint(endpoint)» =
-
-# password per l'accesso al truststore
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.password.«getCodeEndpoint(endpoint)» = 
-# truststore da utilizzare
-«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.file.«getCodeEndpoint(endpoint)» =
-
-«ENDFOREACH»
-«ENDIF»    
-«ENDLET»
-«ENDIF»
-«ENDFOREACH»
+«FOREACH this.serviceimplementations AS impl-»
+	«IF !impl.provides.bindings.isEmpty-»
+	«LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
+		«IF !wsBinding.endpoints.isEmpty-»
+			«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+			«EXPAND wsSecurityProperty(impl.provides.codServizio+getCodeEndpoint(endpoint).toFirstUpper(), endpoint) FOR impl.provides-»
+			«ENDFOREACH-»
+		«ENDIF-»    
+	«ENDLET-»
+	«ENDIF-»
+«ENDFOREACH-»
 «ENDFILE»
 «ENDDEFINE»
 
+«DEFINE wsSecurityPropertyClient FOR ResourceConnector»
+	«ERROR "tipo di risorsa "+this.metaType+" non gestito"»
+«ENDDEFINE»
+
+«DEFINE wsSecurityPropertyClient FOR RPCWebServiceConnector»
+	«EXPAND wsSecurityProperty(this.code, this.endpoint) FOR this.serviceDef»
+«ENDDEFINE»
+«DEFINE wsSecurityProperty(String prefix, WSEndpoint endpoint) FOR ServiceDef»
+# Configurazione WS-Security «this.codServizio» 
+#Configurazione Signature EndPoint «getCodeEndpoint(endpoint)»
+
+«prefix».user.«getCodeEndpoint(endpoint)» =
+
+«prefix».userEncrypt.«getCodeEndpoint(endpoint)» =
+
+# password per l'accesso al keystore
+«prefix».ks.password.«getCodeEndpoint(endpoint)» = 
+# keystore da utilizzare
+«prefix».ks.file.«getCodeEndpoint(endpoint)» =
+
+# password per l'accesso al truststore
+«prefix».ts.password.«getCodeEndpoint(endpoint)» = 
+# trustore da utilizzare
+«prefix».ts.file.«getCodeEndpoint(endpoint)» =
+
+#Configurazione Encryption EndPoint «getCodeEndpoint(endpoint)»
+# password per l'accesso al keystore
+«prefix».encrypt.password.«getCodeEndpoint(endpoint)» = 
+# keystore da utilizzare
+«prefix».encrypt.file.«getCodeEndpoint(endpoint)» =
+
+# password per l'accesso al truststore
+«prefix».decrypt.password.«getCodeEndpoint(endpoint)» = 
+# truststore da utilizzare
+«prefix».decrypt.file.«getCodeEndpoint(endpoint)» =
+
+«ENDDEFINE»
 
 «REM»Variabili per un generico ResourceConnector«ENDREM»
 «DEFINE envVarDefs FOR ResourceConnector»
@@ -828,7 +878,8 @@ war-exclude-custom-libs-filter =
 ################################################################################
 
 # url di connessione al servizio
-«getWSURLVar(serviceDef)» = <inserire l'url di esposizione del web service>
+«getWSURLVar(serviceDef, endpoint)» = <inserire l'url di esposizione del web service>
+«EXPAND wsSecurityPropertyClient FOR this-»
 «IF serviceDef.authLevel!=AuthLevelEnum::A0-»
 
 # credenziali di autenticazione
@@ -1093,72 +1144,72 @@ IVY_VERSION=ivy_2_0_0
 «ENDFILE»
 «ENDDEFINE»
 
-«DEFINE ksPropertiesFile(SOABEModel model) FOR ServiceDef»
-«IF !this.bindings.isEmpty»
-«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+getCodeEndpoint(endpoint).toFirstUpper()+".ks.properties"»
-org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
-org.apache.ws.security.crypto.merlin.keystore.type=jks
-org.apache.ws.security.crypto.merlin.keystore.password=@«this.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.password.«getCodeEndpoint(endpoint)»@
-org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.file.«getCodeEndpoint(endpoint)»@
-«ENDFILE»
-«ENDFOREACH»
-«ENDIF»
-«ENDLET»
-«ENDIF»
+«DEFINE wsSecurityPropertiesFile(SOABEModel model) FOR ServiceDef»
+«IF !this.bindings.isEmpty-»
+	«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+	«IF !wsBinding.endpoints.isEmpty-»
+		«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+		«LET getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+getCodeEndpoint(endpoint).toFirstUpper() AS pathTmp-»
+			«FILE pathTmp+".ks.properties"»
+			«EXPAND ksPropertiesFile(this.codServizio+getCodeEndpoint(endpoint).toFirstUpper(),endpoint) FOR this-»
+			«ENDFILE»
+			«FILE pathTmp+".ts.properties"»
+			«EXPAND tsPropertiesFile(this.codServizio+getCodeEndpoint(endpoint).toFirstUpper(),endpoint) FOR this-»
+			«ENDFILE»
+			«FILE pathTmp+".encrypt.properties"»
+			«EXPAND encryptPropertiesFile(this.codServizio+getCodeEndpoint(endpoint).toFirstUpper(),endpoint) FOR this-»
+			«ENDFILE»
+			«FILE pathTmp+".decrypt.properties"»
+			«EXPAND decryptPropertiesFile(this.codServizio+getCodeEndpoint(endpoint).toFirstUpper(),endpoint) FOR this-»
+			«ENDFILE»
+		«ENDLET-»
+		«ENDFOREACH-»
+	«ENDIF-»
+	«ENDLET-»
+«ENDIF-»
 «ENDDEFINE»
 
-«DEFINE tsPropertiesFile(SOABEModel model) FOR ServiceDef»
-«IF !this.bindings.isEmpty»
-«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+getCodeEndpoint(endpoint).toFirstUpper()+".ts.properties"»
-org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
-org.apache.ws.security.crypto.merlin.keystore.type=jks
-org.apache.ws.security.crypto.merlin.keystore.password=@«this.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.password.«getCodeEndpoint(endpoint)»@
-org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.file.«getCodeEndpoint(endpoint)»@
-«ENDFILE»
-«ENDFOREACH»
-«ENDIF»
+«DEFINE wsSecurityClientPropertiesFile(SOABEModel model, ServiceDef context) FOR RPCWebServiceConnector»
+«LET getSpecificWarConfigRootDir("ws", removeSeparator(context.codServizio.toLowerCase()), model)+"/WEB-INF/"+this.code AS pathTmp-»
+	«FILE pathTmp+".ks.properties"»
+	«EXPAND ksPropertiesFile(this.code, this.endpoint) FOR this.serviceDef-»
+	«ENDFILE»
+	«FILE pathTmp+".ts.properties"»
+	«EXPAND tsPropertiesFile(this.code, this.endpoint) FOR this.serviceDef-»
+	«ENDFILE»
+	«FILE pathTmp+".encrypt.properties"»
+	«EXPAND encryptPropertiesFile(this.code, this.endpoint) FOR this.serviceDef-»
+	«ENDFILE»
+	«FILE pathTmp+".decrypt.properties"»
+	«EXPAND decryptPropertiesFile(this.code, this.endpoint) FOR this.serviceDef-»
+	«ENDFILE»
 «ENDLET»
-«ENDIF»
 «ENDDEFINE»
 
-«DEFINE encryptPropertiesFile(SOABEModel model) FOR ServiceDef»
-«IF !this.bindings.isEmpty»
-«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+getCodeEndpoint(endpoint).toFirstUpper()+".encrypt.properties"»
+«DEFINE ksPropertiesFile(String prefix, WSEndpoint endpoint) FOR ServiceDef»
 org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
 org.apache.ws.security.crypto.merlin.keystore.type=jks
-org.apache.ws.security.crypto.merlin.keystore.password=@«this.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.password.«getCodeEndpoint(endpoint)»@
-org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.file.«getCodeEndpoint(endpoint)»@
-«ENDFILE»
-«ENDFOREACH»
-«ENDIF»
-«ENDLET»
-«ENDIF»
+org.apache.ws.security.crypto.merlin.keystore.password=@«prefix».ks.password.«getCodeEndpoint(endpoint)»@
+org.apache.ws.security.crypto.merlin.file=@«prefix».ks.file.«getCodeEndpoint(endpoint)»@
 «ENDDEFINE»
 
-«DEFINE decryptPropertiesFile(SOABEModel model) FOR ServiceDef»
-«IF !this.bindings.isEmpty»
-«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«FILE getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+getCodeEndpoint(endpoint).toFirstUpper()+".decrypt.properties"»
+«DEFINE tsPropertiesFile(String prefix, WSEndpoint endpoint) FOR ServiceDef»
 org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
 org.apache.ws.security.crypto.merlin.keystore.type=jks
-org.apache.ws.security.crypto.merlin.keystore.password=@«this.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.password.«getCodeEndpoint(endpoint)»@
-org.apache.ws.security.crypto.merlin.file=@«this.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.file.«getCodeEndpoint(endpoint)»@
-«ENDFILE»
-«ENDFOREACH»
-«ENDIF»
-«ENDLET»
-«ENDIF»
+org.apache.ws.security.crypto.merlin.keystore.password=@«prefix».ts.password.«getCodeEndpoint(endpoint)»@
+org.apache.ws.security.crypto.merlin.file=@«prefix».ts.file.«getCodeEndpoint(endpoint)»@
 «ENDDEFINE»
 
+«DEFINE encryptPropertiesFile(String prefix, WSEndpoint endpoint) FOR ServiceDef»
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.password=@«prefix».encrypt.password.«getCodeEndpoint(endpoint)»@
+org.apache.ws.security.crypto.merlin.file=@«prefix».encrypt.file.«getCodeEndpoint(endpoint)»@
+«ENDDEFINE»
 
+«DEFINE decryptPropertiesFile(String prefix, WSEndpoint endpoint) FOR ServiceDef»
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.password=@«prefix».decrypt.password.«getCodeEndpoint(endpoint)»@
+org.apache.ws.security.crypto.merlin.file=@«prefix».decrypt.file.«getCodeEndpoint(endpoint)»@
+«ENDDEFINE»
