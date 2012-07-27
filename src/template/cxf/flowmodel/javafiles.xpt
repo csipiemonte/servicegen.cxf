@@ -353,18 +353,20 @@ public class «serviceBusinessClassName()» implements «serviceBusinessInterfac
 	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
 	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
 	«LET ((RPCWebServiceConnector)currRPCWSC).serviceDef AS currServiceDef-»
+	«LET wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint ) AS beanClientId-»
 	/**
 	 * CXF CLIENT for «currServiceDef.codServizio» WS
 	 */
-	private «fullQualifiedWebServiceInterfaceName(currServiceDef)» «wsCallClientBeanId(currServiceDef)»;
+	private «fullQualifiedWebServiceInterfaceName(currServiceDef)» «beanClientId»;
 	
-	public «fullQualifiedWebServiceInterfaceName(currServiceDef)» get«wsCallClientBeanId(currServiceDef).toFirstUpper()»() {
-		return «wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef)»;
+	public «fullQualifiedWebServiceInterfaceName(currServiceDef)» get«beanClientId.toFirstUpper()»() {
+		return «beanClientId»;
 	}
 
-	public void set«wsCallClientBeanId(currServiceDef).toFirstUpper()»(«fullQualifiedWebServiceInterfaceName(currServiceDef)» «wsCallClientBeanId(currServiceDef)») {
-		this.«wsCallClientBeanId(currServiceDef)» = «wsCallClientBeanId(currServiceDef)»;
+	public void set«beanClientId.toFirstUpper()»(«fullQualifiedWebServiceInterfaceName(currServiceDef)» «beanClientId») {
+		this.«beanClientId» = «beanClientId»;
 	}
+	«ENDLET-»
 	«ENDLET-»
     «ENDFOREACH-»
 	«ENDIF-»
@@ -566,8 +568,8 @@ public Object eseguiWorkFlow(
 	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
 	// inserimento nel context dei client per il wscall
 	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
-	«LET ((RPCWebServiceConnector)currRPCWSC).serviceDef AS currServiceDef-»
-	persistentParams.put("wscall.client.«wsCallClientBeanId(currServiceDef)»", get«wsCallClientBeanId(currServiceDef).toFirstUpper()»());
+	«LET wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint ) AS beanClientId-»
+	persistentParams.put("wscall.client.«beanClientId»", get«beanClientId.toFirstUpper()»());
 	«ENDLET-»
     «ENDFOREACH-»
 	«ENDIF-»
