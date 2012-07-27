@@ -102,13 +102,15 @@ String getExceptionExtendsFQNClass(Exception ex, SOABEModel model, String codSer
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //// NAMING BEAN SPRING
 
-String wsCallClientBeanId(ServiceDef sd) :
-	toCamel(sd.codServizio).toFirstLower()+"Client";
+String wsCallClientBeanId(ServiceDef sd, WSEndpoint endpoint) :
+	toCamel(sd.codServizio).toFirstLower()+getCodeEndpoint(endpoint).toFirstUpper()+"Client";
 
-String wsCallClientFactoryBeanId(ServiceDef sd) :
-	wsCallClientBeanId(sd)+"Factory";
-
-
+String wsCallClientFactoryBeanId(ServiceDef sd, WSEndpoint endpoint) :
+	wsCallClientBeanId(sd,endpoint)+"Factory";
+	
+String wsCallClientAppContextName(ServiceDef sd, WSEndpoint endpoint) :
+	toCamel(sd.codServizio).toFirstLower()+getCodeEndpoint(endpoint).toFirstUpper()+"ClientCxf.xml";
+	
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // DATA TYPES MAPPING
 
@@ -168,11 +170,11 @@ String getWsTargetNamespaceAnnotation(ServiceDef sd, SOABEModel model) :
 String getWSVarsPrefix(ServiceDef sd) :
 	removeSeparator(sd.codProdotto)+"."+removeSeparator(sd.codComponente)+"."+removeSeparator(sd.codServizio);
 
-String getWSURLVar(ServiceDef sd) :
-	getWSVarsPrefix(sd)+".ws.url";
+String getWSURLVar(ServiceDef sd, WSEndpoint endpoint) :
+	getWSVarsPrefix(sd)+getCodeEndpoint(endpoint)+".ws.url";
 
-String getWSURLPlaceHolder(ServiceDef sd) :
-	"@"+getWSURLVar(sd)+"@";
+String getWSURLPlaceHolder(ServiceDef sd, WSEndpoint endpoint)  :
+	"@"+getWSURLVar(sd, endpoint)+"@";
 
 // Credenziali di autenticazione
 
@@ -263,6 +265,39 @@ String getTypeOfAction(WSSecuritySpec action): JAVA
 it.csi.mddtools.servicegen.cxf.genutils.CodeGenetationUtils.getTypeOfAction(it.csi.mddtools.servicedef.WSSecuritySpec);
 
 String getCodeEndpoint(WSEndpoint endpoint): endpoint.code!=null ? endpoint.code : "";
+
+boolean includeSignatureOut(WSEndpoint endpoint, boolean client):
+if(client && endpoint.inChannel.wsSecurity.select(e|e.getTypeOfAction()=="Signature").size>0) then
+	true
+else if(!client && endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Signature").size>0) then
+	true
+else
+	false;	
+	
+boolean includeUserTokenOut(WSEndpoint endpoint, boolean client):
+if(client && endpoint.inChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0) then
+	true
+else if(!client && endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0) then
+	true
+else
+	false;	
+	
+boolean includeEncryptIn(WSEndpoint endpoint, boolean client):
+if(client && endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Encrypt").size>0) then
+	true
+else if(!client && endpoint.inChannel.wsSecurity.select(e|e.getTypeOfAction()=="Encrypt").size>0) then
+	true
+else
+	false;	
+	
+boolean includeUserTokenIn(WSEndpoint endpoint, boolean client):
+if(client && endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0) then
+	true
+else if(!client && endpoint.inChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0) then
+	true
+else
+	false;	
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: vedere se servono
 
