@@ -68,10 +68,7 @@ Metodo centralizzato per la genarazione del progetto
 			«EXPAND javafiles::serviceFiles(this) FOREACH services»
 			«EXPAND javafiles::inInterceptorCallBack(this) FOREACH services»		
 			«EXPAND javafiles::outInterceptorCallBack(this) FOREACH services»
-			«EXPAND buildfiles::ksPropertiesFile(this) FOREACH  services»
-			«EXPAND buildfiles::tsPropertiesFile(this) FOREACH  services»
-			«EXPAND buildfiles::encryptPropertiesFile(this) FOREACH  services»
-			«EXPAND buildfiles::decryptPropertiesFile(this) FOREACH  services»
+			«EXPAND buildfiles::wsSecurityPropertiesFile(this) FOREACH  services»
 			«FOREACH services AS currsrv»
 				«EXPAND javafiles::typedefs(this, currsrv.codServizio) FOR currsrv.types»
 			«ENDFOREACH»
