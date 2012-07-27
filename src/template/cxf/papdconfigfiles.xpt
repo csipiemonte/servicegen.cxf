@@ -59,7 +59,7 @@ RESOURCE CONNECTOR FILES PER CXF
 
 «REM»File Spring di definizione del client«ENDREM»
 «DEFINE cxfClientConfigFile(ServiceDef context, SOABEModel model, ServiceDef sd, boolean includeCxfImports) FOR RPCWebServiceConnector»
-«FILE getSpecificWscliConfigRootDir(context.codServizio, model) +"/"+sd.codServizio.toLowerCase()+"ClientCxf.xml"»<?xml version="1.0" encoding="UTF-8"?>
+«FILE getSpecificWscliConfigRootDir(context.codServizio, model) +"/"+wsCallClientAppContextName(this.serviceDef, this.endpoint)»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xmlns:cxf="http://cxf.apache.org/core"
@@ -77,19 +77,102 @@ RESOURCE CONNECTOR FILES PER CXF
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 	«ENDIF»
-
+	
 	<!-- the client bean -->
-	<bean id="«wsCallClientBeanId(sd)»"
+	<bean id="«wsCallClientBeanId(this.serviceDef,this.endpoint)»"
 		  class="«fullQualifiedWebServiceInterfaceName(sd)»"
-		  factory-bean="«wsCallClientFactoryBeanId(sd)»"
+		  factory-bean="«wsCallClientFactoryBeanId(this.serviceDef,this.endpoint)»"
 		  factory-method="create"/>
 
 	<!-- and its factory -->
-	<bean id="«wsCallClientFactoryBeanId(sd)»" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	<bean id="«wsCallClientFactoryBeanId(this.serviceDef,this.endpoint)»" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
 		<property name="serviceClass" value="«fullQualifiedWebServiceInterfaceName(sd)»"/>
-		<property name="address" value="«getWSURLPlaceHolder(sd)»" />
+		<property name="address" value="«getWSURLPlaceHolder(this.serviceDef,this.endpoint)»" />
+		«IF this.endpoint != null-»
+		<property name="inInterceptors">
+				<list>
+					<ref bean="logIn" />
+					«IF this.endpoint.outChannel != null-»
+					<ref bean="wss4jIn«getCodeEndpoint(endpoint).toFirstUpper()»" />
+					«ENDIF»
+				</list>
+			</property>
+			<property name="outInterceptors">
+				<list>
+					<ref bean="logOut" />
+					«IF this.endpoint.inChannel != null-»
+					<ref bean="wss4jOut«getCodeEndpoint(endpoint).toFirstUpper()»" />
+					«ENDIF»
+				</list>
+		</property>
+		«ENDIF-»
 	</bean>
-
+	
+	«IF this.endpoint != null && this.endpoint.inChannel != null-»
+	<bean id="wss4jOut«getCodeEndpoint(this.endpoint).toFirstUpper()»" class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+		<constructor-arg>
+			<map>
+				<entry key="action" value="«getActionEndPoint( this.endpoint.inChannel)»" />
+				<entry key="user" value="@«this.code».user.«getCodeEndpoint(endpoint)»@" />
+					
+				<entry key="passwordCallbackClass"
+				value="«getFullServiceEJBPkg(context.codServizio, model,true)».«this.serviceDef.codServizio».callback.OutInterceptorCallback«getCodeEndpoint(endpoint)»"/>
+					
+				«FOREACH this.endpoint.inChannel.wsSecurity AS wsSecurity-»
+				 «IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
+				 <!-- USERNAME TOKEN PROPERTIES -->
+				<entry key="passwordType" value="PasswordText"/>
+				«ENDIF-»
+				«IF getTypeOfAction(wsSecurity) =="Signature" -»
+				<!-- SIGNATURE PROPERTIES -->
+				<entry key="signaturePropFile" value="/WEB-INF/«this.code».ks.properties" />
+				«ENDIF-»
+				«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
+				<!-- ENCRYPT PROPERTIES -->
+				<entry key="encryptionUser" value="@«this.code».userEncrypt.«getCodeEndpoint(endpoint)»@"/>
+				<entry key="encryptionPropFile" value="/WEB-INF/«this.code».encrypt.properties"  />
+				<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
+				<entry key="encryptionKeyTransportAlgorithm" value="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
+				«ENDIF-»
+				«ENDFOREACH-»
+				</map>
+			</constructor-arg>
+	</bean> 
+	«ENDIF-»
+	
+	«IF this.endpoint != null && this.endpoint.outChannel != null-»
+	<bean id="wss4jIn«getCodeEndpoint(this.endpoint).toFirstUpper()»" class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+		<constructor-arg>
+			<map>
+				<entry key="action" value="«getActionEndPoint(this.endpoint.outChannel)»"/>
+				<entry key="user" value="@«this.code».user.«getCodeEndpoint(endpoint)»@" />
+				<entry key="passwordCallbackClass"
+				value="«getFullServiceEJBPkg(context.codServizio, model,true)».«this.serviceDef.codServizio».callback.InInterceptorCallback«getCodeEndpoint(endpoint)»"/>
+						
+				«FOREACH this.endpoint.outChannel.wsSecurity AS wsSecurity-»
+				«IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
+				<!-- USERNAME TOKEN PROPERTIES -->
+				<entry key="passwordType" value="PasswordText"/>
+				«ENDIF-»
+				«IF getTypeOfAction(wsSecurity) =="Signature" -»
+				<!-- SIGNATURE PROPERTIES -->
+				<entry key="signaturePropFile" value="/WEB-INF/«this.code».ts.properties" />
+				«ENDIF-»
+				«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
+				<!-- ENCRYPT PROPERTIES -->
+				<entry key="decryptionPropFile" value="/WEB-INF/«this.code».decrypt.properties" />
+				«ENDIF-»
+				«ENDFOREACH-»
+				</map>
+			</constructor-arg>
+	</bean> 
+	«ENDIF-»
+	
+	«IF this.endpoint != null-»
+	<bean id="logIn" class="org.apache.cxf.interceptor.LoggingInInterceptor" />
+	<bean id="logOut" class="org.apache.cxf.interceptor.LoggingOutInterceptor" />
+	«ENDIF-»
+		
 	«LET sd.bindings.typeSelect(WSBinding).first() AS ws-»
 	«IF needConduitConnfiguration(sd, ws)-»
 	<!-- HTTP CONDUIT CONFIGURATION -->
@@ -128,11 +211,9 @@ RESOURCE CONNECTOR FILES PER CXF
 	«ENDIF-»
 	«ENDLET-»
 
-
-	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+sd.codServizio+"cxf.client")»
-	<!-- Other CXF configurations (bus, conduit, security, ecc) -->	
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+this.serviceDef.codServizio+getCodeEndpoint(this.endpoint)+"cxf.client")»
+	<!-- Other CXF configurations (bus, conduit, security, ecc) TTTTTTTTTTTT-->	
 	«ENDPROTECT»
-
 </beans>
 «ENDFILE»
 «ENDDEFINE»
