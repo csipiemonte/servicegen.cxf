@@ -75,6 +75,7 @@ import org.apache.log4j.*;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 «ENDIF-»
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 «PROTECT CSTART '/*' CEND '*/' ID getRegionUID("extraImport"+codServizio)»
 // aggiungere qui eventuali import aggiuntive.
@@ -235,7 +236,7 @@ COMMON METHODS
 «DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR Operation»
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	WebServiceContext wsContext, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
-)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-»;
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-»,Exception,UnrecoverableException;
 «ENDDEFINE»
 
 
@@ -248,7 +249,7 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»
 «IF this.txType==TXTypeEnum::newLocalTX-»@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)«ENDIF-»
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	WebServiceContext wsContext, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
-)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-»,Exception,UnrecoverableException{
 	Logger logger = getLogger(null);
 	logger.debug("[«implClassName»::«name»] - START");
 
@@ -272,7 +273,28 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»
 	 //} catch (Exception ex) {
 	 //	logger.error("[«implClassName»::«name»] - Errore occorso durante l'esecuzione del metodo:"+ex, ex);
 	 //	throw ex;
-	 «ENDPROTECT»	
+	 «ENDPROTECT»
+	} catch (RuntimeException ex) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			logger.error("[«implClassName»::«name»] - Errore imprevisto occorso durante l'esecuzione del metodo:"
+							+ ex, ex);
+			throw new RuntimeException(
+					"Errore imprevisto occorso durante l'esecuzione del metodo:"
+							+ ex, ex);
+	} catch (Throwable ex) {
+			if (Exception.class.isAssignableFrom(ex.getClass())) {
+				logger.error(
+						"[«implClassName»::«name»] - Errore CSI occorso durante l'esecuzione del metodo:"
+								+ ex, ex);
+				throw (Exception) ex;
+			} else {
+				logger.error(
+						"[«implClassName»::«name»] - Errore imprevisto occorso durante l'esecuzione del metodo:"
+								+ ex, ex);
+				throw new UnrecoverableException(
+						"Errore imprevisto occorso durante l'esecuzione del metodo:"
+								+ ex, ex);
+			}	
 	} finally {
 		// fine misurazione
 		watcher.stop();

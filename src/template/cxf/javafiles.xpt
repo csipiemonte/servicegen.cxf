@@ -83,7 +83,7 @@ public interface «serviceInterfaceName()»{
 @WebMethod
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	«EXPAND paramDef(model, def, true) FOREACH params SEPARATOR ","»
-)«EXPAND throwsClause(model, def) FOR this-»;
+)«EXPAND throwsClause(model, def) FOR this-»,Exception,UnrecoverableException;
 «ENDDEFINE»
 
 
@@ -144,7 +144,7 @@ public void set«serviceBusinessInterfaceName()»(«serviceBusinessInterfaceName
 «DEFINE operationImplemetation(SOABEModel model, ServiceDef def) FOR Operation»
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
 	«EXPAND paramDef(model, def, false) FOREACH params SEPARATOR ","»
-)«EXPAND throwsClause(model, def) FOR this-» {
+)«EXPAND throwsClause(model, def) FOR this-»,Exception,UnrecoverableException {
 	«IF this.returnType != null»return «ENDIF»get«serviceBusinessInterfaceName(def)»().«this.name»(wsContext, «FOREACH params AS p SEPARATOR ","»«p.name»«ENDFOREACH»);
 }
 «ENDDEFINE»
