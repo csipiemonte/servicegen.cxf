@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<workflow>
+
+	<!-- Properties file -->
+	<component class="org.eclipse.xtend.util.stdlib.PropertiesReader">
+  		<propertiesFile value="src/workflow/workflow.properties"/>
+	</component>
+
+	<!-- EXTERNAL DAO: valore di default se non specificato -->
+	<property name="useExternalDaoBeans" value="true"/>
+
+	<!-- valorizzare con il nome del progetto eclipse target dove verranno
+	     generati gli artefatti. Corrisponde la nome del progetto SVN relativo
+	     al componente SW
+	-->
+	<property name="src-gen" value="../${targetProjectName}" />
+
+	<!-- TRACK! -->
+	<bean class="it.csi.mddtools.servicegen.workflow.component.TrackingInvoker">
+		<modelName value="${model}"/>
+		<targetProjectName value="${targetProjectName}"/>
+		<track value="true"/>
+	</bean>
+
+	<!-- set up EMF for standalone execution -->
+	<bean class="org.eclipse.emf.mwe.utils.StandaloneSetup" >
+		<platformUri value=".." />
+		<registerGeneratedEPackage value="it.csi.mddtools.servicegen.ServicegenPackage"/>
+		<registerGeneratedEPackage value="it.csi.mddtools.servicedef.ServicedefPackage"/>
+		<registerGeneratedEPackage value="it.csi.mddtools.typedef.TypedefPackage"/>
+		<registerGeneratedEPackage value="it.csi.mddtools.appresources.AppresourcesPackage"/>
+		<registerGeneratedEPackage value="it.csi.mddtools.svcorch.SvcorchPackage"/>
+	</bean>
+
+	<!-- Clean the build directory -->
+	<component class="org.eclipse.emf.mwe.utils.DirectoryCleaner"
+	           directory="${src-gen}/build/cache" />
+	<component class="org.eclipse.emf.mwe.utils.DirectoryCleaner"
+	           directory="${src-gen}/build/classes" />
+	<component class="org.eclipse.emf.mwe.utils.DirectoryCleaner"
+		       directory="${src-gen}/build/temp/conf" />
+
+	<!-- load model and store it in slot 'model' -->
+	<component class="org.eclipse.emf.mwe.utils.Reader">
+		<!-- usare se modalita' a plugin -->
+		<uri value="platform:/resource/${model}" />
+
+		<!-- usare se modalita' standalone -->
+		<!--<uri value="${modelfile}" />-->
+
+		<!-- invariante rispetto alla modalita'-->
+		<modelSlot value="model" />
+	</component>
+
+	<!-- check model -->
+	<component class="org.eclipse.xtend.check.CheckComponent">
+		<metaModel id="mm"
+			class="org.eclipse.xtend.typesystem.emf.EmfRegistryMetaModel"/>
+		<checkFile value="metamodel::ServicegenChecks" />
+		<emfAllChildrenSlot value="model" />
+	</component>
+
+	<!--  generate code -->
+	<component class="org.eclipse.xpand2.Generator">
+		<metaModel idRef="mm"/>
+		<expand
+			value="template::cxf::Main::main(${useExternalDaoBeans}) FOR model" />
+		<!-- protected regions configurator -->
+		<prSrcPaths value="${src-gen}" />
+		<prDefaultExcludes value="true"/>
+		<prExcludes value="*.ear, *.war, *.jar, *.zip, *.class, *.svn-base, .metadata"/>
+		<outlet path="${src-gen}" >
+			 <postprocessor class="org.eclipse.xpand2.output.JavaBeautifier"/>
+		</outlet>
+	</component>
+
+</workflow>

@@ -1,0 +1,585 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;
+
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.
+E' possibile ottenere una copia della Licenza al seguente indirizzo:
+
+http://www.eupl.it/opensource/eupl-1-1
+
+Salvo diversamente indicato dalla legge applicabile o concordato per
+iscritto, il software distribuito secondo i termini della Licenza e'
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,
+esplicite o implicite.
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni
+e le limitazioni secondo i termini della Licenza.
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef»
+«IMPORT appresources»
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«REM»
+==========================================================================================================================
+CLASSI DI BUSINESS (Servizio APPLICATIVO)
+Classe che contiene la vera implementazione del servizio
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE javaApplServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND javaApplServiceBusinessInterfaceFile(model) FOR this»
+	«EXPAND javaApplServiceBusinessClassFile(model) FOR this»
+«ENDDEFINE»
+
+
+«REM»
+Interfaccia del delegate
+«ENDREM»
+«DEFINE javaApplServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.util.List;
+
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+/**
+ * @generated
+ */
+public interface «serviceBusinessInterfaceName()» {
+	«EXPAND operationDeclaration(model, this) FOREACH this.operations-»
+}
+«ENDFILE-»
+«ENDDEFINE»
+
+
+«REM»
+Classe di implementazione del delegate
+«ENDREM»
+«DEFINE javaApplServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio,model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.util.List;
+import javax.xml.ws.WebServiceContext;
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+import org.apache.log4j.*;
+«IF this.operations.select(e|e.txType==servicedef::TXTypeEnum::newLocalTX).size > 0-»
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+«ENDIF-»
+
+«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("extraImport"+codServizio)»
+// aggiungere qui eventuali import aggiuntive.
+// verranno preservate in rigenerazioni successive del progetto
+«ENDPROTECT»
+
+/**
+ * @generated
+ */
+public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceName()» {
+
+    /**
+	 * @generated
+	 */
+	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto,model.codComponente)»";
+
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implLocalVars"+codServizio)»
+	// inserire qui la definizione di varibili locali o costanti dell'implementazione.
+	// non verranno sovrascritte da successive rigenerazioni
+	«ENDPROTECT»
+
+	/*
+	 * Implementazione operazioni esposte dal servizio
+	 */
+	«EXPAND operationImplemetation(model, this, serviceBusinessClassName()) FOREACH this.operations-»
+
+	/**
+	 * @generated
+	 */
+	protected Logger getLogger(String subsystem) {
+		if (subsystem != null) {
+			return Logger.getLogger(LOGGER_PREFIX+"."+subsystem);
+		} else {
+			return Logger.getLogger(LOGGER_PREFIX);
+		}
+	}
+
+	
+	/*
+	 * Eventuali metodi aggiuntivi
+	 */
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implOtherMethods"+codServizio)»
+	// inserire qui la dichiarazione di eventuali metodi aggiuntivi utili per l'implementazione.
+	// non verranno sovrascritti da successive rigenerazioni.
+	«ENDPROTECT»
+}
+«ENDFILE-»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+CLASSI DI BUSINESS (Servizio ORCHESTRATO)
+Classe che contiene la vera implementazione del servizio
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE javaOrchServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND javaOrchServiceBusinessInterfaceFile(model) FOR this»
+	«EXPAND javaOrchServiceBusinessClassFile(model) FOR this»
+«ENDDEFINE»
+
+
+«REM»
+Interfaccia del delegate
+«ENDREM»
+«DEFINE javaOrchServiceBusinessInterfaceFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessInterfaceName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.util.List;
+import javax.xml.ws.WebServiceContext;
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+/**
+ * @generated
+ */
+public interface «serviceBusinessInterfaceName()» {
+	«EXPAND operationDeclaration(model, this) FOREACH this.operations-»
+}
+«ENDFILE-»
+«ENDDEFINE»
+
+
+«REM»
+*************************************************************
+Implementazione del ServiceLocator del servizio di 
+orchestrazione in esame
+*************************************************************
+«ENDREM»
+«DEFINE serviceLocatorClassFile(SOABEModel model) FOR ServiceDef»
+	«FILE fullServiceLocatorClassDir(model)+"/ServiceLocator.java"»
+package «getFullServiceLocatorPkg(model)»;
+
+import it.csi.csi.wrapper.ConfigException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.log4j.Logger;
+
+/**
+ * @generated
+ */
+ 
+ public class ServiceLocator {
+ 	
+ 	/**
+ 	* @generated
+ 	*/
+ 	
+ 	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto,model.codComponente)»";
+	public static final Logger logger = Logger
+			.getLogger(LOGGER_PREFIX);
+			
+    private static ServiceLocator me;
+	private Map cacheMap;
+
+    static {
+      try {
+        me = new ServiceLocator();
+      } catch(Exception se) {
+        System.err.println(se);
+        logger.error("[«getFullServiceLocatorPkg(model)».ServiceLocator::methodName] - errore non gestito nell'esecuzione del flusso",se);
+        //se.printStackTrace(System.err);
+      }
+    }		
+    
+    private ServiceLocator() throws Exception  {
+	   
+	    logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::ServiceLocator()]-START  ");
+        
+        cacheMap = Collections.synchronizedMap(new HashMap());
+        
+        logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::ServiceLocator()]-END  ");
+      
+    }	
+    
+    static public ServiceLocator getInstance() {
+      return me;
+    }
+    
+    public Object getPD(String localPDRes)
+			throws ConfigException {
+		logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-START  ");
+		
+		Object tempPdObject = null;
+
+		logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-reperimento PD da risorsa locale:\"+localPDRes+\"");
+		
+		if (cacheMap.containsKey(localPDRes)) {
+
+			logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-PD gia' presente in cache");
+
+			logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-END");
+			tempPdObject = cacheMap.get(localPDRes);
+		} else {
+
+			logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-PD non presente in cache");
+
+			java.io.InputStream localPD = this.getClass().getResourceAsStream(
+					localPDRes);
+
+			it.csi.csi.porte.InfoPortaDelegata infoPD;
+			try {
+				infoPD = it.csi.csi.util.xml.PDConfigReader.read(localPD);
+				tempPdObject = it.csi.csi.porte.proxy.PDProxy.newInstance(infoPD);
+				cacheMap.put(localPDRes, tempPdObject);
+				
+			} catch (Exception e) {
+			logger.error("[«getFullServiceLocatorPkg( model)».ServiceLocator::getPD] - Errore nella lettura della configurazione da "+ localPDRes,e);
+				throw new ConfigException(
+						"Errore nella lettura della configurazione da "
+								+ localPDRes, e);
+			}
+
+			logger.debug("[«getFullServiceLocatorPkg(model)».ServiceLocator::getPD]-END");
+			
+		}
+		
+		return tempPdObject;
+	}
+}
+
+
+	«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»
+Classe di implementazione del delegate
+«ENDREM»
+«DEFINE javaOrchServiceBusinessClassFile(SOABEModel model) FOR ServiceDef»
+«EXPAND serviceLocatorClassFile(model) FOR this»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceBusinessClassName()+".java"»package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.util.HashMap;
+import java.util.List;
+import javax.xml.ws.WebServiceContext;
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+import org.apache.log4j.*;
+«IF this.operations.select(e|e.txType==servicedef::TXTypeEnum::newLocalTX).size > 0-»
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+«ENDIF-»
+
+import it.csi.svcflow.orchestrator.engine.OswMainEngine;
+import com.opensymphony.workflow.WorkflowException;
+
+«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("extraImport"+codServizio)»
+// aggiungere qui eventuali import aggiuntive.
+// verranno preservate in rigenerazioni successive del progetto
+«ENDPROTECT»
+
+/**
+ * @generated
+ */
+public class «serviceBusinessClassName()» implements «serviceBusinessInterfaceName()» {
+
+    /**
+	 * @generated
+	 */
+	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto,model.codComponente)»";
+	public static final Logger logger = Logger
+			.getLogger(LOGGER_PREFIX);
+	
+	«EXPAND wsCallClientClassInjection(model) FOR this-»
+	
+	«EXPAND authenticationHelperClassInjection(model) FOR this-»
+
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implLocalVars"+codServizio)»
+	// inserire qui la definizione di varibili locali o costanti dell'implementazione.
+	// non verranno sovrascritte da successive rigenerazioni
+	«ENDPROTECT»
+	
+	
+	/*
+	 * Implementazione centralizzata eseguiWorkFlow 
+	 */
+	«EXPAND operationEseguiWorkFlow(model, this, serviceBusinessClassName()) FOR this-»
+
+	/*
+	 * Implementazione operazioni esposte dal servizio
+	 */
+	«EXPAND operationOrchImplementation(model, this, serviceBusinessClassName()) FOREACH this.operations-»
+
+
+	/**
+	 * @generated
+	 */
+	protected Logger getLogger(String subsystem) {
+		if (subsystem != null) {
+			return Logger.getLogger(LOGGER_PREFIX+"."+subsystem);
+		} else {
+			return Logger.getLogger(LOGGER_PREFIX);
+		}
+	}
+
+
+	/*
+	 * Eventuali metodi aggiuntivi
+	 */
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implOtherMethods"+codServizio)»
+	// inserire qui la dichiarazione di eventuali metodi aggiuntivi utili per l'implementazione.
+	// non verranno sovrascritti da successive rigenerazioni.
+	«ENDPROTECT»
+}
+«ENDFILE-»
+«ENDDEFINE»
+
+
+«REM»Dependency injection del client CXF in caso di nod WSCall«ENDREM»
+«DEFINE wsCallClientClassInjection(SOABEModel model) FOR ServiceDef»
+	«LET getAllResourceConnectors(model) AS allResConn-»
+	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+	«LET ((RPCWebServiceConnector)currRPCWSC).serviceDef AS currServiceDef-»
+	«LET wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint ) AS beanClientId-»
+	/**
+	 * CXF CLIENT for «currServiceDef.codServizio» WS
+	 */
+	private «fullQualifiedWebServiceInterfaceName(currServiceDef)» «beanClientId»;
+	
+	public «fullQualifiedWebServiceInterfaceName(currServiceDef)» get«beanClientId.toFirstUpper()»() {
+		return «beanClientId»;
+	}
+
+	public void set«beanClientId.toFirstUpper()»(«fullQualifiedWebServiceInterfaceName(currServiceDef)» «beanClientId») {
+		this.«beanClientId» = «beanClientId»;
+	}
+	«ENDLET-»
+	«ENDLET-»
+    «ENDFOREACH-»
+	«ENDIF-»
+	«ENDLET-»
+«ENDDEFINE»
+
+«REM»Dependency injection del client CXF in caso di nod WSCall«ENDREM»
+«DEFINE authenticationHelperClassInjection(SOABEModel model) FOR ServiceDef»
+	«IF hasAuthentication(this)-»
+	/**
+	 * Authentication Helper Class
+	 */
+	private «authenticationHelperClassName(this)» «authenticationHelperBeanID(this)»;
+
+	public «authenticationHelperClassName(this)» get«authenticationHelperBeanID(this).toFirstUpper()»() {
+		return «authenticationHelperBeanID(this)»;
+	}
+
+	public void set«authenticationHelperBeanID(this).toFirstUpper()»(«authenticationHelperClassName(this)» «authenticationHelperBeanID(this)») {
+		this.«authenticationHelperBeanID(this)» = «authenticationHelperBeanID(this)»;
+	}
+	«ENDIF-»
+«ENDDEFINE»
+
+
+
+
+«REM»
+==========================================================================================================================
+COMMON METHODS
+==========================================================================================================================
+«ENDREM»
+
+
+«REM»Genera la definizione di ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR Operation»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	WebServiceContext wsContext, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-»;
+«ENDDEFINE»
+
+
+«REM»Genera ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationImplemetation(SOABEModel model, ServiceDef def, String implClassName) FOR Operation»
+/**
+ * @generated
+ */
+«IF this.txType==TXTypeEnum::newLocalTX-»@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)«ENDIF-»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	«EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
+	Logger logger = getLogger(null);
+	logger.debug("[«implClassName»::«name»] - START");
+	
+	// inizio misurazione
+	it.csi.util.performance.StopWatch watcher = new it.csi.util.performance.StopWatch("«model.codComponente»");
+	watcher.start();
+
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implCodeLocals"+implClassName+"_"+name)»
+	// inserire qui la dichiarazione di variabili locali al metodo
+	// non verranno sovrascritte nelle successive rigenerazioni
+	«ENDPROTECT»
+
+	try {
+	 «PROTECT CSTART '/*' CEND '*/' ID getRegionUID("implCodeStmt"+implClassName+"_"+name)»
+		 // inserire qui il codice di implementazione del metodo '«name»'.
+		 // non verra' sovrascritto nelle successive rigenerazioni
+		 
+		 «IF returnType!=null»return «defaultInitVal(returnType)»;«ENDIF»
+	 
+	 // aggiungere qui anche la GESTIONE DELLE ECCEZIONI (log e lancio delle eccezioni corrette)
+	 //} catch (Exception ex) {
+	 //	logger.error("[«implClassName»::«name»] - Errore occorso durante l'esecuzione del metodo:"+ex, ex);
+	 //	throw ex;
+	 «ENDPROTECT»	
+	} finally {
+		// fine misurazione
+		watcher.stop();
+		watcher.dumpElapsed("«implClassName»", "«name»()", "invocazione servizio [«removeSeparator(def.codServizio)»]::[«name»]", "(valore input omesso)");
+		logger.debug("[«implClassName»::«name»] - END");
+	}
+}
+«ENDDEFINE»
+
+
+«REM»Genera ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationOrchImplementation(SOABEModel model, ServiceDef def, String implClassName) FOR Operation»
+/**
+ * @generated
+ */
+«IF this.txType==TXTypeEnum::newLocalTX-»@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)«ENDIF-»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	WebServiceContext wsContext, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+)«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
+	//Logger logger = getLogger(null);
+	logger.debug("[«implClassName»::«name»] - START");
+
+	// inizio misurazione
+	it.csi.util.performance.StopWatch watcher = new it.csi.util.performance.StopWatch("«model.codComponente»");
+	watcher.start();
+
+	String remoteUser = «getCXFOrchestrationRemoteUser(def)»;
+	String workflowDescriptor = "«removeSeparator(def.codServizio)+name.toFirstUpper()»";
+	HashMap persistentParams = new HashMap();
+
+	try {
+		// inserimento nel context dei parametri del metodo (senza trasformazioni)
+	 	«FOREACH params AS currPar-»
+	 	persistentParams.put("input.parameter.«currPar.name»", «currPar.name»);
+	 	«ENDFOREACH-»
+
+		«EXPAND wsCallClientParameters(model) FOR this-»
+
+		«EXPAND principalNameParameter(model, def) FOR this-»
+
+		// inizializzazione e richiamo del flusso
+			eseguiWorkFlow(workflowDescriptor, persistentParams, "«name»", remoteUser);
+			
+			Object retVal = persistentParams.get("result");
+     	// se il valore di ritorno e' un'eccezione occorre rilanciarla (anche se metodo void)
+      	if (retVal != null && retVal instanceof Throwable) {
+     		logger.error("[«implClassName»::methodName] - Errore occorso nell'esecuzione del flusso\"+retVal+\"",(Throwable)retVal);
+     		throw (Throwable)retVal;
+     	}
+     	else {
+     	«IF returnType!=null-»	
+		return («map2javaWsType(returnType, def.codServizio, model)»)persistentParams.get("result");
+		«ENDIF-»
+     	}
+	} catch(Throwable ex){
+		«EXPAND throwsCatch(model, def, implClassName) FOR this-»
+	} finally {
+		// fine misurazione
+		watcher.stop();
+		watcher.dumpElapsed("«implClassName»", "methodName()", "invocazione servizio [«removeSeparator(def.codServizio)»]::[methodName]", "(valore input omesso)");
+		logger.debug("[«implClassName»::methodName] - END");
+	}
+}
+«ENDDEFINE»
+
+
+«REM»Genera metodo eseguiWorkFlow di accesso al workflow«ENDREM»
+«DEFINE operationEseguiWorkFlow(SOABEModel model, ServiceDef def, String implClassName) FOR ServiceDef»
+/**
+ * @generated
+ */
+public Object eseguiWorkFlow(
+			String workflowDescriptor,
+			java.util.HashMap persistentParams, String methodName,
+			String remoteUser
+) throws Exception {
+	//Logger logger = getLogger(null);
+	logger.debug("[«implClassName»::methodName] - START");
+
+	// inizio misurazione
+	it.csi.util.performance.StopWatch watcher = new it.csi.util.performance.StopWatch("«model.codComponente»");
+	watcher.start();
+
+			// inizializzazione e richiamo del flusso
+		try {
+			OswMainEngine.esecuzioneWorkflow(remoteUser, workflowDescriptor, Integer.valueOf(0), persistentParams);
+			Object retVal = persistentParams.get("result");
+     	    return retVal;
+		}
+		catch(WorkflowException wfe) {
+			logger.error("[«implClassName»::methodName] - errore non gestito nell'esecuzione del flusso", wfe);
+			throw new javax.xml.ws.WebServiceException("Errore non gestito nell'esecuzione del flusso: "+wfe.getMessage(), wfe);
+		}
+	
+	finally {
+		// fine misurazione
+		watcher.stop();
+		watcher.dumpElapsed("«implClassName»", "methodName()", "invocazione servizio [«removeSeparator(def.codServizio)»]::[methodName]", "(valore input omesso)");
+		logger.debug("[«implClassName»::methodName] - END");
+	}
+
+}
+«ENDDEFINE»
+
+
+«REM»Gestione e rilancio delle eccezioni («ENDREM»
+«DEFINE throwsCatch(SOABEModel model, ServiceDef def, String implClassName) FOR Operation-»
+«FOREACH this.throws AS exc ITERATOR i -»
+        «IF !i.firstIteration»} else «ENDIF»if (ex instanceof «map2JavaTypeSDRelative(exc)») {
+        	logger.error("[«implClassName»::«name»] - Errore occorso durante l'esecuzione del metodo:"+ex, ex);
+     		throw («map2JavaTypeSDRelative(exc)»)ex;
+        }
+«ENDFOREACH-»
+        else {
+			logger.error("[«implClassName»::«name»] - Errore imprevisto occorso durante l'esecuzione del metodo:"+ex, ex);
+			throw new javax.xml.ws.WebServiceException("Errore imprevisto occorso durante l'esecuzione del metodo:"+ex, ex);
+		} 
+«ENDDEFINE»
+
+
+«REM»Inserimento nel context dei client CXF per nodi WSCall«ENDREM»
+«DEFINE wsCallClientParameters(SOABEModel model) FOR Operation»
+	«LET getAllResourceConnectors(model) AS allResConn-»
+	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+	// inserimento nel context dei client per il wscall
+	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+	«LET wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint ) AS beanClientId-»
+	persistentParams.put("wscall.client.«beanClientId»", get«beanClientId.toFirstUpper()»());
+	«ENDLET-»
+    «ENDFOREACH-»
+	«ENDIF-»
+	«ENDLET-»
+«ENDDEFINE»
+
+«REM»Inserimento nel context del principal in caso di autenticazione«ENDREM»
+«DEFINE principalNameParameter(SOABEModel model, ServiceDef def) FOR Operation»
+«IF hasAuthentication(def)»
+// inserimento nel context del principal name
+persistentParams.put("caller.principal.name.slot", remoteUser);
+«ENDIF»
+«ENDDEFINE»

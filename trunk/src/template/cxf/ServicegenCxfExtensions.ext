@@ -1,0 +1,316 @@
+/**
+ * <copyright>
+ * (C) Copyright 2011 CSI-PIEMONTE;
+
+ * Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;
+ * Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.
+ * E' possibile ottenere una copia della Licenza al seguente indirizzo:
+ *
+ * http://www.eupl.it/opensource/eupl-1-1
+ *
+ * Salvo diversamente indicato dalla legge applicabile o concordato per
+ * iscritto, il software distribuito secondo i termini della Licenza e'
+ * distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,
+ * esplicite o implicite.
+ * Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni
+ * e le limitazioni secondo i termini della Licenza.
+ * </copyright>
+ *
+ * $Id$
+ */
+
+import servicegen;
+import typedef;
+import servicedef;
+import appresources;
+
+extension template::ServicegenExtensions;
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+/// NAMING PACCHETTI
+
+String getWSWarName(String codServ, String codBinding, String srvType, SOABEModel model) :
+	srvType+"-"+removeSeparator(codServ)+"-"+codBinding.toLowerCase()+".war";
+
+String wsWebContext(String codServ, String codBinding, String serviceType, SOABEModel model) :
+	model.codComponente.toLowerCase()+toCamel(serviceType.toString())+toCamel(removeSeparator(codServ))+codBinding.toLowerCase().toFirstUpper();
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//// NAMING DIRECTORY
+
+String fullWebServiceInterfaceDir(ServiceDef sd, String codServ, SOABEModel model) :
+    getGeneratedJavaSrcDir(model)+"/"+getOrganizationNamePathPrefix()+"/"+model.codProdotto.toLowerCase()+"/"+model.codComponente.toLowerCase()+"/interfacews/"+removeSeparator(codServ);
+
+String getPdConfigRootDir(SOABEModel model) :
+  getConfigRootDir(model)+"/pd";
+
+String getSpecificPdConfigRootDir(String codServizio, SOABEModel model) :
+  getPdConfigRootDir(model)+"/"+removeSeparator(codServizio);
+
+
+String getWscliConfigRootDir(SOABEModel model) :
+  getConfigRootDir(model)+"/ws";
+
+String getSpecificWscliConfigRootDir(String codServizio, SOABEModel model) :
+  getWscliConfigRootDir(model)+"/"+removeSeparator(codServizio);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+///// NAMING PACKAGE JAVA
+
+// full qualified name dell'interfaccia del servizio (SEI)
+String fullQualifiedWebServiceInterfacePkg(ServiceDef sd, SOABEModel model) :
+    getOrganizationNamePkgPrefix()+"."+model.codProdotto.toLowerCase()+"."+model.codComponente.toLowerCase()+".interfacews."+removeSeparator(sd.codServizio);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//// NAMING CLASSI
+
+String serviceImplementationClassName(ServiceDef sd) :
+	toCamel(sd.codServizio)+"Impl";
+
+String serviceBusinessInterfaceName(ServiceDef sd) :
+	toCamel(sd.codServizio)+"Business";
+
+String serviceBusinessClassName(ServiceDef sd) :
+	toCamel(sd.codServizio)+"BusinessImpl";
+	
+// [DM] STDMDD-1088: Eccezioni comuni
+String userExceptionClassName() :
+	"UserException";
+
+String systemExceptionClassName() :
+	"SystemException";
+
+String unrecoverableExceptionClassName() :
+	"UnrecoverableException";
+
+String getExceptionExtendsClass(Exception ex) :
+	if ex.exceptionType == CSIExceptionTypes::USER then
+		userExceptionClassName()
+	else if ex.exceptionType == CSIExceptionTypes::SYSTEM then
+		systemExceptionClassName()	
+	else if ex.exceptionType == CSIExceptionTypes::UNRECOVERABLE then
+		unrecoverableExceptionClassName();
+
+String getExceptionExtendsFQNClass(Exception ex, SOABEModel model, String codServ) :
+	fullQualifiedServiceExceptionPkg(codServ, model) + "." + getExceptionExtendsClass(ex);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//// NAMING BEAN SPRING
+
+String wsCallClientBeanId(ServiceDef sd, WSEndpoint endpoint) :
+	toCamel(sd.codServizio).toFirstLower()+getCodeEndpoint(endpoint).toFirstUpper()+"Client";
+
+String wsCallClientFactoryBeanId(ServiceDef sd, WSEndpoint endpoint) :
+	wsCallClientBeanId(sd,endpoint)+"Factory";
+	
+String wsCallClientAppContextName(ServiceDef sd, WSEndpoint endpoint) :
+	toCamel(sd.codServizio).toFirstLower()+getCodeEndpoint(endpoint).toFirstUpper()+"ClientCxf.xml";
+	
+///////////////////////////////////////////////////////////////////////////////////////////////
+// DATA TYPES MAPPING
+
+String map2javaWsType(Type type, String codServ, SOABEModel model) :
+	if (type.metaType==PrimitiveType) then
+		map2JavaWSTypeSDRelative((PrimitiveType)type)
+	else if (type.metaType==TypedArray) then
+		"List<" + map2JavaTypeSDRelative(((TypedArray)type).componentType)+">"
+	else
+		// delega al metodo gia' esistente la gestione di void, Entity ed Exception
+		map2javaType(type, codServ, model);
+
+// mappa il tipo java contestualizzandolo nel servicedef contenitore
+// (sfrutta codProdotto e codservizio di ServiceDef invece che quelli di SOABEModel)
+String map2JavaWSTypeSDRelative(PrimitiveType type) :
+	let binding = type.languageBindings.select(a|a.lang=="java").first() :
+	let ns = (binding.langSpecificNS != null ? binding.langSpecificNS : "") :
+	ns + binding.langSpecificType;
+
+// Default value
+String defaultWSInitVal(Type type) :
+	if (type.metaType==PrimitiveType) then
+		defaultPrimitiveInitVal((PrimitiveType)type)
+	else
+		defaultInitVal(type);
+
+String defaultPrimitiveInitVal(PrimitiveType type) :
+	let binding = type.languageBindings.select(a|a.lang=="java").first() :
+	binding.defaultInitValue;
+
+// verifica se
+boolean hasAttachment(List[Operation] operations) : JAVA
+	it.csi.mddtools.servicegen.cxf.genutils.CodeGenetationUtils.hasAttachment(java.util.List);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+///// GENERAZIONE ELEMENTI JAVA
+
+String getWsTargetNamespace(ServiceDef sd, SOABEModel model) :
+	let sdannTns = getSDAnnDetail(sd, "ws", "tns") :
+    if sdannTns != null then
+    	sdannTns.value
+    else
+    	null; // TODO: definire un default?
+
+String getWsTargetNamespaceAnnotation(ServiceDef sd, SOABEModel model) :
+	let sdannTns = getWsTargetNamespace(sd, model) :
+	if sdannTns != null then
+		", targetNamespace = \"" + sdannTns + "\""
+	else
+		"";
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+///// VARIABILI DI BUILD
+
+String getWSVarsPrefix(ServiceDef sd) :
+	removeSeparator(sd.codProdotto)+"."+removeSeparator(sd.codComponente)+"."+removeSeparator(sd.codServizio);
+
+String getWSURLVar(ServiceDef sd, WSEndpoint endpoint) :
+	getWSVarsPrefix(sd)+getCodeEndpoint(endpoint)+".ws.url";
+
+String getWSURLPlaceHolder(ServiceDef sd, WSEndpoint endpoint)  :
+	"@"+getWSURLVar(sd, endpoint)+"@";
+
+// Credenziali di autenticazione
+
+String getWSUsernameVar(ServiceDef sd) :
+	getWSVarsPrefix(sd)+".ws.username";
+
+String getWSUsernamePlaceHolder(ServiceDef sd) :
+	"@"+getWSUsernameVar(sd)+"@";
+
+String getWSPasswordVar(ServiceDef sd) :
+	getWSVarsPrefix(sd)+".ws.password";
+
+String getWSPasswordPlaceHolder(ServiceDef sd) :
+	"@"+getWSPasswordVar(sd)+"@";
+
+// Sicurezza di canale SSL
+
+String getWSTruststorePasswordVar(ServiceDef sd) :
+	getWSVarsPrefix(sd)+".ws.truststore.password";
+
+String getWSTruststorePasswordPlaceHolder(ServiceDef sd) :
+	"@"+getWSTruststorePasswordVar(sd)+"@";
+
+String getWSTruststorePathVar(ServiceDef sd) :
+	getWSVarsPrefix(sd)+".ws.truststore.path";
+
+String getWSTruststorePathPlaceHolder(ServiceDef sd) :
+	"@"+getWSTruststorePathVar(sd)+"@";
+
+String getWSKeystorePasswordVar(ServiceDef sd) :
+	getWSVarsPrefix(sd)+".ws.keystore.password";
+
+String getWSKeystorePasswordPlaceHolder(ServiceDef sd) :
+	"@"+getWSKeystorePasswordVar(sd)+"@";
+
+String getWSKeyststorePathVar(ServiceDef sd) :
+	getWSVarsPrefix(sd)+".ws.keystore.path";
+
+String getWSKeyststorePathPlaceHolder(ServiceDef sd) :
+	"@"+getWSKeyststorePathVar(sd)+"@";
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+///// AUTHENTICATION
+
+boolean hasAuthentication(ServiceDef sd) :
+	sd.authLevel!=null && sd.authLevel!=AuthLevelEnum::A0;
+
+boolean hasChannelSecurity(WSBinding ws) :
+	ws.channelSecurityLevel!=null && ws.channelSecurityLevel!=ChannelSecurityLevelEnum::C0;
+
+boolean hasASAuthentication() :
+	getAuthenticationMethod() == "ASonly" || getAuthenticationMethod() == "both";
+
+boolean hasWSAuthentication() :
+	getAuthenticationMethod() == "WSonly" || getAuthenticationMethod() == "both";
+
+String getAuthenticationMethod() :
+	getProperty("servicegen.cxf.authenticationMethod") == null || getProperty("servicegen.cxf.authenticationMethod").trim().length == 0 ?
+	"both" :
+	getProperty("servicegen.cxf.authenticationMethod").trim();
+
+String authenticationHelperClassName(ServiceDef sd) :
+	"AuthenticationHelper";
+
+String authenticationHelperBeanID(ServiceDef sd) :
+	"authenticationHelper";
+
+boolean needConduitConnfiguration(ServiceDef sd, WSBinding ws) :
+	hasAuthentication(sd) || hasChannelSecurity(ws);
+	
+String getConduitName(ServiceDef sd, SOABEModel model) :
+	"{" + getWsTargetNamespace(sd, model) + "}" + toCamel(sd.codServizio) + "Port.http-conduit";
+	
+String getCXFOrchestrationRemoteUser(ServiceDef sd) :
+	if (hasAuthentication(sd) && getAuthenticationMethod() == "WSonly") then
+		"get"+authenticationHelperBeanID(sd).toFirstUpper()+"().getWebServerPrincipalName()"
+	else if (hasAuthentication(sd) && (getAuthenticationMethod() == "ASonly" || getAuthenticationMethod() == "both")) then
+		"get"+authenticationHelperBeanID(sd).toFirstUpper()+"().getApplicationServerPrincipal() != null ? get"+authenticationHelperBeanID(sd).toFirstUpper()+"().getApplicationServerPrincipal().getName() : \"<???>\""
+	else
+		"\"<???>\"";
+
+
+String getActionEndPoint(WSEndpointChannel actionList): JAVA
+	it.csi.mddtools.servicegen.cxf.genutils.CodeGenetationUtils.getActionEndPoint(it.csi.mddtools.servicedef.WSEndpointChannel);
+	
+String getTypeOfAction(WSSecuritySpec action): JAVA
+it.csi.mddtools.servicegen.cxf.genutils.CodeGenetationUtils.getTypeOfAction(it.csi.mddtools.servicedef.WSSecuritySpec);
+
+String getCodeEndpoint(WSEndpoint endpoint): endpoint.code!=null ? endpoint.code : "";
+
+boolean includeSignatureOut(WSEndpoint endpoint, boolean client):
+if(client && endpoint.inChannel.wsSecurity.select(e|e.getTypeOfAction()=="Signature").size>0) then
+	true
+else if(!client && endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Signature").size>0) then
+	true
+else
+	false;	
+	
+boolean includeUserTokenOut(WSEndpoint endpoint, boolean client):
+if(client && endpoint.inChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0) then
+	true
+else if(!client && endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0) then
+	true
+else
+	false;	
+	
+boolean includeEncryptIn(WSEndpoint endpoint, boolean client):
+if(client && endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="Encrypt").size>0) then
+	true
+else if(!client && endpoint.inChannel.wsSecurity.select(e|e.getTypeOfAction()=="Encrypt").size>0) then
+	true
+else
+	false;	
+	
+boolean includeUserTokenIn(WSEndpoint endpoint, boolean client):
+if(client && endpoint.outChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0) then
+	true
+else if(!client && endpoint.inChannel.wsSecurity.select(e|e.getTypeOfAction()=="UsernameToken").size>0) then
+	true
+else
+	false;	
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+String getAppServerLib(SOABEModel model) :
+	if ( model.targetPlatform.code == TargetPlatformCodes::JBoss43 ) then
+		"jboss"
+	else if ( model.targetPlatform.code == TargetPlatformCodes::WLS92 ) then
+		"weblogic";
+
+/////////////////////////////////////WS-SECURITY CXF//////////////////////////////////////////
+
+String namaPasswordCallbackClass(boolean outChannel, WSEndpoint endpoint):
+	if(outChannel) then
+		 "OutInterceptorCallback"+getCodeEndpoint(endpoint).toFirstUpper()
+	else
+		 "InInterceptorCallback"+getCodeEndpoint(endpoint).toFirstUpper();
+		

@@ -1,0 +1,371 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;                                             
+                                                                            
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.       
+E' possibile ottenere una copia della Licenza al seguente indirizzo:        
+                                                                            
+http://www.eupl.it/opensource/eupl-1-1                                      
+                                                                            
+Salvo diversamente indicato dalla legge applicabile o concordato per        
+iscritto, il software distribuito secondo i termini della Licenza e'        
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,         
+esplicite o implicite.                                                      
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
+e le limitazioni secondo i termini della Licenza.                           
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef»
+«IMPORT appresources»
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«REM»
+Contiene i template per la definizione dei file di configurazione necessari per
+l'implementazione della Specific Platform (CSI over J2EE) 
+«ENDREM»
+
+«DEFINE serviceFiles(SOABEModel model) FOR ServiceDef»
+	«REM»WS CXF FILES«ENDREM»
+	«FOREACH this.bindings.typeSelect(WSBinding) AS ws»
+		«EXPAND wsfiles(model, this) FOR ws»
+	«ENDFOREACH»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+WS CXF FILES
+Genera i file per webservices CXF
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE wsfiles(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+	«EXPAND j2eeconfigfiles::wswebxml(model, serviceDef) FOR this»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+SPRING CONFIGURATION
+Genera i file per la configurazione di Spring (Dependency Injection, CXF configuration, DAO)
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE springFiles(SOABEModel model, boolean useExternalDaoBeans) FOR LogicImplCartridge»
+	«LET (ServiceImpl)eContainer AS impl»
+		«EXPAND springMainFile(model, impl, useExternalDaoBeans) FOR this»
+		«EXPAND applicationContextFile(model, impl, useExternalDaoBeans) FOR this»
+		«EXPAND cxfFile(model, impl, useExternalDaoBeans) FOR this»
+		«IF !useExternalDaoBeans»
+			«EXPAND daoBeansFile(model, impl, useExternalDaoBeans) FOR this»
+		«ENDIF»
+	«ENDLET»
+«ENDDEFINE»
+
+
+«REM»Genera il file spring MAIN (file che include tutti gli altri e viene a sua volta chiamato dal contesto«ENDREM»
+«DEFINE springMainFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"SpringMain.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<!-- CENTRALIZED CXF resources import -->
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	
+	«IF !useExternalDaoBeans»
+	<!-- DB CONFIGURATION AND DAO -->
+	<import resource="«impl.provides.codServizio.toLowerCase()»Dao-beans.xml" />
+	«ENDIF»
+	
+	«LET getAllResourceConnectors(model) AS allResConn-»
+	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+     <!-- CXF CLIENT CONFIGURATION for «((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio» WS -->
+	<import resource="classpath:«wsCallClientAppContextName(((RPCWebServiceConnector)currRPCWSC).serviceDef, ((RPCWebServiceConnector)currRPCWSC).endpoint)»" />   
+    «ENDFOREACH-»
+	«ENDIF-»
+	«ENDLET-»
+
+    <!-- BUSINESS CONFIGURATION -->
+    <import resource="«impl.provides.codServizio.toLowerCase()»ApplicationContext.xml" />
+
+    <!-- CXF SERVICES CONFIGURATION -->
+	<import resource="«impl.provides.codServizio.toLowerCase()»Cxf.xml" />
+
+</beans>
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»Genera il file di configurazione«ENDREM»
+«DEFINE applicationContextFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"ApplicationContext.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"beancontext")»
+	<!-- Insert here your custom Spring Beans -->				
+	«ENDPROTECT»
+	
+	
+	<bean id="«impl.provides.codServizio»BL" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceBusinessClassName(impl.provides)»">
+		«LET getAllResourceConnectors(model) AS allResConn-»
+		«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+		«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+		<!-- CXF CLIENT for «((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio» WS -->
+		<property name="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint )»" ref="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint)»" />
+	    «ENDFOREACH-»
+		«ENDIF-»
+		«ENDLET-»
+		«IF impl.implCartridge.metaType==FlowModelImplCartridge && impl.provides.authLevel!=AuthLevelEnum::A0-»
+		<!-- Authentication Helper (per il recupero del principal) -->
+		<property name="«authenticationHelperBeanID(impl.provides)»" ref="«authenticationHelperBeanID(impl.provides)»" />
+		«ENDIF-»
+
+		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+serviceImplBeanId(impl.provides))»
+		<!-- Insert here «impl.provides.codServizio» bean properties (Dao, customBeans, etc...) -->
+		«ENDPROTECT»
+	</bean>
+
+	«IF impl.provides.authLevel!=AuthLevelEnum::A0-»
+	<!-- Authentication Helper -->
+	<bean id="«authenticationHelperBeanID(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«authenticationHelperClassName(impl.provides)»" />
+	«ENDIF-»
+</beans>
+«ENDFILE»
+«ENDDEFINE»
+
+
+«DEFINE cxfFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"Cxf.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:cxf="http://cxf.apache.org/core"
+	   xmlns:http="http://cxf.apache.org/transports/http/configuration"
+	   xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:sec="http://cxf.apache.org/configuration/security"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+						   http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+						   http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+						   http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+						   http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd">
+
+	<!-- web service implementation definition -->
+	<bean id="«serviceImplBeanId(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceImplClassName(impl.provides)»">
+		<property name="«serviceBusinessInterfaceName(impl.provides).toFirstLower()»" ref="«impl.provides.codServizio»BL" />
+	</bean>
+	«IF impl.provides.bindings.isEmpty-»
+	<!-- web service end point definition -->
+	<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»WS"
+					implementor="#«serviceImplBeanId(impl.provides)»"
+					address="/«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»">
+		«IF hasAttachment(impl.provides.operations)-»
+		<jaxws:properties>
+			<entry key="mtom-enabled" value="true"/>
+		</jaxws:properties>
+		«ENDIF-»
+	</jaxws:endpoint>
+	«ENDIF-»
+	«IF !impl.provides.bindings.isEmpty-»
+		«LET impl.provides.bindings.get(0) AS serviceBinding-»
+		«EXPAND defineEndPoint((WSBinding)serviceBinding, impl) FOR this-»
+		«EXPAND defineBeanCallBack(model,impl) FOR this-»
+		«ENDLET»
+	«ENDIF»
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"cxf")»
+	<!-- Other CXF configurations (bus, conduit, security, ecc) -->	
+	«ENDPROTECT»
+</beans>
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE defineBeanCallBack(SOABEModel model,ServiceImpl impl) FOR LogicImplCartridge»
+
+«IF !impl.provides.bindings.isEmpty-»
+		«LET impl.provides.bindings.get(0) AS serviceBinding-»
+«IF !((WSBinding)serviceBinding).endpoints.isEmpty-»
+	«FOREACH ((WSBinding)serviceBinding).endpoints AS endpoint-»
+		<bean id="inInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
+     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.«namaPasswordCallbackClass(false, endpoint)»"/>
+     	<bean id="outInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
+     	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.«namaPasswordCallbackClass(true, endpoint)»"/>
+	«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE defineEndPoint(WSBinding wsBinding, ServiceImpl impl) FOR LogicImplCartridge»
+«IF !(wsBinding).endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+	<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»«getCodeEndpoint(endpoint).toFirstUpper()»WS"
+					implementor="#«serviceImplBeanId(impl.provides)»"
+					address="/«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»«getCodeEndpoint(endpoint).toFirstUpper()»">
+		«IF hasAttachment(impl.provides.operations)-»
+		<jaxws:properties>
+			<entry key="mtom-enabled" value="true"/>
+		</jaxws:properties>
+		«ENDIF-»
+		«LET endpoint.inChannel AS inInterceptor-»
+		«IF inInterceptor != null-»
+		<jaxws:inInterceptors>
+			<bean class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+				<constructor-arg>
+				    <map>
+					    <entry key="action" value="«getActionEndPoint(inInterceptor)»"/>
+					    
+					    <entry key="user" value="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».user.«getCodeEndpoint(endpoint)»@" />
+					    <entry key="passwordCallbackRef">
+							<ref bean="inInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"/>
+						</entry>
+					    «FOREACH inInterceptor.wsSecurity AS wsSecurity-»
+					    «IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
+					    <!-- USERNAME TOKEN PROPERTIES -->
+					    <entry key="passwordType" value="PasswordText"/>
+						«ENDIF-»
+						«IF getTypeOfAction(wsSecurity) =="Signature" -»
+						<!-- SIGNATURE PROPERTIES -->
+						<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.properties" />
+						«ENDIF-»
+						«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
+						<!-- ENCRYPT PROPERTIES -->
+						<entry key="decryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.properties" />
+						«ENDIF-»
+					    «ENDFOREACH-»
+					</map>
+				</constructor-arg>
+			</bean>
+		</jaxws:inInterceptors>
+		«ENDIF-»
+		«ENDLET-»
+		«LET endpoint.outChannel AS outInterceptor-»
+		«IF outInterceptor != null-»
+		<jaxws:outInterceptors>
+			<bean class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+					<constructor-arg>
+						<map>
+							<entry key="action" value="«getActionEndPoint(outInterceptor)»" />
+							
+							<entry key="user" value="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».user.«getCodeEndpoint(endpoint)»@" />
+						    <entry key="passwordCallbackRef">
+								<ref bean="outInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"/>
+							</entry>
+							«FOREACH outInterceptor.wsSecurity AS wsSecurity-»
+							 «IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
+						    <!-- USERNAME TOKEN PROPERTIES -->
+						    <entry key="passwordType" value="PasswordText"/>
+							«ENDIF-»
+							«IF getTypeOfAction(wsSecurity) =="Signature" -»
+							<!-- SIGNATURE PROPERTIES -->
+							<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.properties" />
+							«ENDIF-»
+							«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
+							<!-- ENCRYPT PROPERTIES -->
+							<entry key="encryptionUser" value="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».userEncrypt.«getCodeEndpoint(endpoint)»@"/>
+							<entry key="encryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.properties"  />
+							<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
+							<entry key="encryptionKeyTransportAlgorithm" value="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
+							«ENDIF-»
+							«ENDFOREACH-»
+						</map>
+					</constructor-arg>
+				</bean>
+		</jaxws:outInterceptors>
+		«ENDIF-»
+		«ENDLET-»
+	</jaxws:endpoint>
+	«ENDFOREACH-»
+	«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE daoBeansFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"Dao-beans.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"daobeans")»
+	<!-- Insert here your Spring Beans -->	
+	«ENDPROTECT»
+	
+</beans>
+«ENDFILE»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+LOGGING CONFIGURATION
+Genera il frammento log4j con log e stopwatch
+==========================================================================================================================
+«ENDREM»
+«REM»
+«DEFINE log4jfiles FOR SOABEModel»
+«FILE getDocsRootDir()+"/log4j_"+this.codComponente+".properties"»
+#-------------------------------------------------------------------
+# configurazione dei logger per il componente «this.codComponente»
+#-------------------------------------------------------------------
+«LET getLoggerPrefixForComponent(this.codProdotto,this.codComponente) AS logger_name»
+log4j.logger.«logger_name»=INFO, «logger_name».file
+log4j.additivity.«logger_name»=false
+#tipologia di appender
+log4j.appender.«logger_name».file=org.apache.log4j.RollingFileAppender
+log4j.appender.«logger_name».file.File=/usr/prod/«this.codComponente»/logs/«this.codComponente»_[srvInstance].log
+#politica di back-up
+log4j.appender.«logger_name».file.MaxFileSize=3Mb
+log4j.appender.«logger_name».file.MaxBackupIndex=5
+#conversion pattern
+log4j.appender.«logger_name».file.layout=org.apache.log4j.PatternLayout
+log4j.appender.«logger_name».file.layout.ConversionPattern= %d{yyyy-MM-dd HH:mm:ss} [«logger_name»] %p <%c> <%t> %m%n
+
+#--------------------------------------------------------------------
+# configurazione dello stopwatch per il componente «codComponente»
+#--------------------------------------------------------------------
+log4j.logger.«logger_name».util.stopwatch=INFO, «logger_name».util.stopwatch.file
+log4j.additivity.«logger_name».util.stopwatch=false
+log4j.appender.«logger_name».util.stopwatch.file=org.apache.log4j.RollingFileAppender
+log4j.appender.«logger_name».util.stopwatch.file.File=/usr/prod/«this.codComponente»/logs/«this.codComponente»_perf_[srvInstance].csv
+log4j.appender.«logger_name».util.stopwatch.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.«logger_name».util.stopwatch.file.layout.ConversionPattern=%t,%d{yyyy-MM-dd HH:mm:ss},%X{«logger_name».stopwatch.context},%X{«logger_name».stopwatch.elapsed},%m%n
+«IF serviceimplementations.select(srvimpl|srvimpl.provides.traceEnabled==true).size>0»
+	«EXPAND papdconfigfiles::cooptrace_logger_cfg FOR this»
+«ENDIF»
+#---------------------------------------------------------------------
+# fine sezione logger del componente «this.codComponente»
+#---------------------------------------------------------------------
+«ENDLET»
+«ENDFILE»
+
+«FILE getDocsRootDir()+"/README.txt"»
+Istruzioni per l'utilizzo dei files contenuti in questa directory.
+
+- «"log4j_"+this.codComponente+".properties"»: 
+  E'il frammento di configurazione di log4j da inserire nel file di configurazione
+  del server (occorre completare i path di destinazione dei file di log).
+  Contiene:
+  - le configurazioni del log applicativo
+  - le configurazioni dello stopwatch
+  - le configurazioni necessarie per abilitare coop-trace (se previsto) 
+
+- «"log4j_"+this.codComponente+".xml"»:
+  E'il frammento di configuraizone di log4j necessario per configurare l'appender
+  JMS che serve alle librerie coop-trace per tracciare le chiamate a servizi.
+«ENDFILE»
+«ENDDEFINE»
+«ENDREM»

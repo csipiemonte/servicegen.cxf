@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<workflow>
+
+	<!-- ***************************************************
+         ALIAS per checkSvcOrch.mwe
+         Lasciata per retrocompatibilita', si limita a invocare la nuova cartuccia MWE
+         passando i parametri ricevuti
+	-->
+
+	<cartridge file="it/csi/mddtools/servicegen/cxf/workflow/checkSvcOrch.mwe"
+		model="${model}"
+	/>
+
+</workflow>

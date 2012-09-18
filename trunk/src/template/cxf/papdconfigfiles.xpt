@@ -1,0 +1,219 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;                                             
+                                                                            
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.       
+E' possibile ottenere una copia della Licenza al seguente indirizzo:        
+                                                                            
+http://www.eupl.it/opensource/eupl-1-1                                      
+                                                                            
+Salvo diversamente indicato dalla legge applicabile o concordato per        
+iscritto, il software distribuito secondo i termini della Licenza e'        
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,         
+esplicite o implicite.                                                      
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
+e le limitazioni secondo i termini della Licenza.                           
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef»
+«IMPORT appresources»
+«IMPORT template::configfiles»
+«IMPORT template::papdconfigfiles»
+«IMPORT papdconfigfiles»
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«REM»
+==========================================================================================================================
+RESOURCE CONNECTOR FILES PER C.S.I
+==========================================================================================================================
+«ENDREM»
+
+«REM»Delego al template ServiceGen CSI la creazione del file PD nella directory corretta«ENDREM»
+«DEFINE defpdejbclientfile(SOABEModel model, ServiceDef sd, ServiceDef context, TargetPlatformCodes paplatform, String pdPluginFQN, String customPAJndi) FOR EJBPABinding»
+	«EXPAND template::papdconfigfiles::defpdejbfile(model, sd, getSpecificPdConfigRootDir(context.codServizio, model)+"/"+pdEJBDefFileName(sd), paplatform, pdPluginFQN, customPAJndi) FOR this»
+«ENDDEFINE»
+
+«REM»Delego al template ServiceGen CSI la creazione del file nella directory corretta«ENDREM»
+«DEFINE defpdsoapclientfile(SOABEModel model, ServiceDef sd, ServiceDef context, String customPAUrl, String customPAUri) FOR SOAPPABRBinding»
+	«EXPAND template::papdconfigfiles::defpdsoapfile(model, sd, getSpecificPdConfigRootDir(context.codServizio, model)+"/"+pdSOAPDefFileName(sd), customPAUrl, customPAUri) FOR this»
+«ENDDEFINE»
+
+
+«REM»PD Selector«ENDREM»
+«DEFINE pdSelectorFile(ServiceDef context, SOABEModel model) FOR PDPAServiceConnector»
+	«EXPAND template::papdconfigfiles::pdSelectorFile(context, model, getSpecificPdConfigRootDir(context.codServizio, model)+"/"+pdSelectorFileName()) FOR this»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+RESOURCE CONNECTOR FILES PER CXF
+==========================================================================================================================
+«ENDREM»
+
+«REM»File Spring di definizione del client«ENDREM»
+«DEFINE cxfClientConfigFile(ServiceDef context, SOABEModel model, ServiceDef sd, boolean includeCxfImports) FOR RPCWebServiceConnector»
+«FILE getSpecificWscliConfigRootDir(context.codServizio, model) +"/"+wsCallClientAppContextName(this.serviceDef, this.endpoint)»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:cxf="http://cxf.apache.org/core"
+	   xmlns:http="http://cxf.apache.org/transports/http/configuration"
+	   xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:sec="http://cxf.apache.org/configuration/security"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+						   http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+						   http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+						   http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+						   http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd">
+	«IF includeCxfImports»
+	<!-- import CXF resources -->
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	«ENDIF»
+	
+	<!-- the client bean -->
+	<bean id="«wsCallClientBeanId(this.serviceDef,this.endpoint)»"
+		  class="«fullQualifiedWebServiceInterfaceName(sd)»"
+		  factory-bean="«wsCallClientFactoryBeanId(this.serviceDef,this.endpoint)»"
+		  factory-method="create"/>
+
+	<!-- and its factory -->
+	<bean id="«wsCallClientFactoryBeanId(this.serviceDef,this.endpoint)»" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass" value="«fullQualifiedWebServiceInterfaceName(sd)»"/>
+		<property name="address" value="«getWSURLPlaceHolder(this.serviceDef,this.endpoint)»" />
+		«IF this.endpoint != null-»
+		<property name="inInterceptors">
+				<list>
+					<ref bean="logIn" />
+					«IF this.endpoint.outChannel != null-»
+					<ref bean="wss4jIn«getCodeEndpoint(endpoint).toFirstUpper()»" />
+					«ENDIF»
+				</list>
+			</property>
+			<property name="outInterceptors">
+				<list>
+					<ref bean="logOut" />
+					«IF this.endpoint.inChannel != null-»
+					<ref bean="wss4jOut«getCodeEndpoint(endpoint).toFirstUpper()»" />
+					«ENDIF»
+				</list>
+		</property>
+		«ENDIF-»
+	</bean>
+	
+	«IF this.endpoint != null && this.endpoint.inChannel != null-»
+	<bean id="wss4jOut«getCodeEndpoint(this.endpoint).toFirstUpper()»" class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+		<constructor-arg>
+			<map>
+				<entry key="action" value="«getActionEndPoint( this.endpoint.inChannel)»" />
+				<entry key="user" value="@«this.code».user.«getCodeEndpoint(endpoint)»@" />
+					
+				<entry key="passwordCallbackClass"
+				value="«getFullServiceEJBPkg(context.codServizio, model,true)».«this.serviceDef.codServizio».callback.«namaPasswordCallbackClass(true, endpoint)»"/>
+					
+				«FOREACH this.endpoint.inChannel.wsSecurity AS wsSecurity-»
+				 «IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
+				 <!-- USERNAME TOKEN PROPERTIES -->
+				<entry key="passwordType" value="PasswordText"/>
+				«ENDIF-»
+				«IF getTypeOfAction(wsSecurity) =="Signature" -»
+				<!-- SIGNATURE PROPERTIES -->
+				<entry key="signaturePropFile" value="/WEB-INF/«this.code».ks.properties" />
+				«ENDIF-»
+				«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
+				<!-- ENCRYPT PROPERTIES -->
+				<entry key="encryptionUser" value="@«this.code».userEncrypt.«getCodeEndpoint(endpoint)»@"/>
+				<entry key="encryptionPropFile" value="/WEB-INF/«this.code».encrypt.properties"  />
+				<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
+				<entry key="encryptionKeyTransportAlgorithm" value="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
+				«ENDIF-»
+				«ENDFOREACH-»
+				</map>
+			</constructor-arg>
+	</bean> 
+	«ENDIF-»
+	
+	«IF this.endpoint != null && this.endpoint.outChannel != null-»
+	<bean id="wss4jIn«getCodeEndpoint(this.endpoint).toFirstUpper()»" class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+		<constructor-arg>
+			<map>
+				<entry key="action" value="«getActionEndPoint(this.endpoint.outChannel)»"/>
+				<entry key="user" value="@«this.code».user.«getCodeEndpoint(endpoint)»@" />
+				<entry key="passwordCallbackClass"
+				value="«getFullServiceEJBPkg(context.codServizio, model,true)».«this.serviceDef.codServizio».callback.«namaPasswordCallbackClass(false, endpoint)»"/>
+						
+				«FOREACH this.endpoint.outChannel.wsSecurity AS wsSecurity-»
+				«IF getTypeOfAction(wsSecurity) =="UsernameToken"-»
+				<!-- USERNAME TOKEN PROPERTIES -->
+				<entry key="passwordType" value="PasswordText"/>
+				«ENDIF-»
+				«IF getTypeOfAction(wsSecurity) =="Signature" -»
+				<!-- SIGNATURE PROPERTIES -->
+				<entry key="signaturePropFile" value="/WEB-INF/«this.code».ts.properties" />
+				«ENDIF-»
+				«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
+				<!-- ENCRYPT PROPERTIES -->
+				<entry key="decryptionPropFile" value="/WEB-INF/«this.code».decrypt.properties" />
+				«ENDIF-»
+				«ENDFOREACH-»
+				</map>
+			</constructor-arg>
+	</bean> 
+	«ENDIF-»
+	
+	«IF this.endpoint != null-»
+	<bean id="logIn" class="org.apache.cxf.interceptor.LoggingInInterceptor" />
+	<bean id="logOut" class="org.apache.cxf.interceptor.LoggingOutInterceptor" />
+	«ENDIF-»
+		
+	«LET sd.bindings.typeSelect(WSBinding).first() AS ws-»
+	«IF needConduitConnfiguration(sd, ws)-»
+	<!-- HTTP CONDUIT CONFIGURATION -->
+	<http:conduit name="«getConduitName(sd, model)»">
+		«IF ws.channelSecurityLevel!=ChannelSecurityLevelEnum::C0-»
+		<http:tlsClientParameters disableCNCheck="true">
+			<sec:trustManagers>
+				<sec:keyStore type="JKS" password="«getWSTruststorePasswordPlaceHolder(sd)»" file="«getWSTruststorePathPlaceHolder(sd)»"/>
+			</sec:trustManagers>
+			«IF ws.channelSecurityLevel==ChannelSecurityLevelEnum::C2-»
+			<sec:keyManagers keyPassword="«getWSKeystorePasswordPlaceHolder(sd)»">
+				<sec:keyStore type="JKS" password="«getWSKeystorePasswordPlaceHolder(sd)»" file="«getWSKeyststorePathPlaceHolder(sd)»"/>
+			</sec:keyManagers>
+			«ENDIF-»
+			<sec:cipherSuitesFilter>
+				<!-- these filters ensure that a ciphersuite with
+				export-suitable or null encryption is used,
+				but exclude anonymous Diffie-Hellman key change as
+				this is vulnerable to man-in-the-middle attacks -->
+				<sec:include>.*_EXPORT_.*</sec:include>
+				<sec:include>.*_EXPORT1024_.*</sec:include>
+				<sec:include>.*_WITH_DES_.*</sec:include>
+				<sec:include>.*_WITH_NULL_.*</sec:include>
+				<sec:exclude>.*_DH_anon_.*</sec:exclude>
+			</sec:cipherSuitesFilter>
+		</http:tlsClientParameters>
+		«ENDIF-»
+		«IF sd.authLevel!=AuthLevelEnum::A0-»
+		<http:authorization>
+			<sec:UserName>«getWSUsernamePlaceHolder(sd)»</sec:UserName>
+			<sec:Password>«getWSPasswordPlaceHolder(sd)»</sec:Password>
+		</http:authorization>
+		<http:client AutoRedirect="true" Connection="Keep-Alive"/>
+		«ENDIF-»
+	</http:conduit>
+	«ENDIF-»
+	«ENDLET-»
+
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+this.serviceDef.codServizio+getCodeEndpoint(this.endpoint)+"cxf.client")»
+	<!-- Other CXF configurations (bus, conduit, security, ecc) TTTTTTTTTTTT-->	
+	«ENDPROTECT»
+</beans>
+«ENDFILE»
+«ENDDEFINE»

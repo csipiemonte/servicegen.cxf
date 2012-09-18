@@ -1,0 +1,85 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;                                             
+                                                                            
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.       
+E' possibile ottenere una copia della Licenza al seguente indirizzo:        
+                                                                            
+http://www.eupl.it/opensource/eupl-1-1                                      
+                                                                            
+Salvo diversamente indicato dalla legge applicabile o concordato per        
+iscritto, il software distribuito secondo i termini della Licenza e'        
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,         
+esplicite o implicite.                                                      
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
+e le limitazioni secondo i termini della Licenza.                           
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef»
+«IMPORT appresources»
+«IMPORT template::configfiles»
+«IMPORT template::papdconfigfiles»
+«IMPORT papdconfigfiles»
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«REM»
+==========================================================================================================================
+RESOURCE CONNECTOR FILES
+==========================================================================================================================
+«ENDREM»
+
+«REM»Gestisce con un errore i casi non ancora implementati«ENDREM»
+«DEFINE resourceConnectorFiles(ServiceDef context, SOABEModel model) FOR ResourceConnector»
+	«ERROR "tipo di risorsa "+this.metaType+" non gestito"»
+«ENDDEFINE»
+
+
+«REM»PDPAServiceConnector: delego alle definizioni di servicegen la generazione«ENDREM»
+«DEFINE resourceConnectorFiles(ServiceDef context, SOABEModel model) FOR PDPAServiceConnector»
+	«EXPAND papdconnectorFiles(context, model, this.binding) FOR this»
+«ENDDEFINE»
+
+«REM»PDPAServiceConnector con ServiceBinding generico: errore per service binding non gestito«ENDREM»
+«DEFINE papdconnectorFiles(ServiceDef context, SOABEModel model, ServiceBinding bnd) FOR PDPAServiceConnector»
+	«ERROR "service binding non gestito "+bnd»
+«ENDDEFINE»
+
+«REM»PDPAServiceConnector con EJBPABinding: connettore a servizio CSI in modalità PA/PD«ENDREM»
+«DEFINE papdconnectorFiles(ServiceDef context, SOABEModel model, EJBPABinding bnd) FOR PDPAServiceConnector»
+	«LET getServiceTargetPlatform() AS paplatform»
+		«LET pdEjbPluginFQN() AS pdPluginFQN»
+			«LET getCustomEJBPAJndiName() AS customPAJndi»
+				«EXPAND template::cxf::papdconfigfiles::defpdejbclientfile(model, this.serviceDef, context, paplatform, pdPluginFQN, customPAJndi) FOR bnd»
+			«ENDLET»
+		«ENDLET»
+	«ENDLET»
+	«EXPAND template::cxf::papdconfigfiles::pdSelectorFile(context, model) FOR this»
+«ENDDEFINE»
+
+«REM»PDPAServiceConnector con SOAPPABRBinding: connettore a servizio CSI in modalità SOAP PA Bridge«ENDREM»
+«DEFINE papdconnectorFiles(ServiceDef context, SOABEModel model, SOAPPABRBinding bnd) FOR PDPAServiceConnector»
+	«LET getCustomSoapPAEndpoint() AS customPAEndpoint»
+		«LET getCustomSoapPAUri() AS customPAUri»
+			«EXPAND template::cxf::papdconfigfiles::defpdsoapclientfile(model, this.serviceDef, context, customPAEndpoint, customPAUri) FOR bnd»
+		«ENDLET»
+	«ENDLET»
+«ENDDEFINE»
+
+
+«REM»RPCWebServiceConnector«ENDREM»
+«DEFINE resourceConnectorFiles(ServiceDef context, SOABEModel model) FOR RPCWebServiceConnector»
+	«EXPAND template::cxf::papdconfigfiles::cxfClientConfigFile(context, model, this.serviceDef, false) FOR this»
+	«EXPAND javafiles::outInterceptorCallBackORCH(model, context) FOR this.serviceDef»
+	«EXPAND javafiles::inInterceptorCallBackORCH(model, context) FOR this.serviceDef»
+	«EXPAND buildfiles::wsSecurityClientPropertiesFile(model, context) FOR  this»
+«ENDDEFINE»
+
+
+«REM»JDBCDataSourceConnector: nessun file previsto«ENDREM»
+«DEFINE resourceConnectorFiles(ServiceDef context) FOR JDBCDataSourceConnector»
+«ENDDEFINE»

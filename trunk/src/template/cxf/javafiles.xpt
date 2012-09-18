@@ -1,0 +1,771 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;                                             
+                                                                            
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.       
+E' possibile ottenere una copia della Licenza al seguente indirizzo:        
+                                                                            
+http://www.eupl.it/opensource/eupl-1-1                                      
+                                                                            
+Salvo diversamente indicato dalla legge applicabile o concordato per        
+iscritto, il software distribuito secondo i termini della Licenza e'        
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,         
+esplicite o implicite.                                                      
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
+e le limitazioni secondo i termini della Licenza.                           
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef» 
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«REM»
+***************************************************************
+Metodo centralizzato per la generazione delle classi dei servizi
+***************************************************************
+«ENDREM»
+«DEFINE serviceFiles(SOABEModel model) FOR ServiceDef»
+	«REM»Files comuni (SEI e SI)«ENDREM»
+	«EXPAND javaServiceEndpointInterfaceFile(model) FOR this»
+	«EXPAND javaServiceImplementationClassFile(model) FOR this»
+	
+	«REM»Files della implementation cartridge (classe di business)«ENDREM»
+	«IF this.serviceType==SrvTypeEnum::orch»
+		«EXPAND javaOrchServiceBusinessFiles(model) FOR this»
+		«EXPAND svcflowFiles(model) FOR this»
+	«ELSE»
+		«EXPAND javaApplServiceBusinessFiles(model) FOR this»
+	«ENDIF»
+	
+	«REM»Helper per il recupero del Principal (Autenticazione)«ENDREM»
+	«IF this.authLevel!=AuthLevelEnum::A0»
+		«EXPAND javaAuthenticationHelperFile(model) FOR this»
+	«ENDIF»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+SERVICE ENDPOINT INTERFACE (SEI)
+==========================================================================================================================
+«ENDREM»
+
+«REM»Genera la Service Endpoint Interface (SEI) del web service«ENDREM»
+«DEFINE javaServiceEndpointInterfaceFile(SOABEModel model) FOR ServiceDef»
+«FILE fullWebServiceInterfaceDir(codServizio, model)+"/"+serviceInterfaceName()+".java" »package «fullQualifiedWebServiceInterfacePkg(model)»;
+
+import java.util.List;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebResult;
+import javax.jws.WebService;
+
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+@WebService(name = "«toCamel(this.codServizio)»"«getWsTargetNamespaceAnnotation(this, model)»)
+public interface «serviceInterfaceName()»{
+	«EXPAND operationDeclaration(model, this) FOREACH this.operations-»
+}
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»Genera la definizione di ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR Operation»
+@WebResult(name = "result"«getWsTargetNamespaceAnnotation(def, model)»)
+@WebMethod
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	«EXPAND paramDef(model, def, true) FOREACH params SEPARATOR ","»
+)«EXPAND throwsClause(model, def) FOR this-»,Exception,UnrecoverableException;
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+SERVICE IMPLEMENTATION CLASS (SI)
+==========================================================================================================================
+«ENDREM»
+
+«REM»Genera la Service Endpoint Interface (SEI) del web service«ENDREM»
+«DEFINE javaServiceImplementationClassFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceImplementationClassName()+".java" »package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.util.List;
+
+import javax.jws.WebService;
+import javax.xml.ws.WebServiceContext;
+import javax.annotation.Resource;
+
+import «fullQualifiedWebServiceInterfacePkg(model)».*;
+import «fullQualifiedEntitiesPkg(codServizio, model)».*;
+import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
+
+@WebService(
+		serviceName = "«serviceInterfaceName()»Service",
+		portName = "«serviceInterfaceName()»Port",
+		endpointInterface = "«fullQualifiedWebServiceInterfacePkg(model)».«serviceInterfaceName()»"
+		«getWsTargetNamespaceAnnotation(this, model)»)
+public class «serviceImplementationClassName()» implements «serviceInterfaceName()» {
+	«EXPAND businessClassInjection(model) FOR this»
+
+	«EXPAND operationImplemetation(model, this) FOREACH this.operations-»
+}
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»Genera la property per l'iniezione via Spring della classe di business«ENDREM»
+«DEFINE businessClassInjection(SOABEModel model) FOR ServiceDef»
+
+@Resource
+WebServiceContext wsContext;
+
+private «serviceBusinessInterfaceName()» «serviceBusinessInterfaceName().toFirstLower()»;
+
+public «serviceBusinessInterfaceName()» get«serviceBusinessInterfaceName()»() {
+	return «serviceBusinessInterfaceName().toFirstLower()»;
+}
+
+public void set«serviceBusinessInterfaceName()»(«serviceBusinessInterfaceName()» «serviceBusinessInterfaceName().toFirstLower()») {
+	this.«serviceBusinessInterfaceName().toFirstLower()» = «serviceBusinessInterfaceName().toFirstLower()»;
+}
+«ENDDEFINE»
+
+
+«REM»Genera ciascuna operation (metodo) del servizio«ENDREM»
+«DEFINE operationImplemetation(SOABEModel model, ServiceDef def) FOR Operation»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
+	«EXPAND paramDef(model, def, false) FOREACH params SEPARATOR ","»
+)«EXPAND throwsClause(model, def) FOR this-»,Exception,UnrecoverableException {
+	«IF this.returnType != null»return «ENDIF»get«serviceBusinessInterfaceName(def)»().«this.name»(wsContext, «FOREACH params AS p SEPARATOR ","»«p.name»«ENDFOREACH»);
+}
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+CLASSI DI BUSINESS
+Classe che contiene la vera implementazione del servizio
+==========================================================================================================================
+«ENDREM»
+
+«REM»Classi di business per servizi applicativi«ENDREM»
+«DEFINE javaApplServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«LET getServiceImpl(this, model) AS impl-»
+		«IF impl != null-»
+			«LET impl.serviceComponent AS sc»
+				«LET impl.implCartridge AS crt»
+					«IF crt==null || crt.metaType==ManualImplCartridge»
+						«EXPAND template::cxf::manualimpl::javafiles::javaApplServiceBusinessFiles(model) FOR this»
+					«ELSEIF crt!=null && crt.metaType==FlowModelImplCartridge»
+						«EXPAND template::cxf::flowmodel::javafiles::javaApplServiceBusinessFiles(model) FOR this»
+					«ELSE»
+						«ERROR "tipo di cartridge non gestita per implementazione "+impl»
+					«ENDIF»
+				«ENDLET-»
+			«ENDLET-»
+		«ELSE-»
+			«ERROR "la definizione di servizio "+this+" non ha implementazione"»		
+		«ENDIF-»
+	«ENDLET-»
+«ENDDEFINE»
+
+
+«REM»Classi di business per servizi orchestrati«ENDREM»
+«DEFINE javaOrchServiceBusinessFiles(SOABEModel model) FOR ServiceDef»
+	«LET getServiceImpl(this, model) AS impl-»
+		«IF impl != null-»
+			«LET impl.serviceComponent AS sc»
+				«LET impl.implCartridge AS crt»
+					«IF crt==null || crt.metaType==ManualImplCartridge»
+						«EXPAND template::cxf::manualimpl::javafiles::javaOrchServiceBusinessFiles(model) FOR this»
+					«ELSEIF crt!=null && crt.metaType==FlowModelImplCartridge»
+						«EXPAND template::cxf::flowmodel::javafiles::javaOrchServiceBusinessFiles(model) FOR this»
+					«ELSE»
+						«ERROR "tipo di cartridge non gestita per implementazione "+impl»
+					«ENDIF»
+				«ENDLET-»
+			«ENDLET-»
+		«ELSE-»
+			«ERROR "la definizione di servizio "+this+" non ha implementazione"»		
+		«ENDIF-»
+	«ENDLET-»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+DATA TYPES GENERATION
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE typedefs(SOABEModel model,String codServ) FOR Types»
+	«REM»Entities modellate«ENDREM»
+	«EXPAND javaWsEntityClass(model, codServ) FOREACH (List[Entity])this.types.select(e|e.metaType==Entity && !e.isTypedefAnnotated())»
+	«REM»STDMDD-1088: Exceptions di base (UserException, SystemException, UnrecoverableException)«ENDREM»
+	«EXPAND javaWsBaseExceptionClasses(model, codServ) FOR this»
+	«REM»Exceptions modellate«ENDREM»
+	«EXPAND javaWsExceptionClass(model, codServ) FOREACH (List[Exception])this.types.select(e|e.metaType==Exception && !e.isTypedefAnnotated())»
+«ENDDEFINE»
+
+
+«REM»
+***************************************************************
+ENTITIES
+***************************************************************
+«ENDREM»
+«DEFINE javaWsEntityClass(SOABEModel model, String codServ) FOR Entity»
+«FILE fullEntitiesDir(codServ, model)+"/"+name+".java"»package «fullQualifiedEntitiesPkg(codServ, model)»;
+
+«EXPAND additionalImports(model, codServ) FOR this-»
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlAccessorType(XmlAccessType.PROPERTY)
+@XmlType(
+	name = "«name.toFirstLower()»",
+	propOrder = {
+		«FOREACH this.features AS prop SEPARATOR ","»"«prop.name.toFirstLower()»"«ENDFOREACH»
+	}
+)
+public class «name» {
+
+	«EXPAND entityProperties(model, codServ) FOREACH this.features»
+
+
+	«EXPAND entityGettersSetters(model, codServ) FOREACH this.features»
+}
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE additionalImports(SOABEModel model, String codServ) FOR Entity-»
+«REM»Esiste almeno una lista?«ENDREM»
+«IF features.select(e|e.type.metaType==TypedArray).size > 0»
+import java.util.List;
+
+«ENDIF»
+«REM»Esiste almeno un allegato?«ENDREM»
+«IF features.select(e|e.type.metaType==PrimitiveType && ((PrimitiveType)e.type).name.contains("64Binary")).size > 0»
+import javax.xml.bind.annotation.XmlMimeType;
+«ENDIF»
+«REM»Esiste almeno una data?«ENDREM»
+«IF features.select(e|e.type.metaType==PrimitiveType && 
+	(((PrimitiveType)e.type).name.contains("date") || ((PrimitiveType)e.type).name.contains("Date") || 
+	((PrimitiveType)e.type).name.contains("time") || ((PrimitiveType)e.type).name.contains("Time"))).size > 0»
+import javax.xml.bind.annotation.XmlSchemaType;
+«ENDIF»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE entityProperties(SOABEModel model, String codServ) FOR Feature-»
+private «map2javaWsType(this.type, codServ, model)» «name»;
+«ENDDEFINE»
+
+«REM»comment«ENDREM»
+«DEFINE entityGettersSetters(SOABEModel model, String codServ) FOR Feature»
+«EXPAND propertyAnnotation(model, codServ) FOR this-»
+public «map2javaWsType(this.type, codServ, model)» get«name.toFirstUpper()»() {
+	return «name»;
+}
+
+public void set«name.toFirstUpper()»(«map2javaWsType(this.type, codServ, model)» «name») {
+	this.«name» = «name»;
+}
+
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE propertyAnnotation(SOABEModel model, String codServ) FOR Feature-»
+	«LET this.type.annotations.select(e|e.source=="jaxb") AS annotations-»
+		«IF annotations.size > 0-»
+			«FOREACH annotations.details AS detail-»
+				«detail.key»(«detail.value»)
+			«ENDFOREACH-»
+		«ENDIF-»
+	«ENDLET-»
+«ENDDEFINE»
+
+
+
+«REM»
+***************************************************************
+EXCEPTIONS
+***************************************************************
+«ENDREM»
+
+«DEFINE javaWsBaseExceptionClasses(SOABEModel model, String codServ) FOR Types»
+	«EXPAND javaWsUserExceptionClass(model, codServ) FOR this»
+	«EXPAND javaWsSystemExceptionClass(model, codServ) FOR this»
+	«EXPAND javaWsUnrecoverableExceptionClass(model, codServ) FOR this»
+«ENDDEFINE»
+
+«DEFINE javaWsUserExceptionClass(SOABEModel model, String codServ) FOR Types»
+«FILE fullServiceExceptionsDir(codServ, model)+"/"+userExceptionClassName()+".java"»package «fullQualifiedServiceExceptionPkg(codServ, model)»;
+
+/**
+ * Classe base per tutte le eccezioni di tipo USER
+ * @generated
+ */
+public class «userExceptionClassName()» extends Exception {
+
+	/**
+	 * @generated
+	 */
+	public «userExceptionClassName()»() {
+		super();
+	}
+
+	/**
+	 * @generated
+	 */
+	public «userExceptionClassName()»(String message) {
+		super(message);
+	}
+
+	/**
+	 * @generated
+	 */
+	public «userExceptionClassName()»(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+}
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE javaWsSystemExceptionClass(SOABEModel model, String codServ) FOR Types»
+«FILE fullServiceExceptionsDir(codServ, model)+"/"+systemExceptionClassName()+".java"»package «fullQualifiedServiceExceptionPkg(codServ, model)»;
+
+/**
+ * Classe base per tutte le eccezioni di tipo SYSTEM
+ * @generated
+ */
+public class «systemExceptionClassName()» extends Exception {
+
+	/**
+	 * @generated
+	 */
+	public «systemExceptionClassName()»() {
+		super();
+	}
+
+	/**
+	 * @generated
+	 */
+	public «systemExceptionClassName()»(String message) {
+		super(message);
+	}
+
+	/**
+	 * @generated
+	 */
+	public «systemExceptionClassName()»(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+}
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE javaWsUnrecoverableExceptionClass(SOABEModel model, String codServ) FOR Types»
+«FILE fullServiceExceptionsDir(codServ, model)+"/"+unrecoverableExceptionClassName()+".java"»package «fullQualifiedServiceExceptionPkg(codServ, model)»;
+
+/**
+ * Classe base per tutte le eccezioni di tipo UNRECOVERABLE
+ * @generated
+ */
+public class «unrecoverableExceptionClassName()» extends Exception {
+
+	/**
+	 * @generated
+	 */
+	public «unrecoverableExceptionClassName()»() {
+		super();
+	}
+
+	/**
+	 * @generated
+	 */
+	public «unrecoverableExceptionClassName()»(String message) {
+		super(message);
+	}
+
+	/**
+	 * @generated
+	 */
+	public «unrecoverableExceptionClassName()»(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+}
+«ENDFILE»
+«ENDDEFINE»
+
+«REM»Crea una eccezione modellata«ENDREM»
+«DEFINE javaWsExceptionClass(SOABEModel model, String codServ) FOR Exception»
+«FILE fullServiceExceptionsDir(codServ, model)+"/"+name+".java"»package «fullQualifiedServiceExceptionPkg(codServ, model)»;
+
+import javax.xml.ws.WebFault;
+
+@WebFault
+public class «name» extends «getExceptionExtendsFQNClass(this, model, codServ)» {
+
+	/**
+	 * @generated
+	 */
+	public «name»() {
+		super();
+	}
+
+	/**
+	 * @generated
+	 */
+	public «name»(String message) {
+		super(message);
+	}
+
+	/**
+	 * @generated
+	 */
+	public «name»(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+}
+«ENDFILE»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+COMMON METHODS
+==========================================================================================================================
+«ENDREM»
+
+«REM»comment«ENDREM»
+«DEFINE paramDef(SOABEModel model, ServiceDef def, boolean interface) FOR Param-»
+	«IF interface»@WebParam(name = "«name»"«getWsTargetNamespaceAnnotation(def, model)»)«ENDIF»
+	«map2javaWsType(this.type, def.codServizio, model)» «name»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE throwsClause(SOABEModel model, ServiceDef def) FOR Operation-»
+	«IF this.throws != null && this.throws.size > 0» throws «EXPAND exceptionInThrowsClause(model, def) FOREACH throws SEPARATOR ","»«ENDIF»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE exceptionInThrowsClause(SOABEModel model, ServiceDef def) FOR Exception-»
+	«map2JavaTypeSDRelative(this)»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+OS WORKFLOW FILES
+==========================================================================================================================
+«ENDREM»
+
+«REM»Riutilizza le definition di ServiceGen CSi«ENDREM»
+«DEFINE svcflowFiles(SOABEModel model) FOR ServiceDef»
+	«EXPAND template::javafiles::svcflowFiles(model, "cxf") FOR this»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+AUTHETICATION FILES
+==========================================================================================================================
+«ENDREM»
+
+«REM»Crea la classe di helper per il recupero del Principal«ENDREM»
+«DEFINE javaAuthenticationHelperFile(SOABEModel model) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+authenticationHelperClassName(this)+".java" »package «getFullServiceEJBPkg(codServizio, model)»;
+
+import java.security.Principal;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+/**
+ * Classe di utilit&agrave; per il recupero dell'utente autenticato.
+ *
+ * @author CSI
+ * @generated
+ */
+public class «authenticationHelperClassName(this)» {
+
+	/**
+	 * @generated
+	 */
+	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto, model.codComponente)»";
+
+	«IF hasWSAuthentication()-»
+	«IF model.targetPlatform.code==TargetPlatformCodes::WLS92-»
+	/** Header di request che contiene lo user principal name in BEA. */
+	public static final String WL_PRINCIPAL_NAME_HEADER = "Proxy-remote-user";
+	«ENDIF-»
+	
+	/**
+	 * Recupera lo Username dell'utente autenticato dalla request.
+	 * @return Lo username dell'utente autenticato
+	 */
+	public String getWebServerPrincipalName() {
+		Logger logger = getLogger(null);
+
+		// recupero la request dal contesto di Spring
+		HttpServletRequest request = getRequest();
+
+		// Recupero lu username
+		String userPrincipalName = null;
+		if (request != null) {
+			«IF model.targetPlatform.code==TargetPlatformCodes::WLS92-»
+			// BEA
+			userPrincipalName = request.getHeader(WL_PRINCIPAL_NAME_HEADER);
+			«ELSEIF model.targetPlatform.code==TargetPlatformCodes::JBoss43-»
+			// JBOSS
+			Principal userPrincipal = request.getUserPrincipal();
+			if (userPrincipal != null) {
+				userPrincipalName = userPrincipal.getName();
+			} else {
+				logger.error("[«authenticationHelperClassName()»::getWebServerPrincipalName] - ERRORE: JBOSS: impossibile recuperare il Principal dalla HttpServletRequest");
+			}
+			«ENDIF-»
+		} else {
+			logger.error("[«authenticationHelperClassName()»::getWebServerPrincipalName] - ERRORE: impossibile recuperare la HttpServletRequest dal contesto Spring");
+		}
+		return userPrincipalName;
+	}
+	«ENDIF-»
+
+
+	«IF hasASAuthentication()-»
+	/**
+	 * Recupera il Principal dell'utente autenticato dalla request.
+	 * @return il Principal dell'utente autenticato
+	 */
+	public Principal getApplicationServerPrincipal() {
+		Logger logger = getLogger(null);
+
+		// recupero la request dal contesto di Spring
+		HttpServletRequest request = getRequest();
+
+		// recupero il Principal dalla request
+		Principal userPrincipal = request.getUserPrincipal();
+		if (request != null) {
+			userPrincipal = request.getUserPrincipal();
+		} else {
+			logger.error("[«authenticationHelperClassName()»::getApplicationServerPrincipal] - ERRORE: impossibile recuperare la HttpServletRequest dal contesto Spring");
+		}
+		return userPrincipal;
+	}
+	«ENDIF-»
+
+	/**
+	 * Recupera la HttpServletRequest dal contesto di Spring.
+	 * @return
+	 */
+	private HttpServletRequest getRequest() {
+		return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+	}
+
+	/**
+	 * @generated
+	 */
+	private Logger getLogger(String subsystem) {
+		if (subsystem != null) {
+			return Logger.getLogger(LOGGER_PREFIX + "." + subsystem);
+		} else {
+			return Logger.getLogger(LOGGER_PREFIX);
+		}
+	}
+
+}
+«ENDFILE»
+«ENDDEFINE»
+
+
+«DEFINE inInterceptorCallBack(SOABEModel model) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE fullServiceEJBClassesDir(codServizio, model, false)+"/callback/"+namaPasswordCallbackClass(false, endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+«EXPAND inInterceptorCallbackBody(endpoint,false) FOR this»
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE inInterceptorCallBackORCH(SOABEModel model, ServiceDef context) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/"+namaPasswordCallbackClass(false, endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
+«EXPAND inInterceptorCallbackBody(endpoint,true) FOR this»
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+
+«ENDDEFINE»
+
+
+«DEFINE outInterceptorCallBackORCH(SOABEModel model, ServiceDef context) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/"+namaPasswordCallbackClass(true, endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
+«EXPAND outInterceptorCallbackBody(endpoint,true) FOR this»
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE outInterceptorCallBack(SOABEModel model) FOR ServiceDef»
+«IF !this.bindings.isEmpty»
+«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+«IF !wsBinding.endpoints.isEmpty-»
+«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+«FILE fullServiceEJBClassesDir(codServizio, model,false)+"/callback/"+namaPasswordCallbackClass(true, endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
+«EXPAND outInterceptorCallbackBody(endpoint,false) FOR this»
+«ENDFILE»
+«ENDFOREACH»
+«ENDIF»
+«ENDLET»
+«ENDIF»
+«ENDDEFINE»
+
+
+«DEFINE inInterceptorCallbackBody(WSEndpoint endpoint, boolean client) FOR ServiceDef»
+import java.io.IOException;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
+import org.apache.ws.security.WSPasswordCallback;
+
+public class «namaPasswordCallbackClass(false, endpoint)» implements CallbackHandler{
+
+	private WSPasswordCallback pc;
+    public void handle(Callback[] callbacks) throws IOException, 
+        UnsupportedCallbackException {
+		pc = (WSPasswordCallback) callbacks[0];
+		int pcUsage = pc.getUsage();
+		
+		«IF includeEncryptIn(endpoint, client) -»
+		if(WSPasswordCallback.DECRYPT == pcUsage){		
+			setPassordDecrypt();
+		}
+		«ENDIF-»
+		
+		«IF includeUserTokenIn(endpoint, client)-»
+		if(WSPasswordCallback.USERNAME_TOKEN == pcUsage){		
+			validatePassordUsernameToken();
+		}
+		«ENDIF-»
+	}
+
+«IF includeEncryptIn(endpoint, client) -»
+private void setPassordDecrypt(){
+
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordDecrypt"+getCodeEndpoint(endpoint))»
+			//pc.setPassword("mypass");
+		«ENDPROTECT»
+}
+«ENDIF»
+
+«IF includeUserTokenIn(endpoint, client)-»
+private void validatePassordUsernameToken(){
+
+		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("validatePassordUsernameToken"+getCodeEndpoint(endpoint))»
+			/*
+			if (pc.getIdentifier().equals("user")
+					&& pc.getPassword().equals("mypass")) {
+			} else {
+				throw new IOException("User non riconosciuto");
+			}
+			*/
+		«ENDPROTECT»
+}
+«ENDIF»
+}
+«ENDDEFINE»
+
+«DEFINE outInterceptorCallbackBody(WSEndpoint endpoint, boolean client) FOR ServiceDef»
+import java.io.IOException;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
+import org.apache.ws.security.WSPasswordCallback;
+
+public class «namaPasswordCallbackClass(true, endpoint)» implements CallbackHandler{
+	
+	private WSPasswordCallback pc;
+    public void handle(Callback[] callbacks) throws IOException, 
+        UnsupportedCallbackException {
+
+        pc = (WSPasswordCallback) callbacks[0];
+		int pcUsage = pc.getUsage();
+		
+		«IF includeSignatureOut(endpoint, client)-»
+		if(WSPasswordCallback.SIGNATURE == pcUsage){		
+			setPassordSignature();
+		}
+		«ENDIF-»
+		«IF includeUserTokenOut(endpoint, client)-»
+		if(WSPasswordCallback.USERNAME_TOKEN == pcUsage){		
+				setPassordUsernameToken();
+		}
+		«ENDIF-»
+    }
+«IF includeSignatureOut(endpoint, client)-»
+private void setPassordSignature(){
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordSignature"+getCodeEndpoint(endpoint))»
+		//pc.setPassword("mypass");
+	«ENDPROTECT»
+}
+«ENDIF-»
+«IF includeUserTokenOut(endpoint, client)-»
+private void setPassordUsernameToken(){
+	«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("setPassordUsernameToken"+getCodeEndpoint(endpoint))»
+	//pc.setPassword("mypass");
+	«ENDPROTECT»
+}
+«ENDIF-»
+}
+
+«ENDDEFINE»

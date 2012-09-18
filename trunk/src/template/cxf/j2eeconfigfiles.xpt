@@ -1,0 +1,240 @@
+«REM»
+C) Copyright 2011 CSI-PIEMONTE;                                             
+                                                                            
+Concesso in licenza a norma dell'EUPL, esclusivamente versione 1.1;         
+Non e' possibile utilizzare l'opera salvo nel rispetto della Licenza.       
+E' possibile ottenere una copia della Licenza al seguente indirizzo:        
+                                                                            
+http://www.eupl.it/opensource/eupl-1-1                                      
+                                                                            
+Salvo diversamente indicato dalla legge applicabile o concordato per        
+iscritto, il software distribuito secondo i termini della Licenza e'        
+distribuito "TAL QUALE", SENZA GARANZIE O CONDIZIONI DI ALCUN TIPO,         
+esplicite o implicite.                                                      
+Si veda la Licenza per la lingua specifica che disciplina le autorizzazioni 
+e le limitazioni secondo i termini della Licenza.                           
+«ENDREM»
+
+«IMPORT servicegen»
+«IMPORT servicedef»
+«IMPORT typedef» 
+
+«EXTENSION template::ServicegenExtensions»
+«EXTENSION template::cxf::ServicegenCxfExtensions»
+
+
+«REM»
+==========================================================================================================================
+Crea il descrittore di applicazione application.xml
+Crea i descrittori specifici per l'Application Server scelto (weblogic-application.xml o jboss-app.xml)
+==========================================================================================================================
+«ENDREM»
+«DEFINE applicationfiles FOR SOABEModel»
+	«EXPAND applicationXmlFile FOR this»
+	«IF targetPlatform.code==TargetPlatformCodes::JBoss43»
+		«EXPAND jbossApplicationXmlFile FOR this»
+	«ENDIF»
+	«IF targetPlatform.code==TargetPlatformCodes::WLS92»
+		«EXPAND wlApplicationXmlFile FOR this»
+	«ENDIF»
+«ENDDEFINE»
+
+«REM»Application descriptor per BEA WebLogic 9.2«ENDREM»
+«DEFINE applicationXmlFile FOR SOABEModel»
+«FILE "conf/ear/application.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://java.sun.com/xml/ns/j2ee" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	version="1.4" 
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd">
+
+	<display-name>«codComponente»</display-name>
+
+	«FOREACH serviceimplementations AS serviceimpl-»
+	«LET serviceimpl.provides AS service-»
+    «FOREACH service.bindings.typeSelect(servicedef::WSBinding) AS ws»
+  	<!-- web module relativo al web-service con codice=«service.codServizio» e binding=«ws.codBinding» --> 
+  	<module>
+    	<web>
+      		<web-uri>«getWSWarName(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»</web-uri>
+     		<context-root>«wsWebContext(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»</context-root>
+    	</web>
+  	</module>
+  «ENDFOREACH»
+  «ENDLET-»
+  «ENDFOREACH-»
+
+</application>
+ «ENDFILE»
+«ENDDEFINE»
+
+«REM»Application descriptor per JBoss 4.3«ENDREM»
+«DEFINE jbossApplicationXmlFile FOR SOABEModel»
+«FILE "conf/ear/jboss-app.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<jboss-app>
+	<loader-repository>
+		apache.cxf:loader=@ear-file-name@.ear
+		<!-- @context-root@:archive=@ear-file-name@.ear -->
+		<loader-repository-config>
+			java2ParentDelegation=false
+		</loader-repository-config>
+	</loader-repository>
+</jboss-app>
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE wlApplicationXmlFile FOR SOABEModel»
+«FILE "conf/ear/weblogic-application.xml"»<?xml version="1.0" encoding="UTF-8"?> 
+<wls:weblogic-application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns:wls="http://www.bea.com/ns/weblogic/90" 
+		xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/j2ee_1_4.xsd
+		                    http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-application.xsd"> 
+
+	<wls:application-param>
+		<wls:param-name>webapp.encoding.default</wls:param-name>
+		<wls:param-value>UTF-8</wls:param-value>
+	</wls:application-param>
+	<wls:prefer-application-packages>
+		<wls:package-name>javax.jws.*</wls:package-name>
+		<wls:package-name>javax.xml.stream.*</wls:package-name>
+	</wls:prefer-application-packages>
+
+</wls:weblogic-application>
+«ENDFILE»
+«ENDDEFINE»
+
+
+
+«REM»
+==========================================================================================================================
+WS CXF
+Crea il deployment descriptor generico (web.xml) 
+Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml o jboss-web.xml) 
+==========================================================================================================================
+«ENDREM»
+
+«DEFINE wswebxml(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+	«EXPAND webxmlFile(model, serviceDef) FOR this»
+	«IF model.targetPlatform.code==TargetPlatformCodes::JBoss43»
+		«EXPAND jbossWebxmlFile(model, serviceDef) FOR this»
+	«ENDIF»
+	«IF model.targetPlatform.code==TargetPlatformCodes::WLS92»
+		«EXPAND wlWebxmlFile(model, serviceDef) FOR this»
+	«ENDIF»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE webxmlFile(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(serviceDef.codServizio), model)+"/WEB-INF/web.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+         http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>WEB-INF/«serviceDef.codServizio.toLowerCase()»SpringMain.xml</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    «IF serviceDef.authLevel!=AuthLevelEnum::A0-»
+	<listener>
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+	</listener>
+	«ENDIF-»
+
+    <servlet>
+    	<display-name>CXF Servlet</display-name>
+			<servlet-name>CXFServlet</servlet-name>
+			<servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+			<load-on-startup>1</load-on-startup>
+	 </servlet>
+
+	<servlet-mapping>
+		<servlet-name>CXFServlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+
+	«IF serviceDef.authLevel!=AuthLevelEnum::A0 && hasASAuthentication()-»
+	<!-- impostazioni di security -->
+	<security-constraint>
+		<!-- A collection of protected resources along with the access mechanism -->
+		<web-resource-collection>
+			<web-resource-name>Restricted to Secure role</web-resource-name>
+			<description>protezione «codBinding»</description>
+			<url-pattern>/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+		</web-resource-collection>
+		<!-- The list of roles that can access the resource. -->
+		<auth-constraint>
+			«FOREACH serviceDef.roles AS role-»
+			<role-name>«role.name»</role-name>
+			«ENDFOREACH-»
+		</auth-constraint>
+	</security-constraint>
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>applications</realm-name>
+	</login-config>
+	«FOREACH serviceDef.roles AS role-»
+		<security-role>
+		<role-name>«role.name»</role-name>
+	</security-role>
+	«ENDFOREACH-»
+	«ENDIF-»
+
+</web-app>
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE jbossWebxmlFile(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(serviceDef.codServizio), model)+"/WEB-INF/jboss-web.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web>
+	«IF serviceDef.authLevel!=AuthLevelEnum::A0 && hasASAuthentication()-»
+	<security-domain>java:/jaas/services</security-domain>
+	«ELSE-»
+	<!-- NO SPECIFIC CONFIGURATION NEEDED -->
+	«ENDIF-»
+</jboss-web>
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»comment«ENDREM»
+«DEFINE wlWebxmlFile(SOABEModel model, ServiceDef serviceDef) FOR WSBinding»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(serviceDef.codServizio), model)+"/WEB-INF/weblogic.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<weblogic-web-app xmlns="http://www.bea.com/ns/weblogic/90"
+                  xmlns:j2ee ="http://java.sun.com/xml/ns/j2ee"
+                  xmlns:xsi ="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-web-app.xsd ">
+
+	<context-root>/«wsWebContext(serviceDef.codServizio, codBinding, serviceDef.serviceType.toString(), model)»</context-root>
+
+	<container-descriptor>
+		<prefer-web-inf-classes>true</prefer-web-inf-classes>
+	</container-descriptor>
+
+	<session-descriptor>
+		<persistent-store-type>replicated_if_clustered</persistent-store-type>
+	</session-descriptor>
+
+	«IF serviceDef.authLevel!=AuthLevelEnum::A0 && hasASAuthentication()-»
+	<!-- impostazioni di sicurezza: i ruoli devono corrispondere ai principal (groups) -->
+	«FOREACH serviceDef.roles AS currRole-»
+	<security-role-assignment>
+		<role-name>«currRole.name»</role-name>
+		<principal-name>«currRole.name»</principal-name>
+	</security-role-assignment>
+	«ENDFOREACH-»
+	«ENDIF-»
+
+</weblogic-web-app>
+«ENDFILE»
+«ENDDEFINE»
+

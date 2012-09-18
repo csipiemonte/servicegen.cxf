@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %pluginName
+Bundle-SymbolicName: servicegen.cxf; singleton:=true
+Bundle-Version: 2.2.0.003
+Require-Bundle: org.eclipse.xpand;visibility:=reexport,
+ org.eclipse.xtend;visibility:=reexport,
+ org.eclipse.xtend.util.stdlib;visibility:=reexport,
+ org.eclipse.xtend.typesystem.emf;visibility:=reexport,
+ servicegen;bundle-version="2.1.0"
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-Vendor: %providerName
+Export-Package: check,
+ it.csi.mddtools.servicegen.cxf.genutils,
+ it.csi.mddtools.servicegen.cxf.workflow,
+ template.cxf,
+ template.cxf.flowmodel,
+ template.cxf.manualimpl,
+ workflow
