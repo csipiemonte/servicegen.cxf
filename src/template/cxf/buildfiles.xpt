@@ -220,16 +220,18 @@ creazione del build.xml per ANT
 	<!-- -->
 	<target name="environment-config"
 	        description="Predispone le configurazioni dipendenti dall&apos;ambiente." >
-	       		<!-- gestone variabili WS-Security -->
+	<!-- gestone variabili WS-Security -->
 		
 		«FOREACH this.serviceimplementations AS impl»
 		    «IF !impl.provides.bindings.isEmpty-»
 		    «LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
 				«IF !wsBinding.endpoints.isEmpty-»
 					«FOREACH  ((WSBinding)wsBinding).endpoints AS endpoint-»
+					«IF endpoint.isWsSecurityCxf()»
 					«LET impl.provides.codServizio+getCodeEndpoint(endpoint).toFirstUpper() AS prefPrefix»
 						«EXPAND replacePropWsSecurity(prefPrefix, endpoint) FOR impl.provides-»
 					«ENDLET»
+					«ENDIF»
 					«ENDFOREACH-»
 			    «ENDIF»
 		    «ENDLET»
@@ -827,6 +829,7 @@ war-exclude-custom-libs-filter =
 	«EXPAND wsSecurityProperty(this.code, this.endpoint) FOR this.serviceDef»
 «ENDDEFINE»
 «DEFINE wsSecurityProperty(String prefix, WSEndpoint endpoint) FOR ServiceDef»
+«IF isWsSecurityCxf(endpoint)-»
 # Configurazione WS-Security «this.codServizio» 
 #Configurazione Signature EndPoint «getCodeEndpoint(endpoint)»
 
@@ -854,7 +857,7 @@ war-exclude-custom-libs-filter =
 «prefix».decrypt.password.«getCodeEndpoint(endpoint)» = 
 # truststore da utilizzare
 «prefix».decrypt.file.«getCodeEndpoint(endpoint)» =
-
+«ENDIF-»
 «ENDDEFINE»
 
 «REM»Variabili per un generico ResourceConnector«ENDREM»
@@ -1039,13 +1042,21 @@ creazione del file di configurazione IVY
 		«ENDLET-»
 		«ENDIF-»
 		
-		«IF !serviceimplementations.select(e|!e.provides.bindings.isEmpty).isEmpty»
+		«IF !serviceimplementations.provides.bindings.isEmpty-»
+		«LET serviceimplementations.provides.bindings.get(0) AS serviceBinding-»
+		«IF !((WSBinding)serviceBinding).endpoints.isEmpty-»
+		«LET ((WSBinding)serviceBinding).endpoints AS endPoints-»
+		«IF !endPoints.select(e|e.isWsSecurityCxf()).isEmpty»
 		<!-- librerie necessarie per la configurazione WS-Security -->
 		<dependency org="sun" name="saaj" rev="1.3.2" />
 		<dependency org="others" name="xmlsec" rev="1.4.4" />
 		<dependency org="apache" name="wss4j" rev="1.5.10" />
-		«ENDIF» 
-
+		«ENDIF»
+		«ENDLET»		
+		«ENDIF»
+		«ENDLET»
+		«ENDIF»
+		
 		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("ivyExtraDependencies")»
 		<!-- Inserire qui le dipendenze aggiuntive -->
 		«ENDPROTECT»
@@ -1149,6 +1160,7 @@ IVY_VERSION=ivy_2_0_0
 	«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 	«IF !wsBinding.endpoints.isEmpty-»
 		«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
+		«IF isWsSecurityCxf(endpoint)»
 		«LET getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+getCodeEndpoint(endpoint).toFirstUpper() AS pathTmp-»
 			«FILE pathTmp+".ks.properties"»
 			«EXPAND ksPropertiesFile(this.codServizio+getCodeEndpoint(endpoint).toFirstUpper(),endpoint) FOR this-»
@@ -1163,6 +1175,7 @@ IVY_VERSION=ivy_2_0_0
 			«EXPAND decryptPropertiesFile(this.codServizio+getCodeEndpoint(endpoint).toFirstUpper(),endpoint) FOR this-»
 			«ENDFILE»
 		«ENDLET-»
+		«ENDIF»
 		«ENDFOREACH-»
 	«ENDIF-»
 	«ENDLET-»
