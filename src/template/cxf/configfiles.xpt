@@ -193,18 +193,14 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 «DEFINE defineBeanCallBack(SOABEModel model,ServiceImpl impl) FOR LogicImplCartridge»
 
 «IF !impl.provides.bindings.isEmpty-»
-		«LET impl.provides.bindings.get(0) AS serviceBinding-»
-«IF !((WSBinding)serviceBinding).endpoints.isEmpty-»
-	«FOREACH ((WSBinding)serviceBinding).endpoints AS endpoint-»
-	«IF isWsSecurityCxf(endpoint)»
+	«LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
+	«FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 		<bean id="inInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
      	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.«namaPasswordCallbackClass(false, endpoint)»"/>
      	<bean id="outInterceptorsCallback«getCodeEndpoint(endpoint).toFirstUpper()»Id"
      	class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».callback.«namaPasswordCallbackClass(true, endpoint)»"/>
-	«ENDIF»
 	«ENDFOREACH»
-«ENDIF»
-«ENDLET»
+	«ENDLET»
 «ENDIF»
 «ENDDEFINE»
 

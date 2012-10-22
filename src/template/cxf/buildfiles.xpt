@@ -224,16 +224,12 @@ creazione del build.xml per ANT
 		
 		«FOREACH this.serviceimplementations AS impl»
 		    «IF !impl.provides.bindings.isEmpty-»
-		    «LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»	
-				«IF !wsBinding.endpoints.isEmpty-»
-					«FOREACH  ((WSBinding)wsBinding).endpoints AS endpoint-»
-					«IF endpoint.isWsSecurityCxf()»
+		    «LET (WSBinding)impl.provides.bindings.get(0) AS wsBinding-»		
+				«FOREACH  wsBinding.getAllEndPointWS() AS endpoint-»			
 					«LET impl.provides.codServizio+getCodeEndpoint(endpoint).toFirstUpper() AS prefPrefix»
 						«EXPAND replacePropWsSecurity(prefPrefix, endpoint) FOR impl.provides-»
-					«ENDLET»
-					«ENDIF»
-					«ENDFOREACH-»
-			    «ENDIF»
+					«ENDLET»					
+				«ENDFOREACH-»			   
 		    «ENDLET»
 		    «ENDIF»
 	    «ENDFOREACH»
@@ -1042,17 +1038,14 @@ creazione del file di configurazione IVY
 		«ENDLET-»
 		«ENDIF-»
 		
+		
 		«IF !serviceimplementations.provides.bindings.isEmpty-»
-		«LET serviceimplementations.provides.bindings.get(0) AS serviceBinding-»
-		«IF !((WSBinding)serviceBinding).endpoints.isEmpty-»
-		«LET ((WSBinding)serviceBinding).endpoints AS endPoints-»
-		«IF !endPoints.select(e|e.isWsSecurityCxf()).isEmpty»
+		«LET (WSBinding)serviceimplementations.provides.bindings.get(0) AS wsBinding-»				
+		«IF !wsBinding.getAllEndPointWS().isEmpty-»
 		<!-- librerie necessarie per la configurazione WS-Security -->
 		<dependency org="sun" name="saaj" rev="1.3.2" />
 		<dependency org="others" name="xmlsec" rev="1.4.4" />
 		<dependency org="apache" name="wss4j" rev="1.5.10" />
-		«ENDIF»
-		«ENDLET»		
 		«ENDIF»
 		«ENDLET»
 		«ENDIF»
@@ -1158,9 +1151,7 @@ IVY_VERSION=ivy_2_0_0
 «DEFINE wsSecurityPropertiesFile(SOABEModel model) FOR ServiceDef»
 «IF !this.bindings.isEmpty-»
 	«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-	«IF !wsBinding.endpoints.isEmpty-»
-		«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-		«IF isWsSecurityCxf(endpoint)»
+		«FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 		«LET getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+getCodeEndpoint(endpoint).toFirstUpper() AS pathTmp-»
 			«FILE pathTmp+".ks.properties"»
 			«EXPAND ksPropertiesFile(this.codServizio+getCodeEndpoint(endpoint).toFirstUpper(),endpoint) FOR this-»
@@ -1175,9 +1166,7 @@ IVY_VERSION=ivy_2_0_0
 			«EXPAND decryptPropertiesFile(this.codServizio+getCodeEndpoint(endpoint).toFirstUpper(),endpoint) FOR this-»
 			«ENDFILE»
 		«ENDLET-»
-		«ENDIF»
 		«ENDFOREACH-»
-	«ENDIF-»
 	«ENDLET-»
 «ENDIF-»
 «ENDDEFINE»

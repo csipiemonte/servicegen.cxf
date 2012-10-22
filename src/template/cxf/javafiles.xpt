@@ -611,49 +611,36 @@ public class «authenticationHelperClassName(this)» {
 «DEFINE inInterceptorCallBack(SOABEModel model) FOR ServiceDef»
 «IF !this.bindings.isEmpty»
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«IF isWsSecurityCxf(endpoint)-»
+«FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 «FILE fullServiceEJBClassesDir(codServizio, model, false)+"/callback/"+namaPasswordCallbackClass(false, endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
 «EXPAND inInterceptorCallbackBody(endpoint,false) FOR this»
 «ENDFILE»
-«ENDIF-»
 «ENDFOREACH»
-«ENDIF»
-«ENDLET»»
+«ENDLET»
 «ENDIF»
 «ENDDEFINE»
 
 «DEFINE inInterceptorCallBackORCH(SOABEModel model, ServiceDef context) FOR ServiceDef»
 «IF !this.bindings.isEmpty»
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«IF isWsSecurityCxf(endpoint)-»
+«FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 «FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/"+namaPasswordCallbackClass(false, endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
 «EXPAND inInterceptorCallbackBody(endpoint,true) FOR this»
 «ENDFILE»
-«ENDIF»
 «ENDFOREACH»
-«ENDIF»
 «ENDLET»
 «ENDIF»
-
 «ENDDEFINE»
 
 
 «DEFINE outInterceptorCallBackORCH(SOABEModel model, ServiceDef context) FOR ServiceDef»
 «IF !this.bindings.isEmpty»
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«IF isWsSecurityCxf(endpoint)-»
+«FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 «FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/"+namaPasswordCallbackClass(true, endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
 «EXPAND outInterceptorCallbackBody(endpoint,true) FOR this»
 «ENDFILE»
-«ENDIF»
 «ENDFOREACH»
-«ENDIF»
 «ENDLET»
 «ENDIF»
 «ENDDEFINE»
@@ -661,15 +648,11 @@ public class «authenticationHelperClassName(this)» {
 «DEFINE outInterceptorCallBack(SOABEModel model) FOR ServiceDef»
 «IF !this.bindings.isEmpty»
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
-«IF !wsBinding.endpoints.isEmpty-»
-«FOREACH ((WSBinding)wsBinding).endpoints AS endpoint-»
-«IF isWsSecurityCxf(endpoint)-»
+«FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 «FILE fullServiceEJBClassesDir(codServizio, model,false)+"/callback/"+namaPasswordCallbackClass(true, endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
 «EXPAND outInterceptorCallbackBody(endpoint,false) FOR this»
 «ENDFILE»
-«ENDIF»
 «ENDFOREACH»
-«ENDIF»
 «ENDLET»
 «ENDIF»
 «ENDDEFINE»

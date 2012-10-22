@@ -307,12 +307,18 @@ String getAppServerLib(SOABEModel model) :
 		"weblogic";
 
 /////////////////////////////////////WS-SECURITY CXF//////////////////////////////////////////
-boolean isWsSecurityCxf(WSEndpoint endpoint):
-	endpoint.inChannel != null || endpoint.outChannel!=null;
-
 String namaPasswordCallbackClass(boolean outChannel, WSEndpoint endpoint):
 	if(outChannel) then
 		 "OutInterceptorCallback"+getCodeEndpoint(endpoint).toFirstUpper()
 	else
 		 "InInterceptorCallback"+getCodeEndpoint(endpoint).toFirstUpper();
+		 
+List[WSEndpoint] getAllEndPointWS(WSBinding wsBinding):
+if(!wsBinding.endpoints.isEmpty) then
+	wsBinding.endpoints.select(e|e.isWsSecurityCxf())
+else 	
+	wsBinding.endpoints;
+	
+boolean isWsSecurityCxf(WSEndpoint endpoint):
+	endpoint.inChannel != null || endpoint.outChannel!=null;	
 		
