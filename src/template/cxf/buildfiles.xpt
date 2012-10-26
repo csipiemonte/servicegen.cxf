@@ -289,8 +289,12 @@ creazione del build.xml per ANT
 			</fileset>
 			«IF targetPlatform.code == TargetPlatformCodes::WLS92-»
 			<metainf dir="${temp}/conf/ear/" includes="weblogic-application.xml" />
-			«ELSEIF targetPlatform.code == TargetPlatformCodes::JBoss43-»
+			«ELSE»
+				«IF targetPlatform.isJboss6eap()»
+			<metainf dir="${temp}/conf/ear/" includes="jboss-deployment-structure.xml" />
+				«ELSE»
 			<metainf dir="${temp}/conf/ear/" includes="jboss-app.xml" />
+				«ENDIF»
 			«ENDIF-»
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
@@ -711,16 +715,18 @@ creazione del build.properties richiamato dal build ANT
 # Questo filtro viene utilizzato per definire la lista dei JAR(s) che devono
 # essere inclusi all'interno dell'EAR prodotto.
 # ----------------------------------------------------------------------------
-  ear-libs-filter = spring-aop-2.5.6.jar,                  \
+  ear-libs-filter = «IF !this.targetPlatform.isJboss6eap()-»spring-aop-2.5.6.jar,                  \
                     spring-beans-2.5.6.jar,                \
                     spring-context-2.5.6.jar,              \
                     spring-context-support-2.5.6.jar,      \
                     spring-core-2.5.6.jar,                 \
                     spring-jdbc-2.5.6.jar,                 \
                     spring-tx-2.5.6.jar,                   \
-                    spring-web-2.5.6.jar,                  \
+                    spring-web-2.5.6.jar,                  \                    
                     aopalliance-1.0.jar,                   \
+                    «ENDIF-»
                     commons-logging-1.1.1.jar
+                    
 
 «IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0-»
 # - [svcflow-libs] --------------------------------------------------------
@@ -746,16 +752,18 @@ ear-custom-libs-filter =
 # venire inclusi all'interno del WAR.
 # ----------------------------------------------------------------------------
 «REM»DIFFERENZIARE WEBLOGIC-JBOSS«ENDREM»
-  war-exclude-libs-filter = servlet*.jar,                  \
+  war-exclude-libs-filter = «IF targetPlatform.isJboss6eap()-»cxf*.jar,                  \
+  							«ENDIF-»
+  							servlet*.jar,                  \
                             csi-tools*.jar,                \
                             log4j*.jar,                    \
                             ejb*.jar,                      \
                             spring*.jar,                   \
                             aopalliance*.jar,              \
                             geronimo*.jar,              \
-                            «getAppServerLib(this)»*.jar«IF targetPlatform.code == TargetPlatformCodes::JBoss43-», \
+                            «getAppServerLib(this)»*.jar«IF targetPlatform.isJbossPlatform()-», \
                             weblogic-7*.jar,               \
-                            weblogic-9*.jar                \
+                            weblogic-9*.jar
                             «ENDIF-»
 
 # - [war-exclude-custom-libs-filter] ------------------------------------------------
@@ -779,11 +787,11 @@ war-exclude-custom-libs-filter =
 
 «REM»Build properties: configurazione del server«ENDREM»
 «DEFINE appServerConfigurationBuildProperties FOR SOABEModel»
-«IF this.targetPlatform.code == TargetPlatformCodes::JBoss43 -»
+«IF this.targetPlatform.isJbossPlatform()-»
 # - [Configurazione del Server (JBoss)] --------------------------------------
   server = jboss
   earLib = lib
-«ELSEIF this.targetPlatform.code == TargetPlatformCodes::WLS92 -»
+«ELSEIF this.targetPlatform.isWebLogicPlatform() -»
 # - [Configurazione del Server (WebLogic)] -----------------------------------
   server = weblogic
   earLib = APP-INF/lib
@@ -969,7 +977,7 @@ creazione del file di configurazione IVY
             <artifact name="asm-2.2.3" type="jar" />
         </dependency>
 
-		«IF this.targetPlatform.code == TargetPlatformCodes::WLS92»
+		«IF this.targetPlatform.isWebLogicPlatform()»
         <!-- Dipendenze richieste da CXF 2.2.12 su BEA WL 9.2.2 -->
         <dependency org="apache" name="geronimo-stax" rev="1.0" />
         <dependency org="others" name="wstx-asl" rev="3.2.9" />
@@ -1005,7 +1013,7 @@ creazione del file di configurazione IVY
 	    	<artifact name="wsadp-2.0.2" type="jar" />
 	    </dependency>
 
-		«IF this.targetPlatform.code==TargetPlatformCodes::JBoss43-»
+		«IF this.targetPlatform.isJbossPlatform()-»
 		<!-- librerie necessarie per la connessione a servizi su WLS92 -->
 		<dependency org="csipiemonte" name="weblogic-client" rev="3.0.0">
 			<artifact name="weblogic-client-3.0.0" type="jar" />
