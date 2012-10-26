@@ -524,7 +524,7 @@ public class «authenticationHelperClassName(this)» {
 	public static final String LOGGER_PREFIX = "«getLoggerPrefixForComponent(model.codProdotto, model.codComponente)»";
 
 	«IF hasWSAuthentication()-»
-	«IF model.targetPlatform.code==TargetPlatformCodes::WLS92-»
+	«IF model.targetPlatform.isWebLogicPlatform()-»
 	/** Header di request che contiene lo user principal name in BEA. */
 	public static final String WL_PRINCIPAL_NAME_HEADER = "Proxy-remote-user";
 	«ENDIF-»
@@ -542,10 +542,10 @@ public class «authenticationHelperClassName(this)» {
 		// Recupero lu username
 		String userPrincipalName = null;
 		if (request != null) {
-			«IF model.targetPlatform.code==TargetPlatformCodes::WLS92-»
+			«IF model.targetPlatform.isWebLogicPlatform()-»
 			// BEA
 			userPrincipalName = request.getHeader(WL_PRINCIPAL_NAME_HEADER);
-			«ELSEIF model.targetPlatform.code==TargetPlatformCodes::JBoss43-»
+			«ELSEIF model.targetPlatform.isJbossPlatform()-»
 			// JBOSS
 			Principal userPrincipal = request.getUserPrincipal();
 			if (userPrincipal != null) {

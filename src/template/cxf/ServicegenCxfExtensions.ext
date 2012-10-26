@@ -110,7 +110,13 @@ String wsCallClientFactoryBeanId(ServiceDef sd, WSEndpoint endpoint) :
 	
 String wsCallClientAppContextName(ServiceDef sd, WSEndpoint endpoint) :
 	toCamel(sd.codServizio).toFirstLower()+getCodeEndpoint(endpoint).toFirstUpper()+"ClientCxf.xml";
-	
+
+String cxfConfigurationFilenName(ServiceDef sd, TargetPlatform tp):
+	if (tp.code==TargetPlatformCodes::JBossEAP6) then 
+		"jbossws-cxf.xml"
+	else 
+		sd.codServizio.toLowerCase()+"SpringMain.xml";
+		
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // DATA TYPES MAPPING
 
@@ -301,7 +307,7 @@ else
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 String getAppServerLib(SOABEModel model) :
-	if ( model.targetPlatform.code == TargetPlatformCodes::JBoss43 ) then
+	if ( model.targetPlatform.isJbossPlatform()) then
 		"jboss"
 	else if ( model.targetPlatform.code == TargetPlatformCodes::WLS92 ) then
 		"weblogic";
@@ -320,5 +326,4 @@ else
 	wsBinding.endpoints;
 	
 boolean isWsSecurityCxf(WSEndpoint endpoint):
-	endpoint.inChannel != null || endpoint.outChannel!=null;	
-		
+	endpoint.inChannel != null || endpoint.outChannel!=null;			
