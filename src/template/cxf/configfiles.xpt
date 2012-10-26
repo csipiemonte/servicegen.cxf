@@ -60,15 +60,99 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 
 «DEFINE springFiles(SOABEModel model, boolean useExternalDaoBeans) FOR LogicImplCartridge»
 	«LET (ServiceImpl)eContainer AS impl»
-		«EXPAND springMainFile(model, impl, useExternalDaoBeans) FOR this»
-		«EXPAND applicationContextFile(model, impl, useExternalDaoBeans) FOR this»
-		«EXPAND cxfFile(model, impl, useExternalDaoBeans) FOR this»
+		«IF model.targetPlatform.isJboss6eap()-»
+			«EXPAND jbosswscxfFile(model, impl, useExternalDaoBeans) FOR this»
+			«EXPAND jbosswsapplicationContextFile(model, impl, useExternalDaoBeans) FOR this»
+		«ELSE-»
+			«EXPAND springMainFile(model, impl, useExternalDaoBeans) FOR this»
+			«EXPAND applicationContextFile(model, impl, useExternalDaoBeans) FOR this»
+			«EXPAND cxfFile(model, impl, useExternalDaoBeans) FOR this»
+		«ENDIF-»		
 		«IF !useExternalDaoBeans»
 			«EXPAND daoBeansFile(model, impl, useExternalDaoBeans) FOR this»
 		«ENDIF»
 	«ENDLET»
 «ENDDEFINE»
 
+
+«REM»Genera il file jbossws-cxf.xml (file che include tutte le configurazioni di contesto del servizio cxf«ENDREM»
+«DEFINE jbosswscxfFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/jbossws-cxf.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:beans="http://www.springframework.org/schema/beans"
+xmlns:jaxws="http://cxf.apache.org/jaxws"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://cxf.apache.org/jaxws
+http://cxf.apache.org/schemas/jaxws.xsd">
+	«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"beancontext")»
+	<!-- Insert here your custom Spring Beans -->				
+	«ENDPROTECT»
+	
+	
+	<bean id="«impl.provides.codServizio»BL" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceBusinessClassName(impl.provides)»">
+		«LET getAllResourceConnectors(model) AS allResConn-»
+		«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+		«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+		<!-- CXF CLIENT for «((RPCWebServiceConnector)currRPCWSC).serviceDef.codServizio» WS -->
+		<property name="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint )»" ref="«wsCallClientBeanId(((RPCWebServiceConnector)currRPCWSC).serviceDef,((RPCWebServiceConnector)currRPCWSC).endpoint)»" />
+	    «ENDFOREACH-»
+		«ENDIF-»
+		«ENDLET-»
+		«IF impl.implCartridge.metaType==FlowModelImplCartridge && impl.provides.authLevel!=AuthLevelEnum::A0-»
+		<!-- Authentication Helper (per il recupero del principal) -->
+		<property name="«authenticationHelperBeanID(impl.provides)»" ref="«authenticationHelperBeanID(impl.provides)»" />
+		«ENDIF-»
+
+		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+serviceImplBeanId(impl.provides))»
+		<!-- Insert here «impl.provides.codServizio» bean properties (Dao, customBeans, etc...) -->
+		«ENDPROTECT»
+	</bean>
+
+		«IF impl.provides.authLevel!=AuthLevelEnum::A0-»
+		<!-- Authentication Helper -->
+		<bean id="«authenticationHelperBeanID(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«authenticationHelperClassName(impl.provides)»" />
+		«ENDIF-»
+		<!-- web service implementation definition -->
+		<bean id="«serviceImplBeanId(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«serviceImplClassName(impl.provides)»">
+			<property name="«serviceBusinessInterfaceName(impl.provides).toFirstLower()»" ref="«impl.provides.codServizio»BL" />
+		</bean>
+		«IF impl.provides.bindings.isEmpty-»
+		<!-- web service end point definition -->
+		<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»WS"
+						implementor="#«serviceImplBeanId(impl.provides)»"
+						address="/«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»">
+			«IF hasAttachment(impl.provides.operations)-»
+			<jaxws:properties>
+				<entry key="mtom-enabled" value="true"/>
+			</jaxws:properties>
+			«ENDIF-»
+		</jaxws:endpoint>
+		«ENDIF-»
+		«IF !impl.provides.bindings.isEmpty-»
+			«LET impl.provides.bindings.get(0) AS serviceBinding-»
+			«EXPAND defineEndPoint((WSBinding)serviceBinding, impl) FOR this-»
+			«EXPAND defineBeanCallBack(model,impl) FOR this-»
+			«ENDLET»
+		«ENDIF»
+		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID(""+impl.provides.codServizio+"cxf")»
+		<!-- Other CXF configurations (bus, conduit, security, ecc) -->	
+		«ENDPROTECT»
+		
+</beans>
+«ENDFILE»
+«ENDDEFINE»
+
+
+«REM»Genera il file di configurazione«ENDREM»
+«DEFINE jbosswsapplicationContextFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
+«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/applicationContext.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans default-autowire="autodetect">
+</beans>
+«ENDFILE»
+«ENDDEFINE»
 
 «REM»Genera il file spring MAIN (file che include tutti gli altri e viene a sua volta chiamato dal contesto«ENDREM»
 «DEFINE springMainFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
