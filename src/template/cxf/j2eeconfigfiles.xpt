@@ -34,6 +34,9 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
 	«IF targetPlatform.code==TargetPlatformCodes::JBoss43»
 		«EXPAND jbossApplicationXmlFile FOR this»
 	«ENDIF»
+	«IF targetPlatform.code==TargetPlatformCodes::JBossEAP6»
+		«EXPAND jboss6eapApplicationXmlFile FOR this»
+	«ENDIF»
 	«IF targetPlatform.code==TargetPlatformCodes::WLS92»
 		«EXPAND wlApplicationXmlFile FOR this»
 	«ENDIF»
@@ -65,6 +68,35 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
 
 </application>
  «ENDFILE»
+«ENDDEFINE»
+
+«REM»Application descriptor per JBoss.6.eap«ENDREM»
+«DEFINE jboss6eapApplicationXmlFile FOR SOABEModel»
+«FILE "conf/ear/jboss-deployment-structure.xml"»<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
+«FOREACH serviceimplementations AS serviceimpl-»
+«LET serviceimpl.provides AS service-»
+    «FOREACH service.bindings.typeSelect(servicedef::WSBinding) AS ws-»
+	<sub-deployment name="«getWSWarName(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»">
+	<dependencies>      	
+		<module name="org.apache.cxf" slot="main" export="true" services="import">  
+			<imports>
+				<include path="**" />
+			</imports>	
+		</module>
+		<module name="org.springframework.spring" slot="main" export="true" services="import">  
+			<imports>
+				<include path="**" />
+			</imports>	
+		</module>   
+	</dependencies>
+	</sub-deployment>
+	«ENDFOREACH-»
+«ENDLET-»
+«ENDFOREACH-»
+</jboss-deployment-structure>
+
+«ENDFILE»
 «ENDDEFINE»
 
 «REM»Application descriptor per JBoss 4.3«ENDREM»
@@ -132,9 +164,10 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
          xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
          http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
+
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>WEB-INF/«serviceDef.codServizio.toLowerCase()»SpringMain.xml</param-value>
+        <param-value>WEB-INF/«cxfConfigurationFilenName(serviceDef, model.targetPlatform)»</param-value>
     </context-param>
 
     <listener>
