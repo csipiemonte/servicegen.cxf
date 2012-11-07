@@ -318,11 +318,11 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Signature" -»
 						<!-- SIGNATURE PROPERTIES -->
-						<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.properties" />
+						<entry key="signaturePropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.properties" />
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 						<!-- ENCRYPT PROPERTIES -->
-						<entry key="decryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.properties" />
+						<entry key="decryptionPropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.properties" />
 						«ENDIF-»
 					    «ENDFOREACH-»
 					</map>
@@ -350,12 +350,12 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 							«ENDIF-»
 							«IF getTypeOfAction(wsSecurity) =="Signature" -»
 							<!-- SIGNATURE PROPERTIES -->
-							<entry key="signaturePropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.properties" />
+							<entry key="signaturePropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.properties" />
 							«ENDIF-»
 							«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 							<!-- ENCRYPT PROPERTIES -->
 							<entry key="encryptionUser" value="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».userEncrypt.«getCodeEndpoint(endpoint)»@"/>
-							<entry key="encryptionPropFile" value="/WEB-INF/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.properties"  />
+							<entry key="encryptionPropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.properties"  />
 							<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
 							<entry key="encryptionKeyTransportAlgorithm" value="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
 							«ENDIF-»

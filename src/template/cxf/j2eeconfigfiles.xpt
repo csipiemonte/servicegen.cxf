@@ -79,11 +79,27 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
     «FOREACH service.bindings.typeSelect(servicedef::WSBinding) AS ws-»
 	<sub-deployment name="«getWSWarName(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»">
 	<dependencies>      	
-		<module name="org.apache.cxf" slot="main" export="true" services="import">  
+			<module name="org.apache.cxf" slot="main" export="true" services="import">  
 			<imports>
 				<include path="**" />
 			</imports>	
 		</module>
+		<module name="org.apache.ws.security" slot="main" export="true" services="import">  
+			<imports>
+				<include path="**" />
+			</imports>	
+		</module>
+		<module name="org.apache.santuario.xmlsec" slot="main" export="true" services="import">  
+			<imports>
+				<include path="**" />
+			</imports>	
+		</module>
+		<module name="com.sun.xml.messaging.saaj" slot="main" export="true" services="import">  
+			<imports>
+				<include path="**" />
+			</imports>	
+		</module>
+		
 		<module name="org.springframework.spring" slot="main" export="true" services="import">  
 			<imports>
 				<include path="**" />

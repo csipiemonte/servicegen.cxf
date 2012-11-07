@@ -326,4 +326,11 @@ else
 	wsBinding.endpoints;
 	
 boolean isWsSecurityCxf(WSEndpoint endpoint):
-	endpoint.inChannel != null || endpoint.outChannel!=null;			
+	endpoint.inChannel != null || endpoint.outChannel!=null;		
+	
+String wsSecurityPropertiesPath(SOABEModel model, ServiceDef sd):
+if(model.targetPlatform.isJboss6eap()) then
+	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/WEB-INF/classes/"
+else
+	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/WEB-INF/";	
+		

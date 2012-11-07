@@ -376,9 +376,10 @@ creazione del build.xml per ANT
 				<war destfile="${build}/archives/${target}/${service.type}-${service.name}-${binding.code}.war"
 				     webxml="${conf}/web/${binding.code}/${service.name}/WEB-INF/web.xml"
 				     roundup="false">
-					<webinf dir="${conf}/web/${binding.code}/${service.name}/WEB-INF/">
+					<webinf dir="${temp}/conf/web/${binding.code}/${service.name}/WEB-INF/">
 						<include name="*.xml" />
 						<include name="*.properties" />
+						<include name="/classes/*.properties" />
 					</webinf>
 					<classes dir="${build}/classes">
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/business/${service.name}/**"/>
@@ -1160,7 +1161,7 @@ IVY_VERSION=ivy_2_0_0
 «IF !this.bindings.isEmpty-»
 	«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 		«FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
-		«LET getSpecificWarConfigRootDir("ws", removeSeparator(codServizio.toLowerCase()), model)+"/WEB-INF/"+this.codServizio+getCodeEndpoint(endpoint).toFirstUpper() AS pathTmp-»
+		«LET wsSecurityPropertiesPath(model, this)+ this.codServizio+getCodeEndpoint(endpoint).toFirstUpper() AS pathTmp-»
 			«FILE pathTmp+".ks.properties"»
 			«EXPAND ksPropertiesFile(this.codServizio+getCodeEndpoint(endpoint).toFirstUpper(),endpoint) FOR this-»
 			«ENDFILE»
