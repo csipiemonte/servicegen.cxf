@@ -32,6 +32,12 @@ Metodo centralizzato per la generazione delle classi dei servizi
 	«REM»Files comuni (SEI e SI)«ENDREM»
 	«EXPAND javaServiceEndpointInterfaceFile(model) FOR this»
 	«EXPAND javaServiceImplementationClassFile(model) FOR this»
+	«LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
+	«FOREACH wsBinding.endpoints AS endpoint-»
+	«EXPAND javaServiceImplementationEPClassFile(model,endpoint,wsBinding) FOR this»
+	«ENDFOREACH»
+	«ENDLET»
+	
 	
 	«REM»Files della implementation cartridge (classe di business)«ENDREM»
 	«IF this.serviceType==SrvTypeEnum::orch»
@@ -103,6 +109,11 @@ import java.util.List;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceContext;
 import javax.annotation.Resource;
+«IF model.targetPlatform.isJboss6eap()-»
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
+«ENDIF-»
 
 import «fullQualifiedWebServiceInterfacePkg(model)».*;
 import «fullQualifiedEntitiesPkg(codServizio, model)».*;
@@ -127,7 +138,9 @@ public class «serviceImplementationClassName()» implements «serviceInterfaceN
 
 @Resource
 WebServiceContext wsContext;
-
+«IF model.targetPlatform.isJboss6eap()-»
+@Autowired
+«ENDIF-»
 private «serviceBusinessInterfaceName()» «serviceBusinessInterfaceName().toFirstLower()»;
 
 public «serviceBusinessInterfaceName()» get«serviceBusinessInterfaceName()»() {
@@ -137,6 +150,13 @@ public «serviceBusinessInterfaceName()» get«serviceBusinessInterfaceName()»(
 public void set«serviceBusinessInterfaceName()»(«serviceBusinessInterfaceName()» «serviceBusinessInterfaceName().toFirstLower()») {
 	this.«serviceBusinessInterfaceName().toFirstLower()» = «serviceBusinessInterfaceName().toFirstLower()»;
 }
+
+«IF model.targetPlatform.isJboss6eap()-»
+@PostConstruct
+	public void postConstruct() {
+		SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+}
+«ENDIF-»
 «ENDDEFINE»
 
 
@@ -149,6 +169,31 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»
 }
 «ENDDEFINE»
 
+«REM»
+==========================================================================================================================
+SERVICE IMPLEMENTATION CLASS Endpoint
+Jboss6 richiede un address differente per ogni EndPoint e un corrispondente serviceName
+Nasce quindi l'esigenze di generare classi implementative una per ogni EnnPoint che estenderanno 
+fullServiceEJBClassesDir(codServizio, model)+"/"+serviceImplementationClassName()+".java" 
+==========================================================================================================================
+«ENDREM»
+
+
+«REM»Genera la Service Endpoint Interface (SEI) del web service«ENDREM»
+«DEFINE javaServiceImplementationEPClassFile(SOABEModel model,WSEndpoint endpoint, WSBinding wsBinding) FOR ServiceDef»
+«FILE fullServiceEJBClassesDir(codServizio, model)+"/"+serviceImplementationEPClassName(endpoint)+".java" »package «getFullServiceEJBPkg(codServizio, model)»;
+import javax.jws.WebService;
+@WebService(
+		serviceName = "«serviceNameEP(endpoint)»Service",
+		portName = "«serviceInterfaceName()»Port",
+		endpointInterface = "«fullQualifiedWebServiceInterfacePkg(model)».«serviceInterfaceName()»"
+		«getWsTargetNamespaceAnnotation(this, model)»)
+public class «serviceImplementationEPClassName(endpoint)» extends «serviceImplementationClassName()»{
+}
+
+
+«ENDFILE»
+«ENDDEFINE»
 
 
 «REM»
