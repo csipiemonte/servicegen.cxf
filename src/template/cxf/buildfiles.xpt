@@ -716,16 +716,15 @@ creazione del build.properties richiamato dal build ANT
 # Questo filtro viene utilizzato per definire la lista dei JAR(s) che devono
 # essere inclusi all'interno dell'EAR prodotto.
 # ----------------------------------------------------------------------------
-  ear-libs-filter = «IF !this.targetPlatform.isJboss6eap()-»spring-aop-2.5.6.jar,                  \
+  ear-libs-filter = spring-aop-2.5.6.jar,                  \
                     spring-beans-2.5.6.jar,                \
                     spring-context-2.5.6.jar,              \
                     spring-context-support-2.5.6.jar,      \
                     spring-core-2.5.6.jar,                 \
                     spring-jdbc-2.5.6.jar,                 \
                     spring-tx-2.5.6.jar,                   \
-                    spring-web-2.5.6.jar,                  \                    
+                    spring-web-2.5.6.jar,                  \
                     aopalliance-1.0.jar,                   \
-                    «ENDIF-»
                     commons-logging-1.1.1.jar
                     
 
@@ -753,7 +752,10 @@ ear-custom-libs-filter =
 # venire inclusi all'interno del WAR.
 # ----------------------------------------------------------------------------
 «REM»DIFFERENZIARE WEBLOGIC-JBOSS«ENDREM»
-  war-exclude-libs-filter = «IF targetPlatform.isJboss6eap()-»cxf*.jar,                  \
+  war-exclude-libs-filter = «IF targetPlatform.isJboss6eap()-»cxf*.jar,	                   \
+  							wss4j-*.jar					   \
+  							saaj-impl*.jar				   \
+  							xmlsec-*.jar				   \
   							«ENDIF-»
   							servlet*.jar,                  \
                             csi-tools*.jar,                \
