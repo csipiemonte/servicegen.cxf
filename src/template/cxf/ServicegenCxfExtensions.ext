@@ -71,6 +71,12 @@ String fullQualifiedWebServiceInterfacePkg(ServiceDef sd, SOABEModel model) :
 String serviceImplementationClassName(ServiceDef sd) :
 	toCamel(sd.codServizio)+"Impl";
 
+String serviceImplementationEPClassName(ServiceDef sd,WSEndpoint endpoint) :
+if (endpoint.code!=null && endpoint.code != "") then
+	serviceImplementationClassName(sd)+"EP"+endpoint.code
+else 
+	serviceImplementationClassName(sd)+"EP";
+
 String serviceBusinessInterfaceName(ServiceDef sd) :
 	toCamel(sd.codServizio)+"Business";
 
@@ -111,11 +117,8 @@ String wsCallClientFactoryBeanId(ServiceDef sd, WSEndpoint endpoint) :
 String wsCallClientAppContextName(ServiceDef sd, WSEndpoint endpoint) :
 	toCamel(sd.codServizio).toFirstLower()+getCodeEndpoint(endpoint).toFirstUpper()+"ClientCxf.xml";
 
-String cxfConfigurationFilenName(ServiceDef sd, TargetPlatform tp):
-	if (tp.code==TargetPlatformCodes::JBossEAP6) then 
-		"jbossws-cxf.xml"
-	else 
-		sd.codServizio.toLowerCase()+"SpringMain.xml";
+String springConfigurationFilenName(ServiceDef sd, TargetPlatform tp):
+	sd.codServizio.toLowerCase()+"SpringMain.xml";
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // DATA TYPES MAPPING
@@ -333,4 +336,30 @@ if(model.targetPlatform.isJboss6eap()) then
 	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/WEB-INF/classes/"
 else
 	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/WEB-INF/";	
+
+String serviceNameEP(ServiceDef sd,WSEndpoint endpoint) :
+if (endpoint.code!=null && endpoint.code != "") then
+	serviceInterfaceName(sd)+"EP"+endpoint.code
+else 
+	serviceInterfaceName(sd)+"EP";	
+	
+String addressJB6(ServiceDef sd,WSEndpoint ep, WSBinding bind, SOABEModel model) :
+if (ep==null) then
+	"/" + wsWebContext(sd.codServizio, bind.codBinding, sd.serviceType.toString(), model)+"/" + serviceInterfaceName(sd) 
+else 
+	"/" + wsWebContext(sd.codServizio, bind.codBinding, sd.serviceType.toString(), model)+"/" + serviceNameEP(sd, ep); 
+
+String addressEP(ServiceDef sd,WSEndpoint ep, WSBinding bind, SOABEModel model) :
+if(model.targetPlatform.isJboss6eap()) then
+	addressJB6(sd, ep,bind,model) 
+else
+    "/"+ sd.codComponente.toLowerCase()+removeSeparator(sd.codServizio).toFirstUpper()+getCodeEndpoint(ep).toFirstUpper();
 		
+String implementorEP(SOABEModel model, ServiceDef sd,WSEndpoint ep) :
+if(model.targetPlatform.isJboss6eap()) then
+	getFullServiceEJBPkg(sd.codServizio, model)+"."+serviceImplementationEPClassName(sd,ep)
+else
+	"#"+serviceImplBeanId(sd);
+		
+
+ 
