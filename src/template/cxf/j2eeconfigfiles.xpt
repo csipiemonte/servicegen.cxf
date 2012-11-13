@@ -79,32 +79,8 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
     «FOREACH service.bindings.typeSelect(servicedef::WSBinding) AS ws-»
 	<sub-deployment name="«getWSWarName(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»">
 	<dependencies>      	
-			<module name="org.apache.cxf" slot="main" export="true" services="import">  
-			<imports>
-				<include path="**" />
-			</imports>	
-		</module>
-		<module name="org.apache.ws.security" slot="main" export="true" services="import">  
-			<imports>
-				<include path="**" />
-			</imports>	
-		</module>
-		<module name="org.apache.santuario.xmlsec" slot="main" export="true" services="import">  
-			<imports>
-				<include path="**" />
-			</imports>	
-		</module>
-		<module name="com.sun.xml.messaging.saaj" slot="main" export="true" services="import">  
-			<imports>
-				<include path="**" />
-			</imports>	
-		</module>
-		
-		<module name="org.springframework.spring" slot="main" export="true" services="import">  
-			<imports>
-				<include path="**" />
-			</imports>	
-		</module>   
+		<module name="org.apache.cxf" slot="main" />
+		<module name="org.apache.ws.security" slot="main" />
 	</dependencies>
 	</sub-deployment>
 	«ENDFOREACH-»
@@ -183,7 +159,7 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>WEB-INF/«cxfConfigurationFilenName(serviceDef, model.targetPlatform)»</param-value>
+        <param-value>WEB-INF/«springConfigurationFilenName(serviceDef, model.targetPlatform)»</param-value>
     </context-param>
 
     <listener>
@@ -195,6 +171,7 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 	</listener>
 	«ENDIF-»
 
+	«IF !model.targetPlatform.isJboss6eap()-»
     <servlet>
     	<display-name>CXF Servlet</display-name>
 			<servlet-name>CXFServlet</servlet-name>
@@ -206,7 +183,8 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 		<servlet-name>CXFServlet</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
-
+	«ENDIF-»
+	
 	«IF serviceDef.authLevel!=AuthLevelEnum::A0 && hasASAuthentication()-»
 	<!-- impostazioni di security -->
 	<security-constraint>
