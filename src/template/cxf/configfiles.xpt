@@ -314,7 +314,7 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 		«ENDLET-»
 	</jaxws:endpoint>
 	«ENDFOREACH-»
-	«ENDIF-»
+	«ELSE»
 	<!-- web service end point definition -->
 	<jaxws:endpoint id="«impl.provides.codComponente.toLowerCase()»«removeSeparator(impl.provides.codServizio).toFirstUpper()»WS"
 					implementor="«getFullServiceEJBPkg(impl.provides.codServizio, model)+"."+serviceImplementationClassName(impl.provides)»"
@@ -325,6 +325,7 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 		</jaxws:properties>
 		«ENDIF-»
 	</jaxws:endpoint>
+	«ENDIF-»
 	
 «ENDDEFINE»
 
