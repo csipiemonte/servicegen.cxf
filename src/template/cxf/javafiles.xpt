@@ -118,12 +118,13 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import «fullQualifiedWebServiceInterfacePkg(model)».*;
 import «fullQualifiedEntitiesPkg(codServizio, model)».*;
 import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
-
+«IF insertAnnotationWebService(model, (WSBinding)this.bindings.get(0))-»
 @WebService(
 		serviceName = "«serviceInterfaceName()»Service",
 		portName = "«serviceInterfaceName()»Port",
 		endpointInterface = "«fullQualifiedWebServiceInterfacePkg(model)».«serviceInterfaceName()»"
 		«getWsTargetNamespaceAnnotation(this, model)»)
+«ENDIF-»
 public class «serviceImplementationClassName()» implements «serviceInterfaceName()» {
 	«EXPAND businessClassInjection(model) FOR this»
 

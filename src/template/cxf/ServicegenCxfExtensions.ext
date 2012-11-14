@@ -360,6 +360,10 @@ if(model.targetPlatform.isJboss6eap()) then
 	getFullServiceEJBPkg(sd.codServizio, model)+"."+serviceImplementationEPClassName(sd,ep)
 else
 	"#"+serviceImplBeanId(sd);
-		
 
+boolean insertAnnotationWebService(SOABEModel model, WSBinding wsBinding) :
+if(!model.targetPlatform.isJboss6eap() || (model.targetPlatform.isJboss6eap()&&wsBinding.endpoints.isEmpty)) then
+	true		
+else 
+	false;
  
