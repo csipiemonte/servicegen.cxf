@@ -128,7 +128,6 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 	<!-- BUSINESS CONFIGURATION -->
     <import resource="«impl.provides.codServizio.toLowerCase()»ApplicationContext.xml" />
 	
-	«IF !model.targetPlatform.isJboss6eap()-»
 	«LET getAllResourceConnectors(model) AS allResConn-»
 	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
 	«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
@@ -137,7 +136,7 @@ http://cxf.apache.org/schemas/jaxws.xsd">
     «ENDFOREACH-»
 	«ENDIF-»
 	«ENDLET-»
-
+	«IF !model.targetPlatform.isJboss6eap()-»
 	<!-- CXF SERVICES CONFIGURATION -->
 	<import resource="«impl.provides.codServizio.toLowerCase()»Cxf.xml" />
 	«ENDIF-»
