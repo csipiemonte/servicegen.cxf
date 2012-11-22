@@ -56,7 +56,11 @@ Metodo centralizzato per la genarazione del progetto
 		«EXPAND buildfiles::buildfile FOR this»
 		«EXPAND buildfiles::buildproperties  FOR this»
 		«REM»TODO?«EXPAND buildfiles::buildEnvProperties FOR this»«ENDREM»
-		«EXPAND buildfiles::ivyfiles FOR this»
+		«IF this.targetPlatform.isJboss6eap()-»
+		«EXPAND buildfiles::ivyfilesJboss6ap FOR this-»
+		«ELSE-»
+		«EXPAND buildfiles::ivyfiles FOR this-»
+		«ENDIF-»
 		«REM»TODO?«EXPAND buildfiles::aboutfiles FOR this»«ENDREM»
 
 		«REM»File di configurazione dell'applicazione«ENDREM»
