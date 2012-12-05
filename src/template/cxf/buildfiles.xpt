@@ -755,6 +755,8 @@ ear-custom-libs-filter =
 # ----------------------------------------------------------------------------
 «REM»DIFFERENZIARE WEBLOGIC-JBOSS«ENDREM»
   war-exclude-libs-filter = «IF targetPlatform.isJboss6eap()-»cxf*.jar,	                   \
+   							neethi*.jar,				   \
+  							xmlschema-core*.jar,		   \
   							wss4j-*.jar					   \
   							saaj-impl*.jar				   \
   							xmlsec-*.jar				   \
@@ -1137,10 +1139,44 @@ creazione del file di configurazione IVY
 	    <!-- # JBOSS EAP 6.0                                              # -->
 	    <!-- ############################################################## -->
 	    <!--  -->
-	    <dependency org="others" name="jboss" rev="eap-6.0" transitive="false">
-	     	<artifact name="cxf-api-2.4.6-redhat-1" type="jar" />
-	     	<artifact name="wss4j-1.6.5-redhat-1" type="jar" />
-	    </dependency>
+	   <dependency org="others" name="jboss" rev="eap-6.0"
+		transitive="false">
+		<artifact name="cxf-api-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-common-utilities-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-bindings-coloc-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-bindings-http-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-bindings-object-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-bindings-soap-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-bindings-xml-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-core-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-databinding-aegis-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-databinding-jaxb-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-frontend-jaxws-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-frontend-simple-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-management-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-transports-common-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-transports-http-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-transports-jms-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-transports-local-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-ws-addr-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-ws-policy-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-ws-rm-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-rt-ws-security-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-tools-common-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-tools-java2ws-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-tools-validator-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-tools-wsdlto-core-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-tools-wsdlto-databinding-jaxb-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-tools-wsdlto-frontend-jaxws-2.4.6-redhat-1" type="jar" />
+		<artifact name="cxf-xjc-boolean-2.4.0-redhat-1" type="jar" />
+		<artifact name="cxf-xjc-dv-2.4.0-redhat-1" type="jar" />
+		<artifact name="cxf-xjc-ts-2.4.0-redhat-1" type="jar" />
+		<artifact name="wss4j-1.6.5-redhat-1" type="jar" />
+				
+		<artifact name="neethi-3.0.1-redhat-1" type="jar" />
+		<artifact name="wsdl4j-1.6.2-redhat-1" type="jar" />
+		<artifact name="xmlschema-core-2.0.2-redhat-1" type="jar" />
+	</dependency>
 	
 	
 	«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0»
