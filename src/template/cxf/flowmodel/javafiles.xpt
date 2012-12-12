@@ -161,13 +161,13 @@ public interface «serviceBusinessInterfaceName()» {
 
 «REM»
 *************************************************************
-Implementazione del ServiceLocator del servizio di 
-orchestrazione in esame
+nel caso CXF il service locator non e' una sola classe ma 
+e' ripetuta in tutti i servizi
 *************************************************************
 «ENDREM»
 «DEFINE serviceLocatorClassFile(SOABEModel model) FOR ServiceDef»
-	«FILE fullServiceLocatorClassDir(model)+"/ServiceLocator.java"»
-package «getFullServiceLocatorPkg(model)»;
+	«FILE fullServiceLocatorClassDir(this, model)+"/ServiceLocator.java"»
+package «getFullServiceLocatorPkg(this, model)»;
 
 import it.csi.csi.wrapper.ConfigException;
 import java.util.Collections;
