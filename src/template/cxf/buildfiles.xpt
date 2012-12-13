@@ -727,9 +727,9 @@ creazione del build.properties richiamato dal build ANT
 					spring-asm-*.jar,                  \
                     spring-expression-*.jar,      \
                    	aopalliance-*.jar,                   \
-                   	«IF targetPlatform.isJboss6eap()»util-perf-*.jar,                  \«ENDIF»
+                   	«IF targetPlatform.isJboss6eap()»util-perf-*.jar,                  \
 					asm-*.jar,                   \
-					cglib-*.jar,                   \
+					cglib-*.jar,                   \«ENDIF»
                     commons-logging-1.1.1.jar
                     
 
