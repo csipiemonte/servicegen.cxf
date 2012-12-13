@@ -725,8 +725,11 @@ creazione del build.properties richiamato dal build ANT
                     spring-tx-*.jar,                   \
                     spring-web-*.jar,                  \
 					spring-asm-*.jar,                  \
-                    spring-expression-*.jar,			\
-                    aopalliance-1.0.jar,                   \
+                    spring-expression-*.jar,      \
+                   	aopalliance-*.jar,                   \
+                   	«IF targetPlatform.isJboss6eap()»util-perf-*.jar,                  \«ENDIF»
+					asm-*.jar,                   \
+					cglib-*.jar,                   \
                     commons-logging-1.1.1.jar
                     
 
@@ -756,11 +759,14 @@ ear-custom-libs-filter =
 «REM»DIFFERENZIARE WEBLOGIC-JBOSS«ENDREM»
   war-exclude-libs-filter = «IF targetPlatform.isJboss6eap()-»cxf*.jar,	                   \
    							neethi*.jar,				   \
+   							util-perf-*.jar,                  \
   							xmlschema-core*.jar,		   \
   							wss4j-*.jar					   \
   							saaj-impl*.jar				   \
   							xmlsec-*.jar				   \
-  							«ENDIF-»
+  							asm-*.jar,                   \
+							cglib-*.jar,                   \
+							«ENDIF-»
   							servlet*.jar,                  \
                             csi-tools*.jar,                \
                             log4j*.jar,                    \
@@ -1118,6 +1124,14 @@ creazione del file di configurazione IVY
 		</dependency> 
 		
     	<dependency org="others" name="asm" rev="3.3.1"  transitive="false"/>
+    	
+    	<dependency org="others" name="cglib" rev="2.2.2">
+			<artifact name="cglib-2.2.2" type="jar"/>
+		</dependency>
+		
+		<dependency org="others" name="asm" rev="3.3.1">
+			<artifact name="asm-3.3.1" type="jar"/>
+		</dependency>
 	
 		<!-- ############################################################## -->
     	<!-- # SPRING                                                     # -->
@@ -1129,7 +1143,7 @@ creazione del file di configurazione IVY
 	      <artifact name="spring-beans-3.1.1.RELEASE" type="jar" />
 	      <artifact name="spring-context-3.1.1.RELEASE" type="jar" />
 	      <artifact name="spring-core-3.1.1.RELEASE" type="jar" />
-	    	      <artifact name="spring-expression-3.1.1.RELEASE" type="jar" />
+	      <artifact name="spring-expression-3.1.1.RELEASE" type="jar" />
 	      <artifact name="spring-jdbc-3.1.1.RELEASE" type="jar" />
 	      <artifact name="spring-tx-3.1.1.RELEASE" type="jar" />
 	      <artifact name="spring-web-3.1.1.RELEASE" type="jar" />
