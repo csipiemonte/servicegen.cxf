@@ -507,7 +507,7 @@ COMMON METHODS
 
 «REM»comment«ENDREM»
 «DEFINE paramDef(SOABEModel model, ServiceDef def, boolean interface) FOR Param-»
-	«IF interface»@WebParam(name = "«name»"«getWsTargetNamespaceAnnotation(def, model)»)«ENDIF»
+	«IF interface»@WebParam(name = "«name»"«getWsTargetNamespaceAnnotation(def, model)» «getHeaderWebParamAnnotation(this)»)«ENDIF»
 	«map2javaWsType(this.type, def.codServizio, model)» «name»
 «ENDDEFINE»
 

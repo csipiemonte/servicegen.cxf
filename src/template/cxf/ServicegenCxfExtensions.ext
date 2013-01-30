@@ -172,6 +172,11 @@ String getWsTargetNamespaceAnnotation(ServiceDef sd, SOABEModel model) :
 	else
 		"";
 
+String getHeaderWebParamAnnotation(Param p) :
+	if (p.inHeader) then
+	 ", header=true" 
+	else
+	 ""; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///// VARIABILI DI BUILD
