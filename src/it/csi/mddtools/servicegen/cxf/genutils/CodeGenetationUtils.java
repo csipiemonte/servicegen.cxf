@@ -14,6 +14,7 @@ import it.csi.mddtools.typedef.PrimitiveType;
 import it.csi.mddtools.typedef.Type;
 import it.csi.mddtools.typedef.TypedArray;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.tools.ant.util.StringUtils;
@@ -51,16 +52,26 @@ public class CodeGenetationUtils {
 		return false;
 	}
 
-	
 	private static boolean hasAttachment(Type type) {
+		ArrayList<Type> alreadyVisited  = new ArrayList<Type>();
+		return hasAttachment_internal(type, alreadyVisited);
+	}
+	
+	private static boolean hasAttachment_internal(Type type,
+			ArrayList<Type> alreadyVisited) {
 		if (type instanceof Entity) {
-			for (Feature f : ((Entity) type).getFeatures()) {
-				if (hasAttachment(f.getType())) {
-					return true;
+			if (alreadyVisited.contains(type)) {
+				return false;
+			} else {
+				alreadyVisited.add(type);
+				for (Feature f : ((Entity) type).getFeatures()) {
+					if (hasAttachment_internal(f.getType(), alreadyVisited)) {
+						return true;
+					}
 				}
 			}
 		} else if (type instanceof TypedArray) {
-			if (hasAttachment(((TypedArray) type).getComponentType())) {
+			if (hasAttachment_internal(((TypedArray) type).getComponentType(), alreadyVisited)) {
 				return true;
 			}
 		} else if (type instanceof PrimitiveType) {
