@@ -403,8 +403,10 @@ COMMON METHODS
 
 «REM»Genera la definizione di ciascuna operation (metodo) del servizio«ENDREM»
 «DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR Operation»
-public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
-	WebServiceContext wsContext, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(WebServiceContext wsContext
+ «IF params != null && params.size > 0»
+	, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+«ENDIF»
 )«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-»;
 «ENDDEFINE»
 
@@ -458,8 +460,10 @@ public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»
  * @generated
  */
 «IF this.txType==TXTypeEnum::newLocalTX-»@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)«ENDIF-»
-public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
-	WebServiceContext wsContext, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(WebServiceContext wsContext
+ «IF params != null && params.size > 0»
+	, «EXPAND template::cxf::javafiles::paramDef(model, def, false) FOREACH params SEPARATOR ","»
+ «ENDIF»
 )«EXPAND template::cxf::javafiles::throwsClause(model, def) FOR this-» {
 	//Logger logger = getLogger(null);
 	logger.debug("[«implClassName»::«name»] - START");
