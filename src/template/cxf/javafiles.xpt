@@ -748,10 +748,12 @@ private void validatePassordUsernameToken(){
 
 		«PROTECT CSTART '/*' CEND '*/' ID getRegionUID("validatePassordUsernameToken"+getCodeEndpoint(endpoint))»
 			/*
-			if (pc.getIdentifier().equals("user")
-					&& pc.getPassword().equals("mypass")) {
+			// esempio di callback handler "cablato". riconosce solo l'utente user/mypass
+			if (pc.getIdentifier().equals("user")) {
+				pc.setPassword("mypass");
 			} else {
-				throw new IOException("User non riconosciuto");
+				throw new RuntimeException("User " + pc.getIdentifier()
+					+ "non riconosciuto");
 			}
 			*/
 		«ENDPROTECT»
