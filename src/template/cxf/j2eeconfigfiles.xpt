@@ -78,10 +78,11 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
 «LET serviceimpl.provides AS service-»
     «FOREACH service.bindings.typeSelect(servicedef::WSBinding) AS ws-»
 	<sub-deployment name="«getWSWarName(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»">
-	<dependencies>      	
-		<module name="org.apache.cxf" slot="main" />
-		<module name="org.apache.ws.security" slot="main" />
-	</dependencies>
+		<dependencies>      	
+			<module name="org.apache.cxf" slot="main" />
+			<module name="org.apache.ws.security" slot="main" />
+			<module name="org.springframework.spring"/>
+		</dependencies>
 	</sub-deployment>
 	«ENDFOREACH-»
 «ENDLET-»
@@ -157,14 +158,14 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
          http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
 
-    <context-param>
+    «IF !model.targetPlatform.isJboss6eap()-»<context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>WEB-INF/«springConfigurationFilenName(serviceDef, model.targetPlatform)»</param-value>
-    </context-param>
+        <param-value>WEB-INF/«springConfigurationFileName(serviceDef, model.targetPlatform)»</param-value>
+    </context-param>«ENDIF-»
 
-    <listener>
+    «IF !model.targetPlatform.isJboss6eap()-»<listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
+    </listener>«ENDIF-»
     «IF serviceDef.authLevel!=AuthLevelEnum::A0-»
 	<listener>
 		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>

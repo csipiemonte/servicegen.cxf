@@ -351,6 +351,12 @@ creazione del build.xml per ANT
 				«ENDIF-»
 				«ENDLET-»
 				</copy>
+				«REM»«IF targetPlatform.isJboss6eap()»
+				<!-- per JBoss 6.2 i file di spring devono essere in 'classes' -->
+				<copy todir="${build}/classes" overwrite="true" flatten="true">
+					<fileset dir="${temp}/classes" includes="*.xml"/>
+				</copy> 
+				«ENDIF»«ENDREM»
 				<war destfile="${build}/archives/${target}/${service.type}-${service.name}-${binding.code}.war"
 				     webxml="${conf}/web/${binding.code}/${service.name}/WEB-INF/web.xml"
 				     roundup="false">
@@ -363,6 +369,12 @@ creazione del build.xml per ANT
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
 						<include name="*.xml"/>
 					</classes>
+					«IF targetPlatform.isJboss6eap()»
+					<!-- in JB6.x i file di spring vanno in classes e non in WEB-INF -->
+					<classes dir="${temp}/conf/web/${binding.code}/${service.name}/WEB-INF/classes">
+						<include name="*.xml"/>
+				    </classes>
+				    «ENDIF»
 					<lib dir="${lib}" includes="*" excludes="${war-exclude-libs-filter}, ${war-exclude-custom-libs-filter}«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0-», ${svcflow-libs}«ENDIF-»" />
 					<lib dir="${build}/archives/${target}/" includes="«codComponente.toLowerCase()»-${service.name}-client-${service.ver}.0.jar" />
 				</war>
@@ -385,6 +397,12 @@ creazione del build.xml per ANT
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/business/${service.name}/**"/>
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
 					</classes>
+					«IF targetPlatform.isJboss6eap()»
+					<!-- in JB6.x i file di spring vanno in classes e non in WEB-INF -->
+					<classes dir="${temp}/conf/web/${binding.code}/${service.name}/WEB-INF/classes">
+						<include name="*.xml"/>
+				    </classes>
+				    «ENDIF»
 					<lib dir="${lib}" includes="*" excludes="${war-exclude-libs-filter}, ${war-exclude-custom-libs-filter}" />
 					<lib dir="${build}/archives/${target}/" includes="«codComponente.toLowerCase()»-${service.name}-client-${service.ver}.0.jar" />
 				</war>
@@ -716,7 +734,8 @@ creazione del build.properties richiamato dal build ANT
 # Questo filtro viene utilizzato per definire la lista dei JAR(s) che devono
 # essere inclusi all'interno dell'EAR prodotto.
 # ----------------------------------------------------------------------------
-  ear-libs-filter = spring-aop-*.jar,                  \
+ear-libs-filter = dummy.jar, \
+  					«IF !targetPlatform.isJboss6eap()-»spring-aop-*.jar,                  \
                     spring-beans-*.jar,                \
                     spring-context-*.jar,              \
                     spring-context-support-*.jar,      \
@@ -726,7 +745,7 @@ creazione del build.properties richiamato dal build ANT
                     spring-web-*.jar,                  \
 					spring-asm-*.jar,                  \
                     spring-expression-*.jar,      \
-                   	aopalliance-*.jar,                   \
+                   	aopalliance-*.jar,                   \«ENDIF»
                    	«IF targetPlatform.isJboss6eap()»util-perf-*.jar,                  \
 					asm-*.jar,                   \
 					cglib-*.jar,                   \«ENDIF»
@@ -738,7 +757,7 @@ creazione del build.properties richiamato dal build ANT
 # Questo filtro viene utilizzato per definire la lista dei JAR(s) che devono
 # essere inclusi nel caso di servizi orchestrati
 # ----------------------------------------------------------------------------
-  svcflow-libs = svcflow-1.2.1.jar,                       \
+svcflow-libs = svcflow-1.2.1.jar,                       \
                  oscore-2.2.5.jar,                        \
                  osworkflow-2.8.0.jar,                    \
                  propertyset-1.4.jar
@@ -757,7 +776,7 @@ ear-custom-libs-filter =
 # venire inclusi all'interno del WAR.
 # ----------------------------------------------------------------------------
 «REM»DIFFERENZIARE WEBLOGIC-JBOSS«ENDREM»
-  war-exclude-libs-filter = «IF targetPlatform.isJboss6eap()-»cxf*.jar,	                   \
+war-exclude-libs-filter = «IF targetPlatform.isJboss6eap()-»cxf*.jar,	                   \
    							neethi*.jar,				   \
    							util-perf-*.jar,                  \
   							xmlschema-core*.jar,		   \
@@ -790,9 +809,9 @@ war-exclude-custom-libs-filter =
 
 
 # ----------------------------------------------------------------------------
-  package.prefix = «getOrganizationNamePkgPrefix()».${prodotto}.${componente}
+package.prefix = «getOrganizationNamePkgPrefix()».${prodotto}.${componente}
 
- «REM»DIFFERENZIZIONE WEBLOGIC-JBOSS«ENDREM»
+ «REM»DIFFERENZIAZIONE WEBLOGIC-JBOSS«ENDREM»
 «EXPAND appServerConfigurationBuildProperties FOR this»
 «ENDFILE»
 «ENDDEFINE»

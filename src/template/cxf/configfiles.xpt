@@ -79,13 +79,26 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 «FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/jbossws-cxf.xml"»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xmlns:beans="http://www.springframework.org/schema/beans"
+
+«IF model.targetPlatform.isJboss6eap()-»xmlns:cxf="http://cxf.apache.org/core"
+xmlns:context="http://www.springframework.org/schema/context"«ELSE»
+xmlns:beans="http://www.springframework.org/schema/beans"«ENDIF»
 xmlns:jaxws="http://cxf.apache.org/jaxws"
 xsi:schemaLocation="http://www.springframework.org/schema/beans
 http://www.springframework.org/schema/beans/spring-beans.xsd
+
+«IF model.targetPlatform.isJboss6eap()»
+http://cxf.apache.org/core
+http://cxf.apache.org/schemas/core.xsd
+http://www.springframework.org/schema/context  
+http://www.springframework.org/schema/context/spring-context-3.0.xsd«ENDIF»
+
 http://cxf.apache.org/jaxws
 http://cxf.apache.org/schemas/jaxws.xsd">
-	
+	«IF model.targetPlatform.isJboss6eap()-»<!-- import dei file non cxf -->
+	<import resource="classpath:/«springConfigurationFileName(impl.provides, model.targetPlatform)»" />
+	<!-- nuova direttiva necessaria per JBoss6.x -->
+	<context:annotation-config/>«ENDIF»
 	«IF impl.provides.authLevel!=AuthLevelEnum::A0-»
 	<!-- Authentication Helper -->
 	<bean id="«authenticationHelperBeanID(impl.provides)»" class="«getFullServiceEJBPkg(impl.provides.codServizio, model)».«authenticationHelperClassName(impl.provides)»" />
@@ -108,7 +121,7 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 
 «REM»Genera il file spring MAIN (file che include tutti gli altri e viene a sua volta chiamato dal contesto«ENDREM»
 «DEFINE springMainFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
-«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"SpringMain.xml"»<?xml version="1.0" encoding="UTF-8"?>
+«FILE springConfigurationFilePath(impl.provides, model.targetPlatform)»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" 
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
@@ -122,11 +135,11 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 	
 	«IF !useExternalDaoBeans»
 	<!-- DB CONFIGURATION AND DAO -->
-	<import resource="«impl.provides.codServizio.toLowerCase()»Dao-beans.xml" />
+	<import resource="«springDaoBeansInternalFileName(impl.provides, model.targetPlatform)»" />
 	«ENDIF»
 	
 	<!-- BUSINESS CONFIGURATION -->
-    <import resource="«impl.provides.codServizio.toLowerCase()»ApplicationContext.xml" />
+    <import resource="«springAppContextFileName(impl.provides, model.targetPlatform)»" />
 	
 	«LET getAllResourceConnectors(model) AS allResConn-»
 	«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
@@ -148,7 +161,7 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 
 «REM»Genera il file di configurazione«ENDREM»
 «DEFINE applicationContextFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
-«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"ApplicationContext.xml"»<?xml version="1.0" encoding="UTF-8"?>
+«FILE springAppContextFilePath(impl.provides, model.targetPlatform)»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" 
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
@@ -329,7 +342,7 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 «ENDDEFINE»
 
 «DEFINE daoBeansFile(SOABEModel model, ServiceImpl impl, boolean useExternalDaoBeans) FOR LogicImplCartridge»
-«FILE getSpecificWarConfigRootDir("ws", removeSeparator(impl.provides.codServizio.toLowerCase()), model)+"/WEB-INF/"+impl.provides.codServizio.toLowerCase()+"Dao-beans.xml"»<?xml version="1.0" encoding="UTF-8"?>
+«FILE springDaoBeansInternalFilePath(impl.provides, model.targetPlatform)»<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:aop="http://www.springframework.org/schema/aop"

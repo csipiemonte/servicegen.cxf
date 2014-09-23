@@ -117,9 +117,31 @@ String wsCallClientFactoryBeanId(ServiceDef sd, WSEndpoint endpoint) :
 String wsCallClientAppContextName(ServiceDef sd, WSEndpoint endpoint) :
 	toCamel(sd.codServizio).toFirstLower()+getCodeEndpoint(endpoint).toFirstUpper()+"ClientCxf.xml";
 
-String springConfigurationFilenName(ServiceDef sd, TargetPlatform tp):
-	sd.codServizio.toLowerCase()+"SpringMain.xml";
-		
+String springConfigurationFileName(ServiceDef sd, TargetPlatform tp):
+	sd.codServizio.toCamel()+"SpringMain.xml";
+	
+String springConfigurationFilePath(ServiceDef sd, TargetPlatform tp):
+let model = (SOABEModel)tp.eContainer :
+let actualFolderForPlatform = tp.isJboss6eap() ? "WEB-INF/classes" : "WEB-INF" :
+	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/"+actualFolderForPlatform+"/"+springConfigurationFileName(sd, tp);
+
+String springDaoBeansInternalFileName(ServiceDef sd, TargetPlatform tp):
+	sd.codServizio.toLowerCase()+"Dao-beans.xml";
+	
+String springDaoBeansInternalFilePath(ServiceDef sd, TargetPlatform tp):
+let model = (SOABEModel)tp.eContainer :
+let actualFolderForPlatform = tp.isJboss6eap() ? "WEB-INF/classes" : "WEB-INF" :
+	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/"+actualFolderForPlatform+"/"+springDaoBeansInternalFileName(sd, tp);
+
+String springAppContextFileName(ServiceDef sd, TargetPlatform tp):
+	sd.codServizio.toLowerCase()+"ApplicationContext.xml";
+	
+String springAppContextFilePath(ServiceDef sd, TargetPlatform tp):
+let model = (SOABEModel)tp.eContainer :
+let actualFolderForPlatform = tp.isJboss6eap() ? "WEB-INF/classes" : "WEB-INF" :
+	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/"+actualFolderForPlatform+"/"+springAppContextFileName(sd, tp);
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // DATA TYPES MAPPING
 
