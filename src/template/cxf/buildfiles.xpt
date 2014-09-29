@@ -747,7 +747,6 @@ ear-libs-filter = dummy.jar, \
                     spring-expression-*.jar,      \
                    	aopalliance-*.jar,                   \«ENDIF-»
                    	«IF targetPlatform.isJboss6eap()-»util-perf-*.jar,                  \
-					asm-*.jar,                   \
 					cglib-*.jar,                   \«ENDIF-»
                     commons-logging-1.1.1.jar
                     
