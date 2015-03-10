@@ -15,19 +15,19 @@ extension org::eclipse::xtend::util::stdlib::naming;
 ///  Check per disabilitare gli elementi WSBinding e PrimitiveType
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-context EJBPABinding ERROR "Il EJBPABinding non � ammesso per la cartuccia basata su framework CXF" :
+context EJBPABinding ERROR "Il EJBPABinding non e' ammesso per la cartuccia basata su framework CXF" :
 	false;
 
-context SOAPPABRBinding ERROR "Il SOAPPABRBinding non � ammesso per la cartuccia basata su framework CXF" :
+context SOAPPABRBinding ERROR "Il SOAPPABRBinding non e' ammesso per la cartuccia basata su framework CXF" :
 	false;
 
-context WSFADBinding ERROR "Il WSFADBinding non � ammesso per la cartuccia basata su framework CXF" :
+context WSFADBinding ERROR "Il WSFADBinding non e' ammesso per la cartuccia basata su framework CXF" :
 	false;
 
-context CSIDatatype ERROR "Il tipo 'CSIDatatype' non � ammesso per la cartuccia basata su framework CXF" :
+context CSIDatatype ERROR "Il tipo 'CSIDatatype' non �e' ammesso per la cartuccia basata su framework CXF" :
 	false;
 
-context Exception ERROR "Una eccezione non pu� avere i seguenti nomi : " + userExceptionClassName() + " o " + systemExceptionClassName() + " o " + unrecoverableExceptionClassName() :
+context Exception ERROR "Una eccezione non puo' avere i seguenti nomi : " + userExceptionClassName() + " o " + systemExceptionClassName() + " o " + unrecoverableExceptionClassName() :
 	this.name.toLowerCase() != userExceptionClassName().toLowerCase() && 
 	this.name.toLowerCase() != systemExceptionClassName().toLowerCase() && 
 	this.name.toLowerCase() != unrecoverableExceptionClassName().toLowerCase();
@@ -41,7 +41,7 @@ context ServiceDef ERROR "Sono ammessi unicamente servizi con livello di securiz
 	this.authLevel==AuthLevelEnum::A0 || this.authLevel==AuthLevelEnum::A1;
 
 // SD5: un servizio pubblico non pu� avere ruoli associati
-context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non pu� avere Ruoli definiti" :
+context ServiceDef ERROR "Un servizio con livello di securizzazione A0 non puo' avere Ruoli definiti" :
 	(this.authLevel==AuthLevelEnum::A0 && this.roles.size==0) || authLevel != AuthLevelEnum::A0; 
 
 // SD7: in un servizio non pubblico ci deve essere almeno un ruolo definito
@@ -110,12 +110,18 @@ context BaseTypes ERROR "TD5: i tipi definiti a livello globale possono essere s
 	(this.baseTypes.select(e|e.metaType==TypedArray&&((TypedArray)e).componentType.metaType==Entity)).size==0&&
 	(this.baseTypes.select(e|e.metaType==Exception).size==0);
 	
-// TD7(ERROR): un typed array non pu� contenere classi eccezione n� tipi array
+// TD7(ERROR): un typed array non puo' contenere classi eccezione ne' tipi array
 context TypedArray ERROR "TD7: un array tipato non pu� contenere eccezioni o tipi array annidati" :
     this.componentType.metaType!=Exception &&
     this.componentType.metaType!=TypedArray;
 
+// TD8 (ERROR - temporaneo): i tipi enumerati non sono gestiti nelkla cartuccia CXF
+context EnumVal ERROR "TD8: i tipi EnumVal non sono gestiti attualmente nella cartuccia CXF":
+false;
 
+//N.B !! quando si implementera' anchjein CXF riverificar el'elenco dei check da fare!!!
+
+ 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // vincoli sulla definizione di servizio
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
