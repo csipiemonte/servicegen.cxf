@@ -74,7 +74,15 @@ import javax.jws.WebService;
 
 import «fullQualifiedEntitiesPkg(codServizio, model)».*;
 import «fullQualifiedServiceExceptionPkg(codServizio, model)».*;
-
+«IF documentation!=null-»
+/**
+ * Interfaccia del servizio «codServizio».
+ *
+ «formatDocText(documentation.doc, true)»
+ *
+ * @generated
+ */
+«ENDIF-»
 @WebService(name = "«toCamel(this.codServizio)»"«getWsTargetNamespaceAnnotation(this, model)»)
 public interface «serviceInterfaceName()»{
 	«EXPAND operationDeclaration(model, this) FOREACH this.operations-»
@@ -85,6 +93,27 @@ public interface «serviceInterfaceName()»{
 
 «REM»Genera la definizione di ciascuna operation (metodo) del servizio«ENDREM»
 «DEFINE operationDeclaration(SOABEModel model, ServiceDef def) FOR Operation»
+«IF documentation!=null-»
+/**
+ * Operation «name».
+ *
+ «formatDocText(documentation.doc, true)»
+ *
+ * L'operation e' presente a partire dalla versione «since==null || since.length==0? "iniziale" : since» dell'interfaccia.
+ *
+ «FOREACH params AS currPar-»
+ * @param «currPar.name» «formatDocText(currPar.documentation.doc, false)»
+ «ENDFOREACH-»
+ *
+ «FOREACH throws AS currExc-»
+ * @throws «currExc.name»
+ «ENDFOREACH-»
+ * @throws Exception
+ * @thrown UnrecoverableException
+ *
+ * @generated
+ */
+«ENDIF-»
 @WebResult(name = "result"«getWsTargetNamespaceAnnotation(def, model)»)
 @WebMethod
 public «map2javaWsType(this.returnType, def.codServizio, model)» «this.name»(
@@ -279,6 +308,15 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+«IF documentation!=null-»
+/**
+ * Classe «name».
+ *
+ «formatDocText(documentation.doc, true)».
+ * 
+ * @generated
+ */
+«ENDIF-»
 @XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlType(
 	name = "«name.toFirstLower()»",
@@ -324,11 +362,24 @@ private «map2javaWsType(this.type, codServ, model)» «name»;
 
 «REM»comment«ENDREM»
 «DEFINE entityGettersSetters(SOABEModel model, String codServ) FOR Feature»
+«IF documentation!=null-»
+/**
+ * Proprieta' «name».
+ *
+ «formatDocText(documentation.doc, true)».
+ * @return il valore della proprieta'
+ * @generated
+ */
+«ENDIF-»
 «EXPAND propertyAnnotation(model, codServ) FOR this-»
 public «map2javaWsType(this.type, codServ, model)» get«name.toFirstUpper()»() {
 	return «name»;
 }
 
+/**
+ * Imposta il valore della property «name».
+ * @param «name» il valore da impostare
+ */
 public void set«name.toFirstUpper()»(«map2javaWsType(this.type, codServ, model)» «name») {
 	this.«name» = «name»;
 }
@@ -469,6 +520,16 @@ public class «unrecoverableExceptionClassName()» extends Exception {
 
 import javax.xml.ws.WebFault;
 
+«IF documentation!=null»
+/**
+ * Eccezione «name».
+ * L'eccezione e' di tipo: «this.exceptionType.toString()».
+ * 
+ «formatDocText(documentation.doc, true)»
+ *
+ * @generated
+ */
+«ENDIF»
 @WebFault
 public class «name» extends «getExceptionExtendsFQNClass(this, model, codServ)» {
 
@@ -480,6 +541,7 @@ public class «name» extends «getExceptionExtendsFQNClass(this, model, codServ
 	}
 
 	/**
+	 * @param message
 	 * @generated
 	 */
 	public «name»(String message) {
@@ -487,6 +549,8 @@ public class «name» extends «getExceptionExtendsFQNClass(this, model, codServ
 	}
 
 	/**
+	 * @param message
+	 * @param cause
 	 * @generated
 	 */
 	public «name»(String message, Throwable cause) {

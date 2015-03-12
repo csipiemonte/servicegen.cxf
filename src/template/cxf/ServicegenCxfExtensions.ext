@@ -394,3 +394,6 @@ if(!model.targetPlatform.isJboss6eap() || (model.targetPlatform.isJboss6eap()&&w
 else 
 	false;
  
+/// formattazione documentazione
+String formatDocText(String s, boolean trailingStar) :
+ (trailingStar ? "* " : " ")+s.replaceAll("\n","\n* ");
