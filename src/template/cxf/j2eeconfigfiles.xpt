@@ -73,22 +73,15 @@ Crea i descrittori specifici per l'Application Server scelto (weblogic-applicati
 «REM»Application descriptor per JBoss.6.eap«ENDREM»
 «DEFINE jboss6eapApplicationXmlFile FOR SOABEModel»
 «FILE "conf/ear/jboss-deployment-structure.xml"»<?xml version="1.0" encoding="UTF-8"?>
-<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
-«FOREACH serviceimplementations AS serviceimpl-»
-«LET serviceimpl.provides AS service-»
-    «FOREACH service.bindings.typeSelect(servicedef::WSBinding) AS ws-»
-	<sub-deployment name="«getWSWarName(service.codServizio, ws.codBinding, service.serviceType.toString(), this)»">
-		<dependencies>      	
-			<module name="org.apache.cxf" slot="main" />
-			<module name="org.apache.ws.security" slot="main" />
-			<module name="org.springframework.spring"/>
-		</dependencies>
-	</sub-deployment>
-	«ENDFOREACH-»
-«ENDLET-»
-«ENDFOREACH-»
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+  <deployment>
+    <dependencies>
+      <module name="org.apache.cxf" slot="main" export="true" meta-inf="export"/>
+      <module name="org.springframework.spring" export="true" meta-inf="export"/>
+      <module name="org.apache.ws.security" slot="main" export="true" meta-inf="export"/>
+    </dependencies>
+  </deployment>
 </jboss-deployment-structure>
-
 «ENDFILE»
 «ENDDEFINE»
 
