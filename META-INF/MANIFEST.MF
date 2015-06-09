@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: servicegen.cxf; singleton:=true
-Bundle-Version: 3.2.0.005
+Bundle-Version: 3.2.0.006
 Require-Bundle: org.eclipse.xpand;visibility:=reexport,
  org.eclipse.xtend;visibility:=reexport,
  org.eclipse.xtend.util.stdlib;visibility:=reexport,
