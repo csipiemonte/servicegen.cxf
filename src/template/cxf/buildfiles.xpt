@@ -779,9 +779,9 @@ war-exclude-libs-filter = «IF targetPlatform.isJboss6eap()-»cxf*.jar,	        
    							neethi*.jar,				   \
    							util-perf-*.jar,                  \
   							xmlschema-core*.jar,		   \
-  							wss4j-*.jar					   \
-  							saaj-impl*.jar				   \
-  							xmlsec-*.jar				   \
+  							wss4j-*.jar,					   \
+  							saaj-impl*.jar,				   \
+  							xmlsec-*.jar,				   \
   							asm-*.jar,                   \
 							cglib-*.jar,                   \
 							«ENDIF-»
