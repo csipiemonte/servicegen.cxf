@@ -116,8 +116,8 @@ context TypedArray ERROR "TD7: un array tipato non pu� contenere eccezioni o t
     this.componentType.metaType!=TypedArray;
 
 // TD8 (ERROR - temporaneo): i tipi enumerati non sono gestiti nelkla cartuccia CXF
-context EnumVal ERROR "TD8: i tipi EnumVal non sono gestiti attualmente nella cartuccia CXF":
-false;
+//context EnumVal ERROR "TD8: i tipi EnumVal non sono gestiti attualmente nella cartuccia CXF":
+//false;
 
 //N.B !! quando si implementera' anchjein CXF riverificar el'elenco dei check da fare!!!
 
