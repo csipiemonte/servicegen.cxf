@@ -67,6 +67,28 @@ creazione del build.xml per ANT
 		</fileset>
 	</path>
 
+
+	<!-- -->
+	<!-- ############################################################ -->
+	<!-- # preparazione artefatto per il deploy su repart           # --> 
+	<!-- # (in dist/${target})                                      # -->
+	<!-- ############################################################ -->
+	<target name="package-deployable-artifact" depends="environment-recreate, environment-config, compile-all, package-all-wsclientlibs-jars">
+		<mkdir dir="dist/csipiemonte"/>
+«FOREACH getProvidedServices() AS currService»
+«LET "dist/csipiemonte/"+getClientLibArtifactName(currService, this)+"/"+currService.versione+".0" AS artifactDir-»
+		<!-- artefatto per il servizio «currService.codServizio» -->
+		<mkdir dir="«artifactDir»"/>
+		<mkdir dir="«artifactDir»/lib/"/>
+		<copydir dest="«artifactDir»/lib" src="build/archives/${target}" includes="«getClientLibArtifactNameWithVersion(currService, this)».jar"></copydir>
+		<copy file="build/temp/conf/artifactory/«currService.codServizio»/«"ivy-"+getClientLibArtifactName(currService, this)+".xml"»" todir="dist/csipiemonte/«getClientLibArtifactName(currService, this)»/«currService.versione».0"></copy>
+«ENDLET-»
+«ENDFOREACH»
+		<zip destfile="dist/«this.codProdotto»-«this.codComponente»-artifacts.zip" basedir="dist" includes="csipiemonte/**">
+		</zip>
+	</target>
+
+
 	<!-- -->
 	<!-- ############################################################# -->
 	<!-- # Target: init                                              # -->
@@ -1426,4 +1448,27 @@ org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.
 org.apache.ws.security.crypto.merlin.keystore.type=jks
 org.apache.ws.security.crypto.merlin.keystore.password=@«prefix».decrypt.password.«getCodeEndpoint(endpoint)»@
 org.apache.ws.security.crypto.merlin.file=@«prefix».decrypt.file.«getCodeEndpoint(endpoint)»@
+«ENDDEFINE»
+
+«REM»comment«ENDREM»
+
+«DEFINE clientLibIvyArtifactFiles FOR SOABEModel»
+«LET this.getProvidedServices() AS allProvidedServices»
+«FOREACH allProvidedServices AS currService»
+«EXPAND clientLibIvyArtifactFile(this) FOR currService»
+«ENDFOREACH»
+«ENDLET»
+«ENDDEFINE»
+
+«DEFINE clientLibIvyArtifactFile(SOABEModel model) FOR ServiceDef»
+«FILE getClientLibArtifactFilePath(this, model)»<ivy-module version="1.0">
+    <info
+        organisation="csipiemonte"
+        module="«getClientLibArtifactName(this, model)»"
+        revision="«this.versione».0" />
+    <publications>
+        <artifact name="«getClientLibArtifactNameWithVersion(this, model)»" type="jar" />   
+    </publications>
+</ivy-module>
+«ENDFILE»
 «ENDDEFINE»

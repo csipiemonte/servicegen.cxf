@@ -62,6 +62,7 @@ Metodo centralizzato per la genarazione del progetto
 		«EXPAND buildfiles::ivyfiles FOR this-»
 		«ENDIF-»
 		«REM»TODO?«EXPAND buildfiles::aboutfiles FOR this»«ENDREM»
+		«EXPAND buildfiles::clientLibIvyArtifactFiles FOR this»
 
 		«REM»File di configurazione dell'applicazione«ENDREM»
  		«EXPAND j2eeconfigfiles::applicationfiles FOR this»
