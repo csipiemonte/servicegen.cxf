@@ -125,12 +125,12 @@ RESOURCE CONNECTOR FILES PER CXF
 				«ENDIF-»
 				«IF getTypeOfAction(wsSecurity) =="Signature" -»
 				<!-- SIGNATURE PROPERTIES -->
-				<entry key="signaturePropFile" value="/WEB-INF/«this.code».ks.properties" />
+				<entry key="signaturePropFile" value="«model.targetPlatform.isJboss6eap()? "" : "/WEB-INF"»/«this.code».ks.properties" />
 				«ENDIF-»
 				«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 				<!-- ENCRYPT PROPERTIES -->
 				<entry key="encryptionUser" value="@«this.code».userEncrypt.«getCodeEndpoint(endpoint)»@"/>
-				<entry key="encryptionPropFile" value="/WEB-INF/«this.code».encrypt.properties"  />
+				<entry key="encryptionPropFile" value="«model.targetPlatform.isJboss6eap()? "" : "/WEB-INF"»/«this.code».encrypt.properties"  />
 				<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
 				<entry key="encryptionKeyTransportAlgorithm" value="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
 				«ENDIF-»
@@ -156,11 +156,11 @@ RESOURCE CONNECTOR FILES PER CXF
 				«ENDIF-»
 				«IF getTypeOfAction(wsSecurity) =="Signature" -»
 				<!-- SIGNATURE PROPERTIES -->
-				<entry key="signaturePropFile" value="/WEB-INF/«this.code».ts.properties" />
+				<entry key="signaturePropFile" value="«model.targetPlatform.isJboss6eap()? "" : "/WEB-INF"»/«this.code».ts.properties" />
 				«ENDIF-»
 				«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 				<!-- ENCRYPT PROPERTIES -->
-				<entry key="decryptionPropFile" value="/WEB-INF/«this.code».decrypt.properties" />
+				<entry key="decryptionPropFile" value="«model.targetPlatform.isJboss6eap()? "" : "/WEB-INF"»/«this.code».decrypt.properties" />
 				«ENDIF-»
 				«ENDFOREACH-»
 				</map>

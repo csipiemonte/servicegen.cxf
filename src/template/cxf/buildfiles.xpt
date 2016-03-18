@@ -395,6 +395,7 @@ creazione del build.xml per ANT
 					<!-- in JB6.x i file di spring vanno in classes e non in WEB-INF -->
 					<classes dir="${temp}/conf/web/${binding.code}/${service.name}/WEB-INF/classes">
 						<include name="*.xml"/>
+						<include name="*.properties"/>
 				    </classes>
 				    «ENDIF»
 					<lib dir="${lib}" includes="*" excludes="${war-exclude-libs-filter}, ${war-exclude-custom-libs-filter}«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0-», ${svcflow-libs}«ENDIF-»" />
@@ -1406,7 +1407,7 @@ IVY_VERSION=ivy_2_0_0
 «ENDDEFINE»
 
 «DEFINE wsSecurityClientPropertiesFile(SOABEModel model, ServiceDef context) FOR RPCWebServiceConnector»
-«LET getSpecificWarConfigRootDir("ws", removeSeparator(context.codServizio.toLowerCase()), model)+"/WEB-INF/"+this.code AS pathTmp-»
+«LET wsSecurityPropertiesPath(model, context)+this.code AS pathTmp-»
 	«FILE pathTmp+".ks.properties"»
 	«EXPAND ksPropertiesFile(this.code, this.endpoint) FOR this.serviceDef-»
 	«ENDFILE»
