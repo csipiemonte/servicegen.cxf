@@ -122,7 +122,7 @@ String springConfigurationFileName(ServiceDef sd, TargetPlatform tp):
 	
 String springConfigurationFilePath(ServiceDef sd, TargetPlatform tp):
 let model = (SOABEModel)tp.eContainer :
-let actualFolderForPlatform = tp.isJboss6eap() ? "WEB-INF/classes" : "WEB-INF" :
+let actualFolderForPlatform = (tp.isJboss6eap()||tp.isWildfly17()) ? "WEB-INF/classes" : "WEB-INF" :
 	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/"+actualFolderForPlatform+"/"+springConfigurationFileName(sd, tp);
 
 String springDaoBeansInternalFileName(ServiceDef sd, TargetPlatform tp):
@@ -130,7 +130,7 @@ String springDaoBeansInternalFileName(ServiceDef sd, TargetPlatform tp):
 	
 String springDaoBeansInternalFilePath(ServiceDef sd, TargetPlatform tp):
 let model = (SOABEModel)tp.eContainer :
-let actualFolderForPlatform = tp.isJboss6eap() ? "WEB-INF/classes" : "WEB-INF" :
+let actualFolderForPlatform = (tp.isJboss6eap()||tp.isWildfly17()) ? "WEB-INF/classes" : "WEB-INF" :
 	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/"+actualFolderForPlatform+"/"+springDaoBeansInternalFileName(sd, tp);
 
 String springAppContextFileName(ServiceDef sd, TargetPlatform tp):
@@ -138,7 +138,7 @@ String springAppContextFileName(ServiceDef sd, TargetPlatform tp):
 	
 String springAppContextFilePath(ServiceDef sd, TargetPlatform tp):
 let model = (SOABEModel)tp.eContainer :
-let actualFolderForPlatform = tp.isJboss6eap() ? "WEB-INF/classes" : "WEB-INF" :
+let actualFolderForPlatform = (tp.isJboss6eap()||tp.isWildfly17()) ? "WEB-INF/classes" : "WEB-INF" :
 	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/"+actualFolderForPlatform+"/"+springAppContextFileName(sd, tp);
 
 
@@ -359,7 +359,7 @@ boolean isWsSecurityCxf(WSEndpoint endpoint):
 	endpoint.inChannel != null || endpoint.outChannel!=null;		
 	
 String wsSecurityPropertiesPath(SOABEModel model, ServiceDef sd):
-if(model.targetPlatform.isJboss6eap()) then
+if(model.targetPlatform.isJboss6eap()||model.targetPlatform.isWildfly17()) then
 	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/WEB-INF/classes/"
 else
 	getSpecificWarConfigRootDir("ws", removeSeparator(sd.codServizio.toLowerCase()), model)+"/WEB-INF/";	
@@ -377,19 +377,20 @@ else
 	"/" + wsWebContext(sd.codServizio, bind.codBinding, sd.serviceType.toString(), model)+"/" + serviceNameEP(sd, ep); 
 
 String addressEP(ServiceDef sd,WSEndpoint ep, WSBinding bind, SOABEModel model) :
-if(model.targetPlatform.isJboss6eap()) then
+if(model.targetPlatform.isJboss6eap()||model.targetPlatform.isWildfly17()) then
 	addressJB6(sd, ep,bind,model) 
 else
     "/"+ sd.codComponente.toLowerCase()+removeSeparator(sd.codServizio).toFirstUpper()+getCodeEndpoint(ep).toFirstUpper();
 		
 String implementorEP(SOABEModel model, ServiceDef sd,WSEndpoint ep) :
-if(model.targetPlatform.isJboss6eap()) then
+if(model.targetPlatform.isJboss6eap()||model.targetPlatform.isWildfly17()) then
 	getFullServiceEJBPkg(sd.codServizio, model)+"."+serviceImplementationEPClassName(sd,ep)
 else
 	"#"+serviceImplBeanId(sd);
 
 boolean insertAnnotationWebService(SOABEModel model, WSBinding wsBinding) :
-if(!model.targetPlatform.isJboss6eap() || (model.targetPlatform.isJboss6eap()&&wsBinding.endpoints.isEmpty)) then
+if(!(model.targetPlatform.isJboss6eap() && model.targetPlatform.isWildfly17()) ||
+ ((model.targetPlatform.isJboss6eap() || model.targetPlatform.isWildfly17()) &&wsBinding.endpoints.isEmpty)) then
 	true		
 else 
 	false;

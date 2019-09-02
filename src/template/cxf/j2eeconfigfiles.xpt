@@ -151,12 +151,14 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
          http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
 
-    «IF !model.targetPlatform.isJboss6eap()-»<context-param>
+    «IF !model.targetPlatform.isJboss6eap()-»
+    «LET model.targetPlatform.isWildfly17() ? "classpath:" : "WEB-INF" AS contextConfigLocation-»
+    <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>WEB-INF/«springConfigurationFileName(serviceDef, model.targetPlatform)»</param-value>
-    </context-param>«ENDIF-»
-
-    «IF !model.targetPlatform.isJboss6eap()-»<listener>
+        <param-value>«contextConfigLocation»/«springConfigurationFileName(serviceDef, model.targetPlatform)»</param-value>
+    </context-param>«ENDLET-»«ENDIF-»
+    «IF !model.targetPlatform.isJboss6eap()-»
+    <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>«ENDIF-»
     «IF serviceDef.authLevel!=AuthLevelEnum::A0-»
@@ -165,7 +167,7 @@ Crea i descrittori specifici per l'Application Server selezionato (weblogic.xml 
 	</listener>
 	«ENDIF-»
 
-	«IF !model.targetPlatform.isJboss6eap()-»
+	«IF !model.targetPlatform.isJboss6eap() && !model.targetPlatform.isWildfly17()-»
     <servlet>
     	<display-name>CXF Servlet</display-name>
 			<servlet-name>CXFServlet</servlet-name>

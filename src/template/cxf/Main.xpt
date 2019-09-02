@@ -58,6 +58,8 @@ Metodo centralizzato per la genarazione del progetto
 		«REM»TODO?«EXPAND buildfiles::buildEnvProperties FOR this»«ENDREM»
 		«IF this.targetPlatform.isJboss6eap()-»
 		«EXPAND buildfiles::ivyfilesJboss6ap FOR this-»
+		«ELSEIF this.targetPlatform.isWildfly17()-»
+		«EXPAND buildfiles::ivyfilesWildfly17 FOR this-»
 		«ELSE-»
 		«EXPAND buildfiles::ivyfiles FOR this-»
 		«ENDIF-»

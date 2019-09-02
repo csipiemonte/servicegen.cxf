@@ -60,7 +60,7 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 
 «DEFINE springFiles(SOABEModel model, boolean useExternalDaoBeans) FOR LogicImplCartridge»
 	«LET (ServiceImpl)eContainer AS impl»
-		«IF model.targetPlatform.isJboss6eap()-»
+		«IF model.targetPlatform.isJboss6eap()-»«REM»non per Wildfly!!«ENDREM»
 			«EXPAND jbosswscxfFile(model, impl, useExternalDaoBeans) FOR this»
 		«ELSE-»
 			«EXPAND cxfFile(model, impl, useExternalDaoBeans) FOR this»
@@ -80,14 +80,14 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 <beans xmlns="http://www.springframework.org/schema/beans"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 
-«IF model.targetPlatform.isJboss6eap()-»xmlns:cxf="http://cxf.apache.org/core"
+«IF model.targetPlatform.isJboss6eap()||model.targetPlatform.isWildfly17()-»xmlns:cxf="http://cxf.apache.org/core"
 xmlns:context="http://www.springframework.org/schema/context"«ELSE»
 xmlns:beans="http://www.springframework.org/schema/beans"«ENDIF»
 xmlns:jaxws="http://cxf.apache.org/jaxws"
 xsi:schemaLocation="http://www.springframework.org/schema/beans
 http://www.springframework.org/schema/beans/spring-beans.xsd
 
-«IF model.targetPlatform.isJboss6eap()»
+«IF model.targetPlatform.isJboss6eap()||model.targetPlatform.isWildfly17()»
 http://cxf.apache.org/core
 http://cxf.apache.org/schemas/core.xsd
 http://www.springframework.org/schema/context  
@@ -95,7 +95,7 @@ http://www.springframework.org/schema/context/spring-context-3.0.xsd«ENDIF»
 
 http://cxf.apache.org/jaxws
 http://cxf.apache.org/schemas/jaxws.xsd">
-	«IF model.targetPlatform.isJboss6eap()-»<!-- import dei file non cxf -->
+	«IF model.targetPlatform.isJboss6eap()||model.targetPlatform.isWildfly17()-»<!-- import dei file non cxf -->
 	<import resource="classpath:/«springConfigurationFileName(impl.provides, model.targetPlatform)»" />
 	<!-- nuova direttiva necessaria per JBoss6.x -->
 	<context:annotation-config/>«ENDIF»
@@ -126,7 +126,7 @@ http://cxf.apache.org/schemas/jaxws.xsd">
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	«IF !model.targetPlatform.isJboss6eap()-»
+	«IF !model.targetPlatform.isJboss6eap() && !model.targetPlatform.isWildfly17()-»
 	<!-- CENTRALIZED CXF resources import -->
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
@@ -149,7 +149,7 @@ http://cxf.apache.org/schemas/jaxws.xsd">
     «ENDFOREACH-»
 	«ENDIF-»
 	«ENDLET-»
-	«IF !model.targetPlatform.isJboss6eap()-»
+	«IF !model.targetPlatform.isJboss6eap() && !model.targetPlatform.isWildfly17()-»
 	<!-- CXF SERVICES CONFIGURATION -->
 	<import resource="«impl.provides.codServizio.toLowerCase()»Cxf.xml" />
 	«ENDIF-»
@@ -276,11 +276,11 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Signature" -»
 						<!-- SIGNATURE PROPERTIES -->
-						<entry key="signaturePropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.properties" />
+						<entry key="signaturePropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap() && !((SOABEModel)impl.eContainer).targetPlatform.isWildfly17()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ts.properties" />
 						«ENDIF-»
 						«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 						<!-- ENCRYPT PROPERTIES -->
-						<entry key="decryptionPropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.properties" />
+						<entry key="decryptionPropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap() && !((SOABEModel)impl.eContainer).targetPlatform.isWildfly17()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».decrypt.properties" />
 						«ENDIF-»
 					    «ENDFOREACH-»
 					</map>
@@ -308,12 +308,12 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 							«ENDIF-»
 							«IF getTypeOfAction(wsSecurity) =="Signature" -»
 							<!-- SIGNATURE PROPERTIES -->
-							<entry key="signaturePropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.properties" />
+							<entry key="signaturePropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap() && !((SOABEModel)impl.eContainer).targetPlatform.isWildfly17()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».ks.properties" />
 							«ENDIF-»
 							«IF getTypeOfAction(wsSecurity) =="Encrypt" -»
 							<!-- ENCRYPT PROPERTIES -->
 							<entry key="encryptionUser" value="@«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».userEncrypt.«getCodeEndpoint(endpoint)»@"/>
-							<entry key="encryptionPropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.properties"  />
+							<entry key="encryptionPropFile" value="«IF!((SOABEModel)impl.eContainer).targetPlatform.isJboss6eap() && !((SOABEModel)impl.eContainer).targetPlatform.isWildfly17()»/WEB-INF«ENDIF»/«impl.provides.codServizio»«getCodeEndpoint(endpoint).toFirstUpper()».encrypt.properties"  />
 							<entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
 							<entry key="encryptionKeyTransportAlgorithm" value="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
 							«ENDIF-»

@@ -138,7 +138,7 @@ import java.util.List;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceContext;
 import javax.annotation.Resource;
-«IF model.targetPlatform.isJboss6eap()-»
+«IF model.targetPlatform.isJboss6eap() || model.targetPlatform.isWildfly17()-»
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
@@ -168,7 +168,7 @@ public class «serviceImplementationClassName()» implements «serviceInterfaceN
 
 @Resource
 WebServiceContext wsContext;
-«IF model.targetPlatform.isJboss6eap()-»
+«IF model.targetPlatform.isJboss6eap() || model.targetPlatform.isWildfly17()-»
 @Autowired
 «ENDIF-»
 private «serviceBusinessInterfaceName()» «serviceBusinessInterfaceName().toFirstLower()»;
@@ -181,7 +181,7 @@ public void set«serviceBusinessInterfaceName()»(«serviceBusinessInterfaceName
 	this.«serviceBusinessInterfaceName().toFirstLower()» = «serviceBusinessInterfaceName().toFirstLower()»;
 }
 
-«IF model.targetPlatform.isJboss6eap()-»
+«IF model.targetPlatform.isJboss6eap() || model.targetPlatform.isWildfly17()-»
 @PostConstruct
 	public void postConstruct() {
 		SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
@@ -723,7 +723,7 @@ public class «authenticationHelperClassName(this)» {
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 «FILE fullServiceEJBClassesDir(codServizio, model, false)+"/callback/"+namaPasswordCallbackClass(false, endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
-«EXPAND inInterceptorCallbackBody(endpoint,false) FOR this»
+«EXPAND inInterceptorCallbackBody(endpoint,false, model) FOR this»
 «ENDFILE»
 «ENDFOREACH»
 «ENDLET»
@@ -735,7 +735,7 @@ public class «authenticationHelperClassName(this)» {
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 «FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/"+namaPasswordCallbackClass(false, endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
-«EXPAND inInterceptorCallbackBody(endpoint,true) FOR this»
+«EXPAND inInterceptorCallbackBody(endpoint,true, model) FOR this»
 «ENDFILE»
 «ENDFOREACH»
 «ENDLET»
@@ -748,7 +748,7 @@ public class «authenticationHelperClassName(this)» {
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 «FILE fullServiceEJBClassesDir(context.codServizio, model,true)+"/"+codServizio+"/callback/"+namaPasswordCallbackClass(true, endpoint)+".java"»package «getFullServiceEJBPkg(context.codServizio, model,true)».«codServizio».callback;
-«EXPAND outInterceptorCallbackBody(endpoint,true) FOR this»
+«EXPAND outInterceptorCallbackBody(endpoint,true, model) FOR this»
 «ENDFILE»
 «ENDFOREACH»
 «ENDLET»
@@ -760,7 +760,7 @@ public class «authenticationHelperClassName(this)» {
 «LET (WSBinding)this.bindings.get(0) AS wsBinding-»	
 «FOREACH wsBinding.getAllEndPointWS() AS endpoint-»
 «FILE fullServiceEJBClassesDir(codServizio, model,false)+"/callback/"+namaPasswordCallbackClass(true, endpoint)+".java"»package «getFullServiceEJBPkg(codServizio, model)».callback;
-«EXPAND outInterceptorCallbackBody(endpoint,false) FOR this»
+«EXPAND outInterceptorCallbackBody(endpoint,false, model) FOR this»
 «ENDFILE»
 «ENDFOREACH»
 «ENDLET»
@@ -768,14 +768,18 @@ public class «authenticationHelperClassName(this)» {
 «ENDDEFINE»
 
 
-«DEFINE inInterceptorCallbackBody(WSEndpoint endpoint, boolean client) FOR ServiceDef»
+«DEFINE inInterceptorCallbackBody(WSEndpoint endpoint, boolean client, SOABEModel model) FOR ServiceDef»
 import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
+«IF model.targetPlatform.isWildfly17()-»
+import org.apache.wss4j.common.ext.WSPasswordCallback;
+«ELSE-»
 import org.apache.ws.security.WSPasswordCallback;
+«ENDIF-»
 
 public class «namaPasswordCallbackClass(false, endpoint)» implements CallbackHandler{
 
@@ -826,14 +830,19 @@ private void validatePassordUsernameToken(){
 }
 «ENDDEFINE»
 
-«DEFINE outInterceptorCallbackBody(WSEndpoint endpoint, boolean client) FOR ServiceDef»
+«DEFINE outInterceptorCallbackBody(WSEndpoint endpoint, boolean client, SOABEModel model) FOR ServiceDef»
 import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
+«IF model.targetPlatform.isWildfly17()-»
+import org.apache.wss4j.common.ext.WSPasswordCallback;
+«ELSE-»
 import org.apache.ws.security.WSPasswordCallback;
+«ENDIF-»
+
 
 public class «namaPasswordCallbackClass(true, endpoint)» implements CallbackHandler{
 	
