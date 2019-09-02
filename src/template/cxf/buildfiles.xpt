@@ -808,6 +808,19 @@ war-exclude-libs-filter = «IF targetPlatform.isJboss6eap() || targetPlatform.is
   							xmlsec-*.jar,				   \
   							asm-*.jar,                   \
 							cglib-*.jar,                   \
+							activation-*.jar,              \
+                            jaas*.jar,                     \
+                            jaxp*.jar,                     \
+                            jms*.jar,                      \
+                            jndi*.jar,                     \
+                            mail*.jar,                     \
+                            saaj*.jar,                     \
+                            xmlschema*.jar,                \
+                            xml-api*.jar,                  \
+                            xmlParserAPIs*.jar,            \
+                            xercesImpl*.jar,               \
+                            wsdl4j*.jar,                   \
+                            cxf*.jar,                      \
 							«ENDIF-»
   							servlet*.jar,                  \
                             csi-tools*.jar,                \
