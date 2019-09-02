@@ -312,7 +312,7 @@ creazione del build.xml per ANT
 			«IF targetPlatform.code == TargetPlatformCodes::WLS92-»
 			<metainf dir="${temp}/conf/ear/" includes="weblogic-application.xml" />
 			«ELSE»
-				«IF targetPlatform.isJboss6eap()»
+				«IF targetPlatform.isJboss6eap() || targetPlatform.isWildfly17()»
 			<metainf dir="${temp}/conf/ear/" includes="jboss-deployment-structure.xml" />
 				«ELSE»
 			<metainf dir="${temp}/conf/ear/" includes="jboss-app.xml" />
@@ -391,8 +391,8 @@ creazione del build.xml per ANT
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
 						<include name="*.xml"/>
 					</classes>
-					«IF targetPlatform.isJboss6eap()»
-					<!-- in JB6.x i file di spring vanno in classes e non in WEB-INF -->
+					«IF targetPlatform.isJboss6eap() || targetPlatform.isWildfly17()»
+					<!-- in JB6.x e Wildfly i file di spring vanno in classes e non in WEB-INF -->
 					<classes dir="${temp}/conf/web/${binding.code}/${service.name}/WEB-INF/classes">
 						<include name="*.xml"/>
 						<include name="*.properties"/>
@@ -420,10 +420,11 @@ creazione del build.xml per ANT
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/business/${service.name}/**"/>
 						<include name="«getOrganizationNamePathPrefix()»/*/«codComponente.toLowerCase()»/integration/${service.name}/**"/>
 					</classes>
-					«IF targetPlatform.isJboss6eap()»
-					<!-- in JB6.x i file di spring vanno in classes e non in WEB-INF -->
+					«IF targetPlatform.isJboss6eap() || targetPlatform.isWildfly17()»
+					<!-- in JB6.x e Wildfly i file di spring vanno in classes e non in WEB-INF -->
 					<classes dir="${temp}/conf/web/${binding.code}/${service.name}/WEB-INF/classes">
 						<include name="*.xml"/>
+						<include name="*.properties"/>
 				    </classes>
 				    «ENDIF»
 					<lib dir="${lib}" includes="*" excludes="${war-exclude-libs-filter}, ${war-exclude-custom-libs-filter}" />
@@ -758,7 +759,7 @@ creazione del build.properties richiamato dal build ANT
 # essere inclusi all'interno dell'EAR prodotto.
 # ----------------------------------------------------------------------------
 ear-libs-filter = dummy.jar, \
-  					«IF !targetPlatform.isJboss6eap()-»spring-aop-*.jar,                  \
+  					«IF !targetPlatform.isJboss6eap() && !targetPlatform.isWildfly17()-»spring-aop-*.jar,                  \
                     spring-beans-*.jar,                \
                     spring-context-*.jar,              \
                     spring-context-support-*.jar,      \
@@ -769,7 +770,7 @@ ear-libs-filter = dummy.jar, \
 					spring-asm-*.jar,                  \
                     spring-expression-*.jar,      \
                    	aopalliance-*.jar,                   \«ENDIF-»
-                   	«IF targetPlatform.isJboss6eap()-»util-perf-*.jar,                  \
+                   	«IF targetPlatform.isJboss6eap() || targetPlatform.isWildfly17()-»util-perf-*.jar,                  \
 					cglib-*.jar,                   \«ENDIF-»
                     commons-logging-1.1.1.jar
                     
@@ -798,7 +799,7 @@ ear-custom-libs-filter =
 # venire inclusi all'interno del WAR.
 # ----------------------------------------------------------------------------
 «REM»DIFFERENZIARE WEBLOGIC-JBOSS«ENDREM»
-war-exclude-libs-filter = «IF targetPlatform.isJboss6eap()-»cxf*.jar,	                   \
+war-exclude-libs-filter = «IF targetPlatform.isJboss6eap() || targetPlatform.isWildfly17()-»cxf*.jar,	                   \
    							neethi*.jar,				   \
    							util-perf-*.jar,                  \
   							xmlschema-core*.jar,		   \
@@ -1141,7 +1142,7 @@ creazione del file di configurazione IVY
 
 «DEFINE ivyfilesJboss6ap  FOR SOABEModel»
 «FILE "buildfiles/ivy.xml"»<ivy-module version="1.0">
-	<info organisation="csipiemonte" module="starissrv" />
+	<info organisation="csipiemonte" module="«codComponente»" />
 	<dependencies>
 
 		<!-- librerie per il logging applicativo e la misurazione
@@ -1319,6 +1320,157 @@ creazione del file di configurazione IVY
 «ENDFILE»
 «ENDDEFINE»
 
+«DEFINE ivyfilesWildfly17  FOR SOABEModel»
+«FILE "buildfiles/ivy.xml"»<ivy-module version="1.0">
+	<info organisation="csipiemonte" module="«codComponente»" />
+	<dependencies>
+
+		<!-- librerie per il logging applicativo e la misurazione
+		     delle performance. Nota: la piattaforma jboss impone l'utilizzo della
+		     versione 1.2.14.
+		-->
+		<dependency org="apache" name="log4j" rev="1.2.14">
+			<artifact name="log4j-1.2.14" type="jar" />
+		</dependency>
+
+		<dependency org="csipiemonte" name="util-perf" rev="1.0.0">
+			<artifact name="util-perf-1.0.0" type="jar" />
+		</dependency>
+
+		<dependency org="apache" name="commons-logging" rev="1.1.1">
+			<artifact name="commons-logging-1.1.1" type="jar" />
+		</dependency>
+
+	  	<dependency org="others" name="aopalliance" rev="1.0.0" >
+			<artifact name="aopalliance-1.0.0" type="jar" />
+		</dependency> 
+		
+    	<dependency org="others" name="asm" rev="3.3.1"  transitive="false"/>
+    	
+    	<dependency org="others" name="cglib" rev="2.2.2">
+			<artifact name="cglib-2.2.2" type="jar"/>
+		</dependency>
+		
+		<dependency org="others" name="asm" rev="3.3.1">
+			<artifact name="asm-3.3.1" type="jar"/>
+		</dependency>
+	
+		<!-- ############################################################## -->
+    	<!-- # SPRING                                                     # -->
+    	<!-- ############################################################## -->
+    	<!--  -->
+	    <dependency org="others" name="spring" rev="4.3.24.RELEASE" transitive="false" >
+	    </dependency>
+
+        <!-- ############################################################## -->
+	    <!-- # CXF 3.3.2                                                 # -->
+	    <!-- ############################################################## -->
+	    <!--  -->
+		<dependency org="apache" name="cxf" rev="3.3.2">
+		</dependency>
+		
+		<!-- ############################################################## -->
+	    <!-- # Wildfly 17                                                 # -->
+	    <!-- ############################################################## -->
+	    <!--  -->
+	   <dependency org="others" name="jboss" rev="eap-6.0"
+		transitive="false">
+		
+		<artifact name="neethi-3.0.1-redhat-1" type="jar" />
+		<artifact name="wsdl4j-1.6.2-redhat-1" type="jar" />
+		<artifact name="xmlschema-core-2.0.2-redhat-1" type="jar" />
+	</dependency>
+	
+	<dependency org="apache" name="wss4j" rev="2.2.3">
+	</dependency>
+	
+	<!--  per le annotation di jbossws -->
+	<dependency org="redhat" name="jbossws-api" rev="1.1.2.Final">
+	</dependency>
+	«IF serviceimplementations.select(si|si.implCartridge!=null && si.implCartridge.metaType==FlowModelImplCartridge).size>0»
+		<!--
+		SERVIZIO ORCHESTRATO: DIPENDENZE NECESSARIE
+		-->
+
+	    <!-- dipendenze per svcflow 1.2.1 -->
+	    <dependency org="csipiemonte" name="svcflow" rev="1.2.1">
+	    	<artifact name="svcflow-1.2.1" type="jar" />
+	    </dependency>
+
+		<!-- librerie Core di C.S.I -->
+		<dependency org="csipiemonte" name="csi" rev="1.4.5">
+			<artifact name="csi-apachesoap-1.4.5" type="jar" />
+			<artifact name="csi-core-1.4.5" type="jar" />
+			<artifact name="csi-ejb-1.4.5" type="jar" />
+			<artifact name="csi-ejb-weblogic-1.4.5" type="jar" />
+			<artifact name="csi-rmi-1.4.5" type="jar" />
+			<artifact name="csi-stadapter-1.4.5" type="jar" />
+			<artifact name="csi-tools-1.4.5" type="jar" />
+		</dependency>
+
+	    <!-- librerie necessarie per i binding WSFAD -->
+	    <dependency org="csipiemonte" name="wsadp" rev="2.0.2">
+	    	<artifact name="wsadp-2.0.2" type="jar" />
+	    </dependency>
+
+		«IF this.targetPlatform.isJbossPlatform()-»
+		<!-- librerie necessarie per la connessione a servizi su WLS92 -->
+		<dependency org="csipiemonte" name="weblogic-client" rev="3.0.0">
+			<artifact name="weblogic-client-3.0.0" type="jar" />
+		</dependency>
+		«ENDIF-»
+
+		<!-- librerie per l'implementazione di monitoraggio e diagnostica -->
+		<dependency org="csipiemonte" name="coop-diag" rev="1.2.1" transitive="false">
+			<artifact name="coop-diag-1.2.1" type="jar" />
+		</dependency>
+		
+	    <!-- librerie necessarie se si attiva il supporto coop trace -->
+	    <dependency org="csipiemonte" name="coop-trace" rev="1.2.0">
+	    	<artifact name="coop-trace-1.2.0" type="jar" />
+	    </dependency>
+
+		«LET getAllResourceConnectors(this) AS allResConn-»
+
+		«IF allResConn.select(rc|rc.metaType==PDPAServiceConnector).size>0-»
+		«FOREACH allResConn.select(rc|rc.metaType==PDPAServiceConnector) AS currPDPARC-»
+		«EXPAND template::buildfiles::pdpaIvyDependency FOR (PDPAServiceConnector)currPDPARC-»
+		«ENDFOREACH-»
+		«ENDIF-»
+
+		«IF allResConn.select(rc|rc.metaType==RPCWebServiceConnector).size>0-»
+		«FOREACH allResConn.select(rc|rc.metaType==RPCWebServiceConnector) AS currRPCWSC-»
+	    «EXPAND wsIvyDependency FOR (RPCWebServiceConnector)currRPCWSC-»
+	    «ENDFOREACH-»
+		«ENDIF-»
+		«ENDLET-»
+		«ENDIF-»
+		«PROTECT CSTART '<!--' CEND '-->' ID getRegionUID("ivyExtraDependencies")»
+		<!-- Inserire qui le dipendenze aggiuntive -->
+		«ENDPROTECT»
+		
+		
+	</dependencies>
+
+</ivy-module>
+
+«ENDFILE»
+«FILE "buildfiles/ivyconf.xml"»<ivysettings>
+	<settings defaultCache="${basedir}/build/cache" defaultResolver="myUrlResolver"/>
+	<resolvers>
+		<url name="myUrlResolver">
+			<artifact pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/[revision]/lib/[artifact].[type]" />
+			<artifact pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/[revision]/conf/[artifact].[type]" />
+
+			<artifact pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/lib/[artifact].[type]" />
+
+			<ivy pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/[revision]/ivy-[module].xml" />
+			<ivy pattern="http://«getIvyRepositoryHost()»/java/[organisation]/[module]/ivy-[module].xml" />
+		</url>
+	</resolvers>
+</ivysettings>
+«ENDFILE»
+«ENDDEFINE»
 
 «REM»comment«ENDREM»
 «DEFINE wsIvyDependency FOR RPCWebServiceConnector»
