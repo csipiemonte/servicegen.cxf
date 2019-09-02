@@ -60,9 +60,9 @@ Genera i file per la configurazione di Spring (Dependency Injection, CXF configu
 
 «DEFINE springFiles(SOABEModel model, boolean useExternalDaoBeans) FOR LogicImplCartridge»
 	«LET (ServiceImpl)eContainer AS impl»
-		«IF model.targetPlatform.isJboss6eap()-»«REM»non per Wildfly!!«ENDREM»
-			«EXPAND jbosswscxfFile(model, impl, useExternalDaoBeans) FOR this»
-		«ELSE-»
+		«IF model.targetPlatform.isJboss6eap()-»
+			«EXPAND jbosswscxfFile(model, impl, useExternalDaoBeans) FOR this»«REM»non per Wildfly!!«ENDREM»
+		«ELSEIF !model.targetPlatform.isWildfly17()-»
 			«EXPAND cxfFile(model, impl, useExternalDaoBeans) FOR this»
 		«ENDIF-»	
 		«EXPAND springMainFile(model, impl, useExternalDaoBeans) FOR this»
